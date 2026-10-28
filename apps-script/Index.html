@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="it"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bilancio di competenze</title>
+<style>
+:root{--paper:#FAF8F6;--ink:#000;--red:#FF3B30;--mist:#FFF0ED}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:18px/1.55 system-ui,sans-serif}
+main{max-width:880px;margin:auto;padding:clamp(24px,5vw,64px)}
+h1{font-weight:900;text-transform:uppercase;letter-spacing:-.04em;line-height:.94;font-size:clamp(48px,9vw,94px);margin:42px 0}
+p{max-width:62ch}.eyebrow{font-size:12px;font-weight:700;letter-spacing:.14em}
+button,input,textarea,select{font:inherit}button{border:1px solid #000;border-radius:999px;background:#000;color:#fff;min-height:48px;padding:8px 24px;cursor:pointer}
+button:disabled{opacity:.5}input,textarea,select{border:1px solid #777;background:#fff;padding:12px;width:100%;border-radius:4px}
+label{font-weight:650;display:block;margin:20px 0 6px}
+textarea{min-height:240px;resize:vertical}nav{display:flex;flex-wrap:wrap;gap:8px;margin:24px 0}
+nav button{background:transparent;color:#000;padding:6px 14px;font-size:14px}
+nav button[aria-current=step]{background:#000;color:#fff}
+.hidden{display:none!important}.alert{background:var(--mist);padding:12px;border-left:3px solid var(--red)}
+small{color:#555}button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid var(--red);outline-offset:3px}
+</style></head><body><main>
+<p class="eyebrow">AFOL METROPOLITANA / CFP ROZZANO</p>
+<h1>Bilancio di<br>competenze</h1>
+<p>Quattro anni. Che cosa hai imparato? Ripercorri le esperienze, riconosci le competenze e racconta il tuo percorso.</p>
+<section id="loginPanel"><label for="code">Codice personale</label><input id="code" autocomplete="off" placeholder="BC-..." maxlength="30"><p><button id="enter">Accedi</button></p></section>
+<section id="workspace" class="hidden">
+<p id="welcome"></p><nav id="steps" aria-label="Sezioni del percorso"></nav>
+<h2 id="question"></h2><p id="hint"></p><label for="answer">La tua risposta</label><textarea id="answer"></textarea>
+<p><button id="save">Salva questa sezione</button> <button id="out" type="button">Esci</button></p>
+<p id="saved" role="status" aria-live="polite"></p>
+</section>
+<p id="notice" role="alert"></p>
+</main><script>
+const sections=[
+ ['percorso','Il tuo percorso','Quali sono le esperienze più significative che ricordi nei quattro anni?'],
+ ['esperienze','Le esperienze','Racconta almeno due attività reali svolte in laboratorio, nelle lezioni o nei progetti.'],
+ ['competenze','Che cosa sai fare','Descrivi ciò che oggi sai fare autonomamente, e come puoi dimostrarlo.'],
+ ['tirocinio','Il tirocinio','Racconta un episodio: situazione, tuo intervento, difficoltà, risultato e competenze utilizzate.'],
+ ['bilancio','Che cosa ti manca','Quali difficoltà hai ancora? Che cosa avresti voluto imparare? Che cosa cambieresti della formazione?'],
+ ['orientamento','Raccontare il CFP','Immagina uno studente delle medie: che cosa gli diresti sul percorso, in modo concreto e senza nascondere le difficoltà?']
+];
+let token='',data={},current=sections[0][0],busy=false;
+const el=id=>document.getElementById(id);
+function call(method,...args){return new Promise((resolve,reject)=>google.script.run.withSuccessHandler(resolve).withFailureHandler(e=>reject(e))[method](...args));}
+function msg(s){el('notice').textContent=s;}
+function draw(){
+ const c=sections.find(x=>x[0]===current);el('question').textContent=c[1];el('hint').textContent=c[2];el('answer').value=data[current]?.content?.text||'';
+ el('saved').textContent=data[current]?.updatedAt?'Ultimo salvataggio registrato':'Non ancora salvato';
+ el('steps').replaceChildren(...sections.map((s,i)=>{const b=document.createElement('button');b.textContent=(i+1)+' '+s[1];b.setAttribute('aria-current',s[0]===current?'step':'false');b.onclick=()=>{if(el('answer').value!==(data[current]?.content?.text||'')&&!confirm('Modifiche non salvate. Proseguire?'))return;current=s[0];draw();};return b;}));
+}
+el('enter').onclick=async()=>{try{msg('');const r=await call('login',el('code').value);if(!r.ok)throw Error(r.error);token=r.token;const x=await call('loadMine',token);if(!x.ok)throw Error(x.error);data=x.data;el('welcome').textContent='Percorso: '+x.student.track;el('loginPanel').classList.add('hidden');el('workspace').classList.remove('hidden');draw();}catch(e){msg(String(e.message||e));}};
+el('save').onclick=async()=>{if(busy)return;busy=true;el('save').disabled=true;try{msg('');const text=el('answer').value;const r=await call('saveSection',token,current,{text},data[current]?.revision||0);if(!r.ok)throw Error(r.error);data[current]={revision:r.revision,content:{text},updatedAt:r.updatedAt};draw();el('saved').textContent='Salvato. Puoi continuare.';}catch(e){msg(String(e.message||e));}finally{busy=false;el('save').disabled=false;}};
+el('out').onclick=async()=>{if(el('answer').value!==(data[current]?.content?.text||'')&&!confirm('Hai modifiche non salvate. Uscire?'))return;await call('logout',token);token='';data={};el('workspace').classList.add('hidden');el('loginPanel').classList.remove('hidden');el('code').value='';msg('Sessione chiusa.');};
+</script></body></html>

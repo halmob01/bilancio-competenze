@@ -1,0 +1,21 @@
+name: Test bilancio
+on:
+  push:
+    branches: [main, 'claude/**']
+  pull_request:
+    branches: [main]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Controllo sintattico JavaScript
+        run: |
+          node --check js/dati.js
+          node --check js/bilancio.js
+          node --check js/app.js
+      - name: Test logica e contenuti
+        run: node --test tests/*.test.cjs

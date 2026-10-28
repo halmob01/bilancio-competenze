@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bilancio di competenze</title>
+  <meta name="description" content="Quattro anni. Che cosa hai imparato? Bilancio riflessivo delle competenze per il quarto anno IeFP.">
+  <meta name="theme-color" content="#FAF8F6">
+  <link rel="preload" href="fonts/geist-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/anton-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/stile.css">
+  <script src="js/dati.js" defer></script>
+  <script src="js/bilancio.js" defer></script>
+  <script src="js/app.js" defer></script>
+</head>
+<body>
+  <a class="salta" href="#principale">Vai al contenuto</a>
+
+  <header class="testata">
+    <div class="testata__riga">
+      <button type="button" class="testata__nome" id="vai-home">Bilancio di competenze</button>
+      <span class="meta testata__salvato" id="salvato" role="status" aria-live="polite"></span>
+      <button type="button" class="pulsante pulsante--secondario pulsante--piccolo" id="apri-risposte">Le tue risposte</button>
+    </div>
+    <div class="avanzamento" id="avanzamento" hidden><div class="avanzamento__barra" id="barra"></div></div>
+    <div class="tappa-mobile" id="tappa-mobile" hidden>
+      <button type="button" class="pulsante pulsante--secondario pulsante--piccolo" id="apri-indice">Indice</button>
+      <span class="meta" id="tappa-nome"></span>
+      <span class="meta" id="tappa-stato"></span>
+    </div>
+  </header>
+
+  <main id="principale" tabindex="-1"></main>
+
+  <dialog id="dialogo-risposte" aria-labelledby="dialogo-risposte-titolo">
+    <h2 id="dialogo-risposte-titolo">Le tue risposte</h2>
+    <p>Sono salvate solo su questo dispositivo, in questo browser. Nessun dato viene inviato a un server.</p>
+    <p>Per riprendere il lavoro su un altro dispositivo, o per consegnarlo, scarica una copia e caricala nella cartella indicata dal docente.</p>
+    <div class="dialogo__azioni">
+      <button type="button" class="pulsante" id="scarica">Scarica una copia</button>
+      <button type="button" class="pulsante pulsante--secondario" id="carica">Carica una copia</button>
+      <button type="button" class="pulsante pulsante--secondario" id="stampa-dialogo">Stampa il bilancio</button>
+    </div>
+    <p class="nota">Se usi un computer condiviso, al termine scarica la copia e poi cancella le risposte da questo browser.</p>
+    <div class="dialogo__azioni">
+      <button type="button" class="pulsante pulsante--secondario pulsante--piccolo" id="cancella">Cancella tutte le risposte</button>
+      <button type="button" class="pulsante pulsante--testo" id="chiudi-risposte">Chiudi</button>
+    </div>
+    <input type="file" id="file-copia" accept="application/json,.json" hidden>
+  </dialog>
+
+  <dialog id="dialogo-indice" class="indice-dialogo" aria-labelledby="dialogo-indice-titolo">
+    <h2 id="dialogo-indice-titolo">Indice</h2>
+    <ol id="indice-elenco"></ol>
+    <button type="button" class="pulsante pulsante--testo" id="chiudi-indice">Chiudi</button>
+  </dialog>
+
+  <div id="stampa"></div>
+
+  <noscript><p style="padding:20px">Per compilare il bilancio serve JavaScript attivo nel browser.</p></noscript>
+</body>
+</html>

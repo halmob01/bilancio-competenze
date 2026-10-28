@@ -1,0 +1,60 @@
+/* Token da design.md §10.
+   Colori: valori originali di babel-sito/styles/base.css.
+   Font, griglia e ritmo: sito-filosofia/css/tokens.css. */
+
+@font-face { font-family: "Anton"; src: url("../fonts/anton-latin-400-normal.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: "Geist"; src: url("../fonts/geist-sans-latin-400-normal.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: "Geist"; src: url("../fonts/geist-sans-latin-600-normal.woff2") format("woff2"); font-weight: 600; font-style: normal; font-display: swap; }
+@font-face { font-family: "Geist Mono"; src: url("../fonts/geist-mono-latin-400-normal.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: "EB Garamond"; src: url("../fonts/eb-garamond-latin-400-normal.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: "EB Garamond"; src: url("../fonts/eb-garamond-latin-400-italic.woff2") format("woff2"); font-weight: 400; font-style: italic; font-display: swap; }
+
+:root {
+  /* Babel — valori originali */
+  --bc-paper: #FAF8F6;
+  --bc-ink: #000000;
+  --bc-red: #FF3B30;
+  --bc-blush: #FFC9C2;
+  --bc-mist: #FFF0ED;
+  --bc-white: #FFFFFF;
+  --bc-ink-60: rgba(0, 0, 0, .6);
+  --bc-ink-30: rgba(0, 0, 0, .3);
+  --bc-ink-10: rgba(0, 0, 0, .08);
+
+  /* sito-filosofia — famiglie tipografiche */
+  --f-display: "Anton", Impact, "Arial Narrow", sans-serif;
+  --f-sans: "Geist", system-ui, sans-serif;
+  --f-libro: "EB Garamond", Garamond, serif;
+  --f-mono: "Geist Mono", ui-monospace, monospace;
+
+  /* sito-filosofia — griglia e ritmo */
+  --cols: 4;
+  --gap: 14px;
+  --m: 20px;
+  --max: 1720px;
+  --measure: 54ch;
+  --space-section: clamp(64px, 12vw, 100px);
+  --radius-card: 8px;
+  --radius-control: 999px;
+
+  /* Scala tipografica (design.md §4) */
+  --t-h1: clamp(56px, 10vw, 120px);
+  --t-sezione: clamp(30px, 5vw, 48px);
+  --t-domanda: clamp(24px, 3.2vw, 36px);
+  --t-corpo: clamp(17px, 1.5vw, 19px);
+  --t-racconto: clamp(20px, 2vw, 23px);
+  --t-meta: 13px;
+
+  --durata: 220ms;
+  --rail: 232px;
+}
+@media (max-width: 359px) { :root { --m: 16px; } }
+@media (min-width: 768px) {
+  :root { --cols: 8; --gap: 20px; --m: clamp(28px, 4vw, 72px); }
+}
+@media (min-width: 1200px) {
+  :root { --cols: 12; --gap: 24px; --space-section: clamp(96px, 9vw, 140px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  :root { --durata: 0ms; }
+}

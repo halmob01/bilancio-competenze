@@ -168,7 +168,7 @@
     {
       id: 'presentati',
       etichetta: 'Chi sei e che cosa studi, in due righe.',
-      esempio: '«Mi chiamo Sara, faccio il quarto anno di Informatica al CFP di Rozzano.»'
+      esempio: '«Mi chiamo Sara, faccio il quarto anno di Informatica.»'
     },
     {
       id: 'racconto',

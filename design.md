@@ -108,7 +108,6 @@ Componenti:
 ## 7. Sequenza UI di riferimento
 
 ### Home
-Kicker `AFOL METROPOLITANA · CFP ROZZANO`  
 Titolo `BILANCIO DI COMPETENZE` (Anton)  
 Sottotitolo `Quattro anni. Che cosa hai imparato?` (Geist)  
 Spiegazione sobria in 2 frasi. Pulsante nero `Inizia`. Piccola indicazione «Puoi tornare sulle risposte per correggerle».

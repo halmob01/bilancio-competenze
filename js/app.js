@@ -5,6 +5,7 @@
 
   const D = window.BC_DATI;
   const L = window.BC_LOGICA;
+  const URL_INVIO = ((window.BC_CONFIG || {}).urlInvio || '').trim();
 
   const CHIAVE = 'bilancio-competenze-v1';
   const CHIAVE_POSIZIONE = 'bilancio-competenze-posizione-v1';
@@ -260,7 +261,9 @@
       h('span', { class: 'meta', text: 'Sezione ' + (vista.s + 1) + ' di ' + D.SEZIONI.length +
         (sez.schermate.length > 1 ? ' · schermata ' + (vista.k + 1) + ' di ' + sez.schermate.length : '') }),
       ultima
-        ? h('button', { type: 'button', class: 'pulsante navigazione__avanti', onclick: scaricaCopia }, 'Scarica una copia')
+        ? (URL_INVIO
+          ? h('button', { type: 'button', class: 'pulsante navigazione__avanti', onclick: inviaAlDocente }, 'Invia al docente')
+          : h('button', { type: 'button', class: 'pulsante navigazione__avanti', onclick: scaricaCopia }, 'Scarica una copia'))
         : h('button', { type: 'button', class: 'pulsante navigazione__avanti', onclick: function () { passo(1); } }, 'Avanti'));
   }
 
@@ -277,7 +280,9 @@
           vai(ripresa ? ripresa.s : 0, ripresa ? ripresa.k : 0);
         } }, iniziato && ripresa ? 'Riprendi da dove eri' : 'Inizia'),
         iniziato ? h('button', { type: 'button', class: 'pulsante pulsante--secondario', onclick: function () { vaiA('bilancio', 'dossier'); } }, 'Vai al bilancio') : null),
-      h('p', { class: 'nota', text: 'Puoi tornare sulle risposte per correggerle. Le risposte restano su questo dispositivo finché non scarichi una copia.' }),
+      h('p', { class: 'nota', text: URL_INVIO
+        ? 'Puoi tornare sulle risposte per correggerle, anche dopo averle inviate al docente: un nuovo invio sostituisce il precedente.'
+        : 'Puoi tornare sulle risposte per correggerle. Le risposte restano su questo dispositivo finché non scarichi una copia.' }),
       h('section', { class: 'home__indice', 'aria-labelledby': 'home-indice' },
         h('h2', { id: 'home-indice', class: 'meta', text: 'Sei sezioni · circa tre ore' }),
         h('ol', null, D.SEZIONI.map(function (s, i) {
@@ -549,7 +554,9 @@
     const risposta = [
       h('p', { class: 'misura', text: 'Questo documento raccoglie soltanto le tue parole. Non è un voto: serve a te, al docente e a chi ti accompagnerà nelle scelte. Da ogni voce puoi tornare alla risposta per correggerla.' }),
       h('div', { class: 'home__azioni' },
+        URL_INVIO ? h('button', { type: 'button', class: 'pulsante', onclick: inviaAlDocente }, 'Invia al docente') : null,
         h('button', { type: 'button', class: 'pulsante pulsante--secondario', onclick: stampa }, 'Stampa o salva in PDF')),
+      notaInvio(),
       dossier(true)
     ];
     return [testa(metaSchermata(), 'Il tuo bilancio'), corpo(intro, risposta, true)];
@@ -572,7 +579,10 @@
     const intro = [
       h('p', { text: 'Puoi partire da una bozza che mette in fila le tue risposte, senza cambiarle. Poi correggi, taglia, aggiungi.' }),
       aiuto('Nessuna correzione automatica: il testo resta tuo. Rileggilo ad alta voce prima di considerarlo finito.'),
-      h('p', { class: 'nota', text: 'Quando hai finito, scarica una copia e consegnala come indicato dal docente. Puoi anche stampare il bilancio insieme a questo testo.' })
+      h('p', { class: 'nota', text: URL_INVIO
+        ? 'Quando hai finito, premi «Invia al docente». Se correggi qualcosa dopo l\'invio, invia di nuovo: la tua riga verrà aggiornata.'
+        : 'Quando hai finito, scarica una copia e consegnala come indicato dal docente. Puoi anche stampare il bilancio insieme a questo testo.' }),
+      notaInvio()
     ];
     const risposta = [
       h('div', { class: 'home__azioni' },
@@ -627,6 +637,69 @@
       .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
     const oggi = new Date().toISOString().slice(0, 10);
     return 'bilancio-competenze' + (nome ? '-' + nome : '') + '-' + oggi + '.json';
+  }
+
+  // ---------- Invio al Foglio Google del docente ----------
+  function dataOra(iso) {
+    const d = new Date(iso);
+    return d.toLocaleDateString('it-IT', { day: 'numeric', month: 'long' }) + ' alle ' +
+      d.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+  }
+
+  function notaInvio() {
+    if (!URL_INVIO) return null;
+    if (!stato.inviato) return h('p', { class: 'nota', text: 'Non hai ancora inviato le risposte al docente.' });
+    const modificato = stato.aggiornato && stato.aggiornato > stato.inviato;
+    return h('p', { class: modificato ? 'avviso' : 'nota', text: 'Ultimo invio: ' + dataOra(stato.inviato) + '.' +
+      (modificato ? ' Hai modificato qualcosa dopo: invia di nuovo per aggiornare.' : '') });
+  }
+
+  let invioInCorso = false;
+
+  function inviaAlDocente() {
+    if (!URL_INVIO || invioInCorso) return;
+    if (!pieno(stato.profilo.nome) || !stato.profilo.indirizzo) {
+      window.alert('Per inviare le risposte al docente servono il tuo nome e l\'indirizzo. Li trovi nella prima schermata.');
+      if ($('dialogo-risposte').open) $('dialogo-risposte').close();
+      vaiA('percorso', 'chi');
+      return;
+    }
+    if (!window.confirm('Inviare le risposte al foglio del docente? Potrai correggerle e inviarle di nuovo: la tua riga verrà aggiornata.')) return;
+
+    clearTimeout(timerSalva);
+    scriviArchivio();
+    invioInCorso = true;
+    $('salvato').textContent = 'Invio in corso…';
+    // text/plain evita la richiesta preliminare CORS, che Apps Script non gestisce.
+    fetch(URL_INVIO, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(stato),
+      redirect: 'follow'
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (esito) {
+        if (!esito || !esito.ok) throw new Error((esito && esito.errore) || 'risposta');
+        stato.inviato = new Date().toISOString(); // ora del dispositivo, confrontabile con «aggiornato»
+        try { localStorage.setItem(CHIAVE, JSON.stringify(stato)); } catch (e) { /* resta in memoria */ }
+        $('salvato').textContent = 'Inviato alle ' + new Date(stato.inviato).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+        if ($('dialogo-risposte').open) aggiornaDialogo();
+        if (vista) ridisegna();
+        window.alert('Risposte inviate al docente.');
+      })
+      .catch(function (err) {
+        $('salvato').textContent = 'Invio non riuscito';
+        window.alert(err && err.message === 'nome'
+          ? 'Invio non riuscito: manca il nome.'
+          : 'Invio non riuscito. Controlla la connessione e riprova; se non funziona, scarica una copia e consegnala al docente.');
+      })
+      .then(function () { invioInCorso = false; });
+  }
+
+  function aggiornaDialogo() {
+    const el = $('esito-dialogo');
+    el.textContent = '';
+    aggiungi(el, notaInvio());
   }
 
   function scaricaCopia() {
@@ -693,7 +766,13 @@
   else if (stato.aggiornato) $('salvato').textContent = 'Risposte ritrovate';
 
   $('vai-home').addEventListener('click', function () { vai(null); });
-  $('apri-risposte').addEventListener('click', function () { $('dialogo-risposte').showModal(); });
+  $('apri-risposte').addEventListener('click', function () { aggiornaDialogo(); $('dialogo-risposte').showModal(); });
+  if (URL_INVIO) {
+    $('invia').hidden = false;
+    $('invia').addEventListener('click', inviaAlDocente);
+    $('scarica').className = 'pulsante pulsante--secondario';
+    $('testo-dialogo').textContent = 'Sono salvate su questo dispositivo, in questo browser, e arrivano al docente solo quando premi «Invia al docente». Puoi inviarle più volte: conta l\'ultimo invio.';
+  }
   $('chiudi-risposte').addEventListener('click', function () { $('dialogo-risposte').close(); });
   $('apri-indice').addEventListener('click', function () { $('dialogo-indice').showModal(); });
   $('chiudi-indice').addEventListener('click', function () { $('dialogo-indice').close(); });

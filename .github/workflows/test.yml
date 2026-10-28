@@ -14,6 +14,7 @@ jobs:
           node-version: '22'
       - name: Controllo sintattico JavaScript
         run: |
+          node --check js/config.js
           node --check js/dati.js
           node --check js/bilancio.js
           node --check js/app.js

@@ -17,14 +17,13 @@ Il percorso completo in sei sezioni, utilizzabile da smartphone e da computer, c
 2. **Soglie di completamento.** Percorso: indirizzo e almeno tre righe fra anni e tirocinio. Esperienze: almeno due schede con titolo, quando e azione. Che cosa so fare: tutte e sei le situazioni con una risposta, e un esempio dove si dichiara di saper fare. Lo stato «Completa» è un'indicazione per lo studente, non blocca la navigazione.
 3. **«Con aiuto» rientra in «So fare»**, con l'indicazione «con aiuto» ben visibile. In alternativa si potrebbe spostarlo in una voce «Sto imparando».
 4. **Un campo per tre significati.** Nella sezione 03 il secondo campo cambia domanda con la risposta: «Come l'hai imparato?» se lo sai fare, «Che cosa ti servirebbe?» se non ancora, «Ti piacerebbe affrontarlo?» se mai. Se lo studente cambia risposta, il testo già scritto resta.
-5. **Consegna manuale** tramite file `.json` (vedi sotto).
+5. **Raccolta in un Foglio Google** tramite Apps Script del docente, una riga per studente aggiornata a ogni invio (vedi `docs/FOGLIO-GOOGLE.md`).
 6. **I ricordi dei quattro anni non entrano nel dossier**: servono solo come promemoria nella sezione 02.
 
 ## Decisioni aperte
 
-- **Google Drive.** `design.md` §9 prevede come destinazione esclusiva un Drive controllato dal docente, con autenticazione e permessi da definire prima dello sviluppo. Opzioni: (a) consegna manuale del file, come ora; (b) Google Apps Script pubblicato dal docente che riceve il file in una cartella; (c) accesso con l'account scolastico e scrittura con l'API di Drive. (b) e (c) richiedono una valutazione privacy e un dominio verificato.
-- **Formato della consegna.** Oggi il file è JSON (ricaricabile). Per il docente potrebbe servire anche un PDF, che si ottiene già con «Stampa o salva in PDF».
-- **Vista docente.** Non c'è: il docente apre i file degli studenti caricandoli nell'app. Una vista di classe è possibile solo dopo aver deciso dove stanno i dati.
+- **Codice di classe.** L'URL dello script è pubblico; un codice dettato in aula ridurrebbe il rischio di righe false.
+- **Vista docente.** Per ora è il foglio stesso; il JSON dell'ultima colonna permette di ricaricare nell'app il lavoro di uno studente.
 - **Dettatura.** Non implementata (design.md §9).
 - **Contenuti.** Le domande e gli esempi per indirizzo sono una prima stesura da rivedere con i docenti di Elettrico, Informatica ed Estetica, anche rispetto alle competenze del repertorio regionale.
 

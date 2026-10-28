@@ -25,7 +25,9 @@
     DATI.ORIENTAMENTO.forEach(function (o) { orientamento[o.id] = ''; });
     return {
       versione: VERSIONE,
+      codice: nuovoCodice(),
       aggiornato: '',
+      inviato: '',
       profilo: { nome: '', classe: '', indirizzo: '' },
       anni: { anno1: '', anno2: '', anno3: '', anno4: '', tirocinio: '' },
       esperienze: [],
@@ -41,6 +43,14 @@
 
   function inElenco(v, elenco) {
     return elenco.some(function (x) { return x.id === v; }) ? v : '';
+  }
+
+  // Codice anonimo del compilatore: permette al foglio del docente di
+  // aggiornare la stessa riga quando lo studente invia di nuovo.
+  function nuovoCodice() {
+    let c = '';
+    while (c.length < 20) c += Math.random().toString(36).slice(2);
+    return c.slice(0, 20);
   }
 
   function nuovoId() {
@@ -59,7 +69,9 @@
     const s = statoVuoto();
     if (!grezzo || typeof grezzo !== 'object') return s;
 
+    if (/^[a-z0-9]{12,40}$/.test(grezzo.codice)) s.codice = grezzo.codice;
     s.aggiornato = testo(grezzo.aggiornato, 40);
+    s.inviato = testo(grezzo.inviato, 40);
 
     const p = grezzo.profilo || {};
     s.profilo.nome = testo(p.nome, 80);

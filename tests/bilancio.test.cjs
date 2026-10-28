@@ -139,7 +139,9 @@ test('normalizza scarta dati estranei, tipi sbagliati e riferimenti orfani', () 
   assert.deepEqual(s.sofare.capire.esperienze, ['a']);
   assert.equal(s.orientamento.testo, '<script>', 'il testo resta testo: è l\'interfaccia a non interpretarlo');
   assert.ok(!('pericolo' in s));
-  assert.deepEqual(L.normalizza(null), L.statoVuoto());
+  const vuoto = L.normalizza(null);
+  assert.match(vuoto.codice, /^[a-z0-9]{20}$/);
+  assert.deepEqual(Object.assign({}, vuoto, { codice: '' }), Object.assign(L.statoVuoto(), { codice: '' }));
 });
 
 test('andata e ritorno di una copia scaricata', () => {
@@ -150,10 +152,21 @@ test('andata e ritorno di una copia scaricata', () => {
   assert.deepEqual(r, s);
 });
 
-test('l\'interfaccia non usa innerHTML né servizi remoti', () => {
+test('il codice del compilatore sopravvive alla copia e ai valori non validi', () => {
+  const s = L.statoVuoto();
+  assert.equal(L.normalizza(JSON.parse(JSON.stringify(s))).codice, s.codice);
+  assert.notEqual(L.normalizza({ codice: '=FORMULA()' }).codice, '=FORMULA()');
+});
+
+test('l\'unica richiesta di rete è l\'invio al foglio configurato', () => {
   const app = fs.readFileSync(path.join(__dirname, '../js/app.js'), 'utf8');
   const html = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
+  const config = fs.readFileSync(path.join(__dirname, '../js/config.js'), 'utf8');
   assert.ok(!/innerHTML|insertAdjacentHTML|document\.write/.test(app));
-  assert.ok(!/fetch\(|XMLHttpRequest|sendBeacon|WebSocket/.test(app));
+  assert.ok(!/XMLHttpRequest|sendBeacon|WebSocket/.test(app));
+  assert.equal((app.match(/fetch\(/g) || []).length, 1);
+  assert.ok(app.includes('fetch(URL_INVIO'));
+  const url = (config.match(/urlInvio:\s*'([^']*)'/) || [])[1];
+  assert.ok(url === '' || /^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec$/.test(url), 'urlInvio: ' + url);
   assert.ok(!/https?:\/\//.test(html), 'nessuna risorsa esterna: font e script sono locali');
 });

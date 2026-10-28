@@ -316,7 +316,7 @@
     const intro = [
       h('p', { text: 'Per ogni anno scrivi che cosa ricordi: un laboratorio, una persona, un lavoro, un momento difficile. Bastano poche parole.' }),
       aiuto('Non serve essere completi. Queste righe ti aiuteranno a ritrovare le esperienze nella prossima sezione.', 'Se un anno non l\'hai frequentato qui, lascia il campo vuoto.'),
-      esempio('Vedi un esempio', h('p', { text: '«III anno: il primo impianto completo in laboratorio. Ho sbagliato i collegamenti del deviatore e li ho rifatti due volte.»' }))
+      esempio('Vedi un esempio', h('p', { text: '«I anno: il primo circuito con il deviatore su un pannello di prova. Ho sbagliato i collegamenti e li ho rifatti due volte.»' }))
     ];
     const risposta = h('div', { class: 'anni' }, Object.keys(nomi).map(function (k) {
       return campo({ id: 'f-' + k, etichetta: nomi[k], area: true, righe: 3, valore: stato.anni[k], aggiorna: function (v) { stato.anni[k] = v; } });

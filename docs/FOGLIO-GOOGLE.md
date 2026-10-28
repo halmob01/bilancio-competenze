@@ -47,9 +47,25 @@ Nel foglio «Risposte» (creato al primo invio), con le prime tre colonne blocca
 
 I testi che iniziano con `=`, `+`, `-` o `@` sono salvati come testo, non come formule.
 
+## Riepilogo di classe
+
+La scheda «Riepilogo» si crea al primo invio (o all'apertura del foglio) e si aggiorna da sola, perché contiene formule. Per ogni gruppo (tutti gli indirizzi, Elettrico, Informatica, Estetica) mostra quanti studenti hanno inviato e, per ognuna delle sei situazioni, quanti hanno scelto ciascun livello e quanti non hanno risposto.
+
+Per vedere una sola classe scrivi la classe nella cella **B3**, esattamente come la scrivono gli studenti (per esempio `4B`); lascia vuoto per tutte.
+
+## Scheda studente
+
+Nella scheda «Scheda studente» scegli un nome dal menu a tendina in **B1**: sotto compare il suo bilancio impaginato (So fare, da documentare, Ho imparato così, Posso dimostrarlo, Devo ancora imparare, Non l'ho mai affrontato, lo sguardo critico su scuola e tirocinio, il testo per l'open day). Le regole sono le stesse dell'app. Per stamparla: File → Stampa.
+
+Se lo stesso nome compare in più righe (per esempio perché lo studente ha cambiato dispositivo), viene mostrato l'invio più recente con un avviso.
+
+## Il menu «Bilancio»
+
+All'apertura del foglio compare il menu **Bilancio** con due voci: aggiornare la scheda dello studente scelto (utile se ha appena inviato di nuovo) e ricreare il riepilogo (se lo hai modificato per errore; il filtro in B3 viene conservato). La prima volta Google chiede di autorizzare lo script.
+
 ## Se modifichi lo script
 
-Dopo una modifica a `Codice.gs` usa **Esegui il deployment → Gestisci deployment → Modifica → Nuova versione**: l'URL resta lo stesso. Un «Nuovo deployment» invece crea un URL diverso, da rimettere in `js/config.js`.
+Dopo una modifica a `Codice.gs` (anche per passare a una versione nuova di questa repository) incolla il nuovo codice, salva, poi usa **Esegui il deployment → Gestisci deployment → Modifica → Nuova versione**: l'URL resta lo stesso. Un «Nuovo deployment» invece crea un URL diverso, da rimettere in `js/config.js`.
 
 ## Privacy e limiti
 

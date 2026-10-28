@@ -18,12 +18,14 @@ function colonnaDaLettere(s) {
 
 function nuovoFoglio(nome) {
   const celle = new Map(); // "r,c" -> valore
+  let colonne = 26; // un foglio nuovo di Google ha le colonne A–Z
   const formati = new Map(); // "r,c" -> { peso }
   const leggi = (r, c) => (celle.has(r + ',' + c) ? celle.get(r + ',' + c) : '');
   const ultima = () => { let m = 0; for (const k of celle.keys()) { const r = +k.split(',')[0]; if (celle.get(k) !== '' && r > m) m = r; } return m; };
   const ultimaColonna = () => { let m = 0; for (const k of celle.keys()) { const c = +k.split(',')[1]; if (celle.get(k) !== '' && c > m) m = c; } return m; };
 
   function intervallo(r, c, nr, nc) {
+    if (c + nc - 1 > colonne) throw new Error('The coordinates of the range are outside the dimensions of the sheet.');
     const metodi = {
       getValues: () => Array.from({ length: nr }, (_, i) => Array.from({ length: nc }, (_, j) => leggi(r + i, c + j))),
       getValue: () => leggi(r, c),
@@ -44,7 +46,10 @@ function nuovoFoglio(nome) {
     getName: () => nome,
     getLastRow: ultima,
     getMaxRows: () => MAX_RIGHE,
-    appendRow: (riga) => { const r = ultima() + 1; riga.forEach((x, j) => celle.set(r + ',' + (j + 1), x)); },
+    // Caso peggiore: le celle oltre le colonne esistenti vengono scartate in silenzio.
+    appendRow: (riga) => { const r = ultima() + 1; riga.forEach((x, j) => { if (j + 1 <= colonne) celle.set(r + ',' + (j + 1), x); }); },
+    getMaxColumns: () => colonne,
+    insertColumnsAfter: (dopo, n) => { colonne = Math.max(colonne, dopo + n); },
     clear: () => { celle.clear(); formati.clear(); },
     getDataRange: () => intervallo(1, 1, Math.max(ultima(), 1), Math.max(ultimaColonna(), 1)),
     getRange: (a, b, c, d) => {
@@ -73,6 +78,7 @@ function ambiente() {
     fogli,
     SpreadsheetApp: {
       getActiveSpreadsheet: () => ss,
+      flush() {},
       newDataValidation: () => catena,
       getUi: () => catena
     },
@@ -191,6 +197,23 @@ test('rifiuta invii senza nome o malformati', () => {
   assert.equal(g.invia({ versione: 2 }).errore, 'formato');
   assert.equal(JSON.parse(g.doPost({ postData: { contents: '{non json' } }).testo).ok, false);
   assert.equal(g.fogli.Risposte, undefined);
+});
+
+test('un foglio nuovo con sole 26 colonne viene allargato: l\'open day e i dati completi arrivano', () => {
+  const g = ambiente();
+  const s = statoCompilato();
+  s.orientamento = Object.assign(s.orientamento, { presentati: 'Sono Sara.', racconto: 'Il tirocinio.', difficile: 'Gli schemi.', consiglio: 'Venite.', testo: 'Il mio testo.' });
+  s.sguardo.scuola = 'Il laboratorio.';
+  assert.equal(g.invia(s).ok, true);
+  const [h, r] = g.righe();
+  assert.ok(h.length > 26);
+  ['Scuola', 'Orientamento — chi sei', 'Orientamento — difficoltà', 'Orientamento — consiglio', 'Testo open day', 'Dati completi (JSON)']
+    .forEach((n) => assert.notEqual(r[h.indexOf(n)], '', n));
+  assert.equal(r[h.indexOf('Testo open day')], 'Il mio testo.');
+  // Un secondo invio aggiorna la stessa riga fino all'ultima colonna.
+  s.orientamento.testo = 'Testo corretto.';
+  assert.equal(g.invia(s).aggiornata, true);
+  assert.equal(g.righe()[1][h.indexOf('Testo open day')], 'Testo corretto.');
 });
 
 // ---------- Riepilogo ----------

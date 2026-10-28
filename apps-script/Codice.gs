@@ -95,16 +95,28 @@ function riga(d, ricevuto) {
   return r;
 }
 
+// Un foglio nuovo ha solo 26 colonne (A–Z), ma qui ne servono 40: senza
+// allargarlo, le colonne oltre la Z (le ultime situazioni, lo sguardo critico,
+// l'open day) non verrebbero scritte.
+function assicuraColonne(sh, n) {
+  var max = sh.getMaxColumns();
+  if (max < n) sh.insertColumnsAfter(max, n - max);
+}
+
 function foglio() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sh = ss.getSheetByName(FOGLIO) || ss.insertSheet(FOGLIO);
   var h = intestazioni();
+  assicuraColonne(sh, h.length);
   if (sh.getLastRow() === 0) {
     sh.appendRow(h);
     sh.setFrozenRows(1);
     sh.setFrozenColumns(3);
-    sh.getRange(1, 1, 1, h.length).setFontWeight('bold');
+  } else {
+    // Riallinea le intestazioni se il foglio è stato creato da una versione precedente.
+    sh.getRange(1, 1, 1, h.length).setValues([h]);
   }
+  sh.getRange(1, 1, 1, h.length).setFontWeight('bold');
   return sh;
 }
 
@@ -131,6 +143,7 @@ function doPost(e) {
       var valori = riga(d, ora);
       var ultima = sh.getLastRow();
       var trovata = -1;
+      var aggiunta = false;
       if (ultima > 1) {
         var codici = sh.getRange(2, 2, ultima - 1, 1).getValues();
         for (var i = 0; i < codici.length; i++) {
@@ -138,9 +151,14 @@ function doPost(e) {
         }
       }
       if (trovata > 0) sh.getRange(trovata, 1, 1, valori.length).setValues([valori]);
-      else sh.appendRow(valori);
+      else { sh.appendRow(valori); trovata = sh.getLastRow(); aggiunta = true; }
+      // Verifica che l'ultima colonna (i dati completi) sia stata scritta davvero:
+      // se no, l'app deve dirlo allo studente invece di fingere un invio riuscito.
+      SpreadsheetApp.flush();
+      var ultimaCella = String(sh.getRange(trovata, valori.length).getValue());
+      if (!ultimaCella) return risposta({ ok: false, errore: 'colonne' });
       try { preparaViste(SpreadsheetApp.getActiveSpreadsheet(), false); } catch (errViste) { /* l'invio resta valido */ }
-      return risposta({ ok: true, ricevuto: ora.toISOString(), aggiornata: trovata > 0 });
+      return risposta({ ok: true, ricevuto: ora.toISOString(), aggiornata: !aggiunta });
     } finally {
       lock.releaseLock();
     }

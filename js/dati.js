@@ -107,7 +107,7 @@
       id: 'scuola',
       domanda: 'Che cosa ti è servito davvero della scuola? Che cosa avresti cambiato?',
       aiuto: 'Pensa a un laboratorio, una materia, un docente, un modo di lavorare. Puoi essere critico: questo bilancio non è una valutazione della scuola su di te.',
-      esempio: '«Le ore di laboratorio al terzo anno mi sono servite più di tutto, perché sbagliavo e rifacevo. Avrei voluto meno teoria ripetuta e più casi veri.»'
+      esempio: '«Nell\'azienda in cui ho fatto il tirocinio al terzo anno ho imparato più che in aula, perché facevo lavori veri e se sbagliavo dovevo rifare. A scuola avrei voluto meno teoria ripetuta e più casi veri.»'
     },
     {
       id: 'tirocinio',
@@ -205,7 +205,7 @@
     },
     estetica: {
       titolo: 'Prima cliente esterna in salone',
-      quando: 'IV anno',
+      quando: 'II anno',
       azione: 'Ho accolto la cliente, ho fatto l\'analisi della pelle e una pulizia del viso completa.',
       prova: 'La scheda cliente compilata e il commento della docente di laboratorio.',
       difficolta: 'Ero in ritardo sui tempi: ho imparato a preparare la cabina prima dell\'arrivo.'

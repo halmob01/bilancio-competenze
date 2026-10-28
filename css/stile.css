@@ -87,7 +87,7 @@ a { color: inherit; }
 .home h1 {
   font-family: var(--f-display); font-weight: 400;
   font-size: var(--t-h1); line-height: .9; text-transform: uppercase;
-  margin: 28px 0 24px; max-width: 9ch;
+  margin: 0 0 24px; max-width: 9ch;
 }
 .home__sottotitolo { font-size: var(--t-domanda); font-weight: 600; line-height: 1.15; margin-bottom: 24px; }
 .home__testo { margin-bottom: 32px; }

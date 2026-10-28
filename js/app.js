@@ -271,7 +271,6 @@
   function disegnaHome() {
     const iniziato = !!stato.aggiornato;
     return h('div', { class: 'home' },
-      h('p', { class: 'meta' }, h('span', { class: 'segno', 'aria-hidden': 'true' }), 'AFOL Metropolitana · CFP Rozzano'),
       h('h1', { text: 'Bilancio di competenze' }),
       h('p', { class: 'home__sottotitolo', text: 'Quattro anni. Che cosa hai imparato?' }),
       h('p', { class: 'home__testo misura', text: 'Ricostruisci le esperienze del tuo percorso, riconosci ciò che sai fare e individua quello che devi ancora imparare. Alla fine avrai un bilancio scritto con le tue parole e un breve testo per presentarti agli open day.' }),
@@ -534,7 +533,7 @@
 
     return h('article', { class: 'dossier', 'aria-label': 'Il tuo bilancio' },
       h('header', { class: 'dossier__testa' },
-        h('p', { class: 'meta', text: 'Bilancio di competenze · AFOL Metropolitana · CFP Rozzano' }),
+        h('p', { class: 'meta', text: 'Bilancio di competenze' }),
         h('p', { class: 'dossier__titolo', text: pieno(stato.profilo.nome) ? stato.profilo.nome : 'Il mio bilancio' }),
         intestazione ? h('p', { class: 'meta', text: intestazione }) : null),
       parte('So fare', (soFare.length ? [h('ul', { class: 'voci' }, soFare)] : []).concat(daDoc), 'Ancora nulla: compila la sezione «Che cosa so fare».'),

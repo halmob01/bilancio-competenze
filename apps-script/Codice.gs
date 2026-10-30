@@ -9,7 +9,7 @@
  * Fogli creati dallo script:
  * - «Risposte»: una riga per studente, tutte le risposte in colonne;
  * - «Riepilogo»: quanti studenti per livello, per situazione e per indirizzo,
- *   con formule che si aggiornano da sole (filtro per classe nella cella B3);
+ *   calcolati dallo script a ogni invio, senza formule (filtro per classe in B3);
  * - «Scheda studente»: scelto un nome in B1, compone il suo bilancio
  *   impaginato e pronto da stampare.
  * Il menu «Bilancio» del foglio permette di ricreare riepilogo e scheda.
@@ -197,8 +197,11 @@ function onOpen() {
 function onEdit(e) {
   if (!e || !e.range) return;
   var sh = e.range.getSheet();
-  if (sh.getName() === SCHEDA && e.range.getRow() === 1 && e.range.getColumn() === 2) {
+  var nome = sh.getName();
+  if (nome === SCHEDA && e.range.getRow() === 1 && e.range.getColumn() === 2) {
     mostraScheda(e.range.getValue());
+  } else if (nome === RIEPILOGO && e.range.getRow() === 3 && e.range.getColumn() === 2) {
+    costruisciRiepilogo(SpreadsheetApp.getActiveSpreadsheet());
   }
 }
 
@@ -213,37 +216,34 @@ function menuRiepilogo() {
 
 function preparaViste(ss, forza) {
   foglio();
-  if (forza || !ss.getSheetByName(RIEPILOGO)) costruisciRiepilogo(ss);
+  // Il riepilogo si ricalcola a ogni invio: contiene valori, non formule,
+  // quindi non dipende dalla lingua del foglio.
+  costruisciRiepilogo(ss);
   if (forza || !ss.getSheetByName(SCHEDA)) costruisciScheda(ss);
 }
 
-function lettereColonna(n) {
-  var s = '';
-  while (n > 0) {
-    var m = (n - 1) % 26;
-    s = String.fromCharCode(65 + m) + s;
-    n = Math.floor((n - 1) / 26);
-  }
-  return s;
-}
-
-// Intervallo aperto di una colonna del foglio Risposte, per nome di intestazione.
-function colonnaRisposte(nome) {
-  var i = intestazioni().indexOf(nome);
-  if (i < 0) throw new Error('Colonna sconosciuta: ' + nome);
-  var c = lettereColonna(i + 1);
-  return "'" + FOGLIO + "'!$" + c + '$2:$' + c;
-}
-
-// COUNTIFS con il filtro facoltativo per classe scritto in B3.
-function formulaConta(criteri) {
-  var base = criteri.map(function (c) { return c[0] + ',' + c[1]; }).join(',');
-  return '=IF($B$3="",COUNTIFS(' + base + '),COUNTIFS(' + base + ',' + colonnaRisposte('Classe') + ',$B$3))';
+// Una riga per studente: indirizzo, classe e livello scelto per ogni situazione.
+function leggiStudenti() {
+  var dati = foglio().getDataRange().getValues();
+  var h = dati[0];
+  var iCodice = h.indexOf('Codice');
+  var iInd = h.indexOf('Indirizzo');
+  var iClasse = h.indexOf('Classe');
+  var iLiv = SITUAZIONI.map(function (s) { return h.indexOf(s[1] + ' — livello'); });
+  return dati.slice(1).filter(function (r) { return String(r[iCodice]) !== ''; }).map(function (r) {
+    return {
+      indirizzo: String(r[iInd]),
+      classe: String(r[iClasse]).trim().toLowerCase(),
+      livelli: iLiv.map(function (i) { return String(r[i]); })
+    };
+  });
 }
 
 function costruisciRiepilogo(ss) {
   var sh = ss.getSheetByName(RIEPILOGO) || ss.insertSheet(RIEPILOGO);
-  var classe = sh.getLastRow() >= 3 ? sh.getRange('B3').getValue() : '';
+  var classe = sh.getLastRow() >= 3 ? String(sh.getRange('B3').getValue()) : '';
+  var filtro = classe.trim().toLowerCase();
+  var studenti = leggiStudenti().filter(function (x) { return !filtro || x.classe === filtro; });
   sh.clear();
 
   var LARGH = 7;
@@ -254,28 +254,27 @@ function costruisciRiepilogo(ss) {
   }
   var righe = [
     riga('Riepilogo di classe'),
-    riga('Si aggiorna da solo a ogni invio. Per vedere una sola classe scrivi in B3 la classe come compare nel foglio Risposte; lascia vuoto per tutte.'),
+    riga('Si aggiorna a ogni invio degli studenti. Per vedere una sola classe scrivi in B3 la classe come compare nel foglio Risposte; lascia vuoto per tutte.'),
     riga('Classe', classe),
     riga()
   ];
   var titoli = [];
   var intestazioniTabelle = [];
-  var gruppi = [['Tutti gli indirizzi', null], ['Elettrico', 'Elettrico'], ['Informatica', 'Informatica'], ['Estetica', 'Estetica']];
+  var gruppi = [['Tutti gli indirizzi', ''], ['Elettrico', 'Elettrico'], ['Informatica', 'Informatica'], ['Estetica', 'Estetica']];
 
   gruppi.forEach(function (g) {
-    var filtro = g[1] ? [[colonnaRisposte('Indirizzo'), '"' + g[1] + '"']] : [];
-    var rigaStudenti = righe.length + 1;
-    titoli.push(rigaStudenti);
-    righe.push(riga(g[0], formulaConta([[colonnaRisposte('Codice'), '"<>"']].concat(filtro)), 'studenti'));
+    var del = studenti.filter(function (x) { return !g[1] || x.indirizzo === g[1]; });
+    titoli.push(righe.length + 1);
+    righe.push(riga(g[0], del.length, 'studenti'));
     intestazioniTabelle.push(righe.length + 1);
     righe.push(['Situazione'].concat(ORDINE_LIVELLI.map(function (l) { return LIVELLI[l]; }), ['Senza risposta']));
-    SITUAZIONI.forEach(function (s) {
-      var n = righe.length + 1;
+    SITUAZIONI.forEach(function (s, i) {
+      var conta = {};
+      del.forEach(function (x) { conta[x.livelli[i]] = (conta[x.livelli[i]] || 0) + 1; });
       var r = [s[1]];
-      ORDINE_LIVELLI.forEach(function (l) {
-        r.push(formulaConta([[colonnaRisposte(s[1] + ' — livello'), '"' + LIVELLI[l] + '"']].concat(filtro)));
-      });
-      r.push('=$B$' + rigaStudenti + '-SUM(B' + n + ':F' + n + ')');
+      var risposto = 0;
+      ORDINE_LIVELLI.forEach(function (l) { var n = conta[LIVELLI[l]] || 0; risposto += n; r.push(n); });
+      r.push(del.length - risposto);
       righe.push(r);
     });
     righe.push(riga());

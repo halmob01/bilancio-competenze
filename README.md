@@ -61,7 +61,7 @@ python3 -m http.server 8000
 node --test tests/*.test.cjs
 ```
 
-La CI controlla la sintassi ed esegue i test (contenuti, regola dell'esempio obbligatorio, distinzione «mai» / «non ancora», normalizzazione delle copie caricate, unica richiesta di rete verso il foglio configurato, assenza di `innerHTML`; lo script Apps Script è eseguito con un foglio simulato: intestazioni, aggiornamento della riga, rifiuto degli invii non validi, testi che sembrano formule). Il percorso completo è stato inoltre provato in Chromium a 390×844 e 1440×900, compresa la ripresa dopo il ricaricamento e l'anteprima di stampa. **Non equivale a una prova con studenti su dispositivi reali.**
+La CI controlla la sintassi ed esegue i test (contenuti, regola dell'esempio obbligatorio, distinzione «mai» / «non ancora», normalizzazione delle copie caricate, unica richiesta di rete verso il foglio configurato, assenza di `innerHTML`; lo script Apps Script è eseguito con un foglio simulato di 26 colonne: intestazioni, riepilogo senza formule, aggiornamento della riga, rifiuto degli invii non validi, testi che sembrano formule). Il percorso completo è stato inoltre provato in Chromium a 390×844 e 1440×900, compresa la ripresa dopo il ricaricamento e l'anteprima di stampa. **Non equivale a una prova con studenti su dispositivi reali.**
 
 ## Documentazione
 

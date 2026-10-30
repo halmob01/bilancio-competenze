@@ -49,9 +49,9 @@ I testi che iniziano con `=`, `+`, `-` o `@` sono salvati come testo, non come f
 
 ## Riepilogo di classe
 
-La scheda «Riepilogo» si crea al primo invio (o all'apertura del foglio) e si aggiorna da sola, perché contiene formule. Per ogni gruppo (tutti gli indirizzi, Elettrico, Informatica, Estetica) mostra quanti studenti hanno inviato e, per ognuna delle sei situazioni, quanti hanno scelto ciascun livello e quanti non hanno risposto.
+La scheda «Riepilogo» si crea al primo invio (o all'apertura del foglio) e si ricalcola a ogni invio. Contiene numeri calcolati dallo script, non formule, quindi funziona con qualsiasi lingua del foglio e non va modificata a mano. Per ogni gruppo (tutti gli indirizzi, Elettrico, Informatica, Estetica) mostra quanti studenti hanno inviato e, per ognuna delle sei situazioni, quanti hanno scelto ciascun livello e quanti non hanno risposto.
 
-Per vedere una sola classe scrivi la classe nella cella **B3**, esattamente come la scrivono gli studenti (per esempio `4B`); lascia vuoto per tutte.
+Per vedere una sola classe scrivi la classe nella cella **B3**, esattamente come la scrivono gli studenti (per esempio `4B`): il riepilogo si ricalcola subito. Lascia vuoto per tutte.
 
 ## Scheda studente
 

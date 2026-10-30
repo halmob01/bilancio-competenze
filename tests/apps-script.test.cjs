@@ -101,47 +101,6 @@ function ambiente() {
   return ctx;
 }
 
-// Valutatore minimo delle formule generate per il riepilogo.
-function dividiArgomenti(s) {
-  const out = []; let liv = 0; let virg = false; let cur = '';
-  for (const ch of s) {
-    if (ch === '"') virg = !virg;
-    if (!virg && ch === '(') liv++;
-    if (!virg && ch === ')') liv--;
-    if (!virg && liv === 0 && ch === ',') { out.push(cur); cur = ''; } else cur += ch;
-  }
-  out.push(cur);
-  return out;
-}
-
-function valuta(formula, riep, risposte) {
-  const b3 = String(riep.leggi(3, 2));
-  let m = formula.match(/^=IF\(\$B\$3="",(COUNTIFS\(.*\)),(COUNTIFS\(.*\))\)$/);
-  if (m) {
-    const scelta = b3 === '' ? m[1] : m[2];
-    const arg = dividiArgomenti(scelta.slice('COUNTIFS('.length, -1));
-    let n = 0;
-    for (let r = 2; r <= risposte.getLastRow(); r++) {
-      let ok = true;
-      for (let i = 0; i < arg.length; i += 2) {
-        const col = colonnaDaLettere(arg[i].match(/!\$([A-Z]+)\$2/)[1]);
-        const v = String(risposte.leggi(r, col));
-        const crit = arg[i + 1] === '$B$3' ? b3 : JSON.parse(arg[i + 1]);
-        if (crit === '<>' ? v === '' : v !== crit) ok = false;
-      }
-      if (ok) n++;
-    }
-    return n;
-  }
-  m = formula.match(/^=\$B\$(\d+)-SUM\(B(\d+):F\2\)$/);
-  if (m) {
-    let somma = 0;
-    for (let c = 2; c <= 6; c++) somma += valuta(riep.leggi(+m[2], c), riep, risposte);
-    return valuta(riep.leggi(+m[1], 2), riep, risposte) - somma;
-  }
-  return formula;
-}
-
 function statoCompilato(nome, indirizzo, classe) {
   const s = L.statoVuoto();
   s.profilo = { nome: nome || 'Sara Bianchi', classe: classe || '4B', indirizzo: indirizzo || 'informatica' };
@@ -217,7 +176,7 @@ test('un foglio nuovo con sole 26 colonne viene allargato: l\'open day e i dati 
 });
 
 // ---------- Riepilogo ----------
-test('il riepilogo conta i livelli per situazione, indirizzo e classe', () => {
+test('il riepilogo conta i livelli per situazione, indirizzo e classe, senza formule', () => {
   const g = ambiente();
   g.invia(statoCompilato('A', 'informatica', '4B'));
   g.invia(statoCompilato('B', 'informatica', '4C'));
@@ -225,18 +184,21 @@ test('il riepilogo conta i livelli per situazione, indirizzo e classe', () => {
   c.sofare.capire.livello = 'mai';
   g.invia(c);
   const riep = g.fogli.Riepilogo;
-  const ris = g.fogli.Risposte;
   assert.ok(riep, 'creato al primo invio');
   assert.ok(g.fogli['Scheda studente'], 'scheda creata al primo invio');
+
+  for (const [k, v] of riep.celle) {
+    assert.ok(typeof v !== 'string' || !v.startsWith('='), 'nessuna formula in ' + k + ': ' + v);
+  }
 
   function tabella(gruppo) {
     let r = 1;
     while (riep.leggi(r, 1) !== gruppo) r++;
-    const out = { studenti: valuta(riep.leggi(r, 2), riep, ris), righe: {} };
+    const out = { studenti: riep.leggi(r, 2), righe: {} };
     const intest = [2, 3, 4, 5, 6, 7].map((col) => riep.leggi(r + 1, col));
     for (let i = 0; i < 6; i++) {
       const riga = {};
-      intest.forEach((nome, j) => { riga[nome] = valuta(riep.leggi(r + 2 + i, j + 2), riep, ris); });
+      intest.forEach((nome, j) => { riga[nome] = riep.leggi(r + 2 + i, j + 2); });
       out.righe[riep.leggi(r + 2 + i, 1)] = riga;
     }
     return out;
@@ -255,13 +217,28 @@ test('il riepilogo conta i livelli per situazione, indirizzo e classe', () => {
   assert.equal(info.righe.Capire["Non l'ho mai affrontato"], 0);
   assert.equal(tabella('Estetica').studenti, 0);
 
+  // Filtro per classe: si scrive la classe in B3 e il riepilogo si ricalcola.
   riep.getRange('B3').setValue('4B');
-  tutti = tabella('Tutti gli indirizzi');
-  assert.equal(tutti.studenti, 2, 'filtro per classe');
+  g.onEdit({ range: riep.getRange('B3') });
+  assert.equal(riep.leggi(3, 2), '4B', 'il filtro resta in B3');
+  assert.equal(tabella('Tutti gli indirizzi').studenti, 2);
   assert.equal(tabella('Informatica').studenti, 1);
 
-  g.costruisciRiepilogo(g.SpreadsheetApp.getActiveSpreadsheet());
-  assert.equal(riep.leggi(3, 2), '4B', 'ricreare il riepilogo conserva il filtro');
+  // Un nuovo invio aggiorna i conteggi mantenendo il filtro.
+  g.invia(statoCompilato('D', 'informatica', '4B'));
+  assert.equal(tabella('Informatica').studenti, 2);
+  assert.equal(riep.leggi(3, 2), '4B');
+});
+
+test('un riepilogo con vecchie formule viene riscritto senza toccare le risposte', () => {
+  const g = ambiente();
+  g.invia(statoCompilato('A'));
+  const riep = g.fogli.Riepilogo;
+  riep.getRange('B5').setValue('=IF($B$3="",COUNTIFS(x),y)'); // residuo della versione con formule
+  const prima = JSON.stringify(g.righe());
+  g.menuRiepilogo();
+  for (const [, v] of riep.celle) assert.ok(typeof v !== 'string' || !v.startsWith('='));
+  assert.equal(JSON.stringify(g.righe()), prima, 'le risposte restano identiche');
 });
 
 // ---------- Scheda studente ----------

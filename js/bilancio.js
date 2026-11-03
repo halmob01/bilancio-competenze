@@ -13,6 +13,7 @@
   const MAX_ESPERIENZE = 30;
   const MAX_FORMAZIONE = 6;
   const MAX_PROFILO = 600;
+  const MAX_FOTO = 150000;
 
   const CAMPI_ESPERIENZA = ['titolo', 'quando', 'contesto', 'azione', 'prova', 'difficolta', 'aiuto', 'autonomia'];
 
@@ -45,7 +46,9 @@
   function cvVuoto() {
     return {
       telefono: '', email: '', citta: '', nascita: '', patente: '',
+      occupazione: '', nazionalita: '', foto: '',
       profilo: '',
+      formato: { colore: 'nero', carattere: 'moderno', dimensione: 'normale', firma: false, luogo: '' },
       formazione: [],
       esperienze: {},
       competenze: '', lingue: '', digitali: '', altro: '',
@@ -142,6 +145,16 @@
     const c = grezzo.cv || {};
     ['telefono', 'nascita', 'patente'].forEach(function (k) { s.cv[k] = testo(c[k], 60); });
     s.cv.email = testo(c.email, 120);
+    s.cv.occupazione = testo(c.occupazione, 120);
+    s.cv.nazionalita = testo(c.nazionalita, 60);
+    // La foto resta un piccolo JPEG ridimensionato dall'app: altro non viene accettato.
+    s.cv.foto = (typeof c.foto === 'string' && c.foto.length <= MAX_FOTO && /^data:image\/jpeg;base64,[A-Za-z0-9+\/=]+$/.test(c.foto)) ? c.foto : '';
+    const f0 = c.formato && typeof c.formato === 'object' ? c.formato : {};
+    s.cv.formato.colore = inElenco(f0.colore, DATI.CV_COLORI) || 'nero';
+    s.cv.formato.carattere = inElenco(f0.carattere, DATI.CV_CARATTERI) || 'moderno';
+    s.cv.formato.dimensione = inElenco(f0.dimensione, DATI.CV_DIMENSIONI) || 'normale';
+    s.cv.formato.firma = f0.firma === true;
+    s.cv.formato.luogo = testo(f0.luogo, 80);
     s.cv.citta = testo(c.citta, 80);
     s.cv.profilo = testo(c.profilo, MAX_PROFILO);
     ['competenze', 'lingue', 'digitali', 'altro'].forEach(function (k) { s.cv[k] = testo(c[k], MAX_LUNGO); });
@@ -158,7 +171,7 @@
     Object.keys(visti).forEach(function (id) {
       const x = ce[id];
       if (!x || typeof x !== 'object') return;
-      const n = { dove: testo(x.dove, MAX_BREVE), periodo: testo(x.periodo, 60) };
+      const n = { dove: testo(x.dove, MAX_BREVE), periodo: testo(x.periodo, 60), mansione: testo(x.mansione, MAX_BREVE), compiti: testo(x.compiti, MAX_LUNGO) };
       if (typeof x.incluso === 'boolean') n.incluso = x.incluso;
       s.cv.esperienze[id] = n;
     });
@@ -330,10 +343,11 @@
   function componiCV(stato) {
     const c = stato.cv;
     const contatti = [];
-    if (pieno(c.citta)) contatti.push({ etichetta: 'Città', valore: c.citta.trim() });
+    if (pieno(c.citta)) contatti.push({ etichetta: 'Indirizzo', valore: c.citta.trim() });
     if (pieno(c.telefono)) contatti.push({ etichetta: 'Telefono', valore: c.telefono.trim() });
     if (pieno(c.email)) contatti.push({ etichetta: 'Email', valore: c.email.trim() });
     if (pieno(c.nascita)) contatti.push({ etichetta: 'Nato/a il', valore: c.nascita.trim() });
+    if (pieno(c.nazionalita)) contatti.push({ etichetta: 'Nazionalità', valore: c.nazionalita.trim() });
     if (pieno(c.patente)) contatti.push({ etichetta: 'Patente', valore: c.patente.trim() });
 
     const formazione = c.formazione.filter(function (f) { return pieno(f.titolo); }).map(function (f) {
@@ -346,11 +360,11 @@
       const x = stato.cv.esperienze[e.id] || {};
       return {
         id: e.id,
-        titolo: pieno(e.titolo) ? e.titolo.trim() : 'Esperienza',
+        titolo: pieno(x.mansione) ? x.mansione.trim() : (pieno(e.titolo) ? e.titolo.trim() : 'Esperienza'),
         dove: (x.dove || '').trim(),
         periodo: (x.periodo || '').trim(),
         tipo: nomeQuando(e.quando),
-        descrizione: (e.azione || '').trim()
+        descrizione: (pieno(x.compiti) ? x.compiti : (e.azione || '')).trim()
       };
     });
 
@@ -361,6 +375,9 @@
 
     return {
       nome: (stato.profilo.nome || '').trim(),
+      occupazione: c.occupazione.trim(),
+      foto: c.foto,
+      formato: c.formato,
       contatti: contatti,
       profilo: c.profilo.trim(),
       formazione: formazione,

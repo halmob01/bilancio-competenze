@@ -42,7 +42,7 @@ Il documento si compone da solo con le parole dello studente, senza riscriverle:
 
 ## 06 Curriculum vitae
 
-Dati, profilo, formazione, esperienze di lavoro, competenze e lingue. Per le lingue si sceglie tra frasi semplici (da «Poche parole e frasi semplici» a «Come un madrelingua»), senza scrivere livelli. Si scarica in **Word** (da modificare) o in **PDF** (da consegnare). Si può scegliere tra tre modelli (Contemporaneo, Classico ed Europass), cambiare colore, carattere e dimensione e correggere il testo direttamente sul foglio. **Il curriculum resta sul dispositivo dello studente e non viene inviato al docente.**
+Dati, profilo, formazione, esperienze di lavoro, competenze e lingue. Per le lingue si sceglie tra frasi semplici (da «Poche parole e frasi semplici» a «Come un madrelingua»), senza scrivere livelli. Si scarica in **Word** (da modificare) o in **PDF** (da consegnare): entrambi mantengono i caratteri del sito. Si può scegliere tra tre modelli (Contemporaneo, Classico ed Europass), cambiare colore, carattere e dimensione e correggere il testo direttamente sul foglio. **Il curriculum resta sul dispositivo dello studente e non viene inviato al docente.**
 
 ![Anteprima del curriculum](guida/07-curriculum-anteprima.png)
 

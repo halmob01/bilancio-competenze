@@ -1146,12 +1146,12 @@
       pannelloAspetto(doc),
       h('div', { class: 'home__azioni' },
         h('button', { type: 'button', class: 'pulsante', onclick: scaricaWord }, 'Scarica in Word'),
-        h('button', { type: 'button', class: 'pulsante', onclick: salvaPdf }, 'Scarica in PDF'),
+        h('button', { type: 'button', class: 'pulsante', onclick: scaricaPdf }, 'Scarica in PDF'),
         h('button', { type: 'button', class: 'pulsante pulsante--testo', onclick: function () { vaiA('cv', 'contatti'); } }, 'Modifica i dati'),
         riuso ? h('button', { type: 'button', class: 'pulsante pulsante--testo', onclick: function () {
           chiedi('Annullare le correzioni scritte a mano sul foglio?', 'Annulla le correzioni', function () { cvManuale = null; ridisegna(); }, 'Tieni le correzioni');
         } }, 'Annulla le correzioni sul foglio') : null),
-      h('p', { class: 'nota', text: 'Il Word si apre e si modifica come un normale documento: in alcuni programmi i caratteri possono cambiare un po\'. Il PDF si crea dalla finestra di stampa: scegli «Salva come PDF» al posto della stampante. Il curriculum resta su questo dispositivo e non viene inviato al docente.' }),
+      h('p', { class: 'nota', text: 'Il curriculum resta su questo dispositivo e non viene inviato al docente.' }),
       doc
     ];
     return [testa(metaSchermata(), 'Il tuo curriculum'), corpo(null, risposta, true)];
@@ -1392,7 +1392,7 @@
             sez.blocchi.push({ t: 'riga', periodo: testoDi('.cv__periodo', c),
               titolo: dx ? testoDi('.cv__titolo', dx) : '', sotto: dx ? testoDi('.cv__sotto', dx) : '', runs: testo ? trattiDa(testo) : [] });
           } else if (c.classList.contains('cv__profilo')) {
-            sez.blocchi.push({ t: 'par', runs: trattiDa(c) });
+            sez.blocchi.push({ t: 'par', runs: trattiDa(c), stretto: true }); // il profilo ha una larghezza massima (68 caratteri)
           } else if (c.classList.contains('cv__elenco')) {
             Array.prototype.forEach.call(c.children, function (li) { sez.blocchi.push({ t: 'voce', runs: trattiDa(li) }); });
           } else if (c.classList.contains('eu-madre')) {
@@ -1431,6 +1431,7 @@
   }
 
   // Il logo Europass è un'immagine del sito: la si rilegge dal disegno, senza altre richieste.
+  // Restituisce i byte del PNG (per il Word) e i punti dell'immagine con la trasparenza (per il PDF).
   function bytesLogo() {
     return new Promise(function (risolvi) {
       const img = new Image();
@@ -1438,10 +1439,17 @@
         try {
           const c = document.createElement('canvas');
           c.width = img.naturalWidth; c.height = img.naturalHeight;
-          c.getContext('2d').drawImage(img, 0, 0);
+          const cx = c.getContext('2d');
+          cx.drawImage(img, 0, 0);
+          const px = cx.getImageData(0, 0, c.width, c.height).data;
+          const rgb = new Uint8Array(c.width * c.height * 3);
+          const alpha = new Uint8Array(c.width * c.height);
+          for (let i = 0, j = 0; i < px.length; i += 4, j++) {
+            rgb[j * 3] = px[i]; rgb[j * 3 + 1] = px[i + 1]; rgb[j * 3 + 2] = px[i + 2]; alpha[j] = px[i + 3];
+          }
           c.toBlob(function (b) {
             if (!b) { risolvi(null); return; }
-            b.arrayBuffer().then(function (x) { risolvi(new Uint8Array(x)); }, function () { risolvi(null); });
+            b.arrayBuffer().then(function (x) { risolvi({ png: new Uint8Array(x), raster: { w: c.width, h: c.height, rgb: rgb, alpha: alpha } }); }, function () { risolvi(null); });
           }, 'image/png');
         } catch (e) { risolvi(null); }
       };
@@ -1454,25 +1462,64 @@
     return nomeFile().replace(/^bilancio-competenze/, 'curriculum').replace(/\.json$/, '.' + estensione);
   }
 
-  function scaricaWord() {
-    const modello = modelloDaDocumento(cvPerLaStampa());
-    const crea = function (logo) {
-      modello.logo = logo;
-      const byte = window.BC_DOCX.creaDocx(modello);
-      scaricaFile(new Blob([byte], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' }), nomeFileCV('docx'));
-      $('salvato').textContent = 'Word scaricato';
-    };
-    if (modello.layout === 'europass') bytesLogo().then(crea); else crea(null);
+  // I caratteri sono file del sito (cartella fonts/ttf): non è una richiesta verso altri indirizzi.
+  function leggiFileFont(nomi) {
+    return Promise.all(nomi.map(function (n) {
+      return fetch('fonts/ttf/' + n + '.ttf').then(function (r) {
+        if (!r.ok) throw new Error('font');
+        return r.arrayBuffer();
+      }).then(function (b) { return new Uint8Array(b); });
+    })).then(function (liste) {
+      const out = {};
+      nomi.forEach(function (n, i) { out[n] = liste[i]; });
+      return out;
+    });
   }
 
-  // Il PDF si crea dalla finestra di stampa: il titolo della pagina diventa il nome del file proposto.
-  function salvaPdf() {
-    const prima = document.title;
-    const nome = (stato.profilo.nome || '').trim();
-    document.title = 'Curriculum' + (nome ? ' ' + nome : '');
-    const ripristina = function () { document.title = prima; window.removeEventListener('afterprint', ripristina); };
-    window.addEventListener('afterprint', ripristina);
-    stampa('cv');
+  // Quali caratteri servono, in base al carattere scelto per il curriculum.
+  function fontDelModello(m) {
+    if (m.carattere === 'classico') return { pdf: { g: 'ebgaramond-regular', gi: 'ebgaramond-italic' } };
+    if (m.carattere === 'semplice') return { pdf: { l: 'liberationsans-regular', lb: 'liberationsans-bold' } };
+    return { pdf: m.layout === 'europass' ? { f: 'firasans-regular', fs: 'firasans-semibold' } : { f: 'firasans-regular', fs: 'firasans-semibold', d: 'anton-regular' } };
+  }
+
+  function scaricaWord() {
+    const modello = modelloDaDocumento(cvPerLaStampa());
+    const eu = modello.layout === 'europass';
+    const files = modello.carattere === 'classico' ? ['ebgaramond-regular', 'ebgaramond-italic']
+      : modello.carattere === 'semplice' ? [] : ['firasans-regular', 'firasans-bold'].concat(eu ? [] : ['anton-regular']);
+    Promise.all([leggiFileFont(files).catch(function () { return null; }), eu ? bytesLogo() : Promise.resolve(null)]).then(function (r) {
+      const f = r[0];
+      const incorporati = {};
+      if (f) {
+        if (f['firasans-regular']) incorporati['Fira Sans'] = { r: f['firasans-regular'], b: f['firasans-bold'] };
+        if (f['anton-regular']) incorporati['Anton'] = { r: f['anton-regular'] };
+        if (f['ebgaramond-regular']) incorporati['EB Garamond'] = { r: f['ebgaramond-regular'], i: f['ebgaramond-italic'] };
+      }
+      modello.logo = r[1] ? r[1].png : null;
+      const byte = window.BC_DOCX.creaDocx(modello, incorporati);
+      scaricaFile(new Blob([byte], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' }), nomeFileCV('docx'));
+      $('salvato').textContent = 'Word scaricato';
+    });
+  }
+
+  // PDF scaricato direttamente, con i caratteri incorporati. Se qualcosa non riesce si ripiega sulla stampa.
+  function scaricaPdf() {
+    const modello = modelloDaDocumento(cvPerLaStampa());
+    const eu = modello.layout === 'europass';
+    const nomi = fontDelModello(modello).pdf;
+    const chiavi = Object.keys(nomi);
+    Promise.all([leggiFileFont(chiavi.map(function (c) { return nomi[c]; })), eu ? bytesLogo() : Promise.resolve(null)]).then(function (r) {
+      const caratteri = {};
+      chiavi.forEach(function (c) { caratteri[c] = r[0][nomi[c]]; });
+      modello.logo = r[1] ? r[1].png : null;
+      return window.BC_PDF.creaPdf(modello, caratteri, { logo: r[1] ? r[1].raster : null });
+    }).then(function (byte) {
+      scaricaFile(new Blob([byte], { type: 'application/pdf' }), nomeFileCV('pdf'));
+      $('salvato').textContent = 'PDF scaricato';
+    }).catch(function () {
+      chiedi('Non sono riuscito a creare il PDF. Vuoi aprire la finestra di stampa e salvarlo da lì?', 'Apri la stampa', function () { stampa('cv'); }, 'No');
+    });
   }
 
   function caricaCopia(file) {

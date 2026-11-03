@@ -167,8 +167,10 @@ test('l\'unica richiesta di rete è l\'invio al foglio configurato', () => {
   const config = fs.readFileSync(path.join(__dirname, '../js/config.js'), 'utf8');
   assert.ok(!/innerHTML|insertAdjacentHTML|document\.write/.test(app));
   assert.ok(!/XMLHttpRequest|sendBeacon|WebSocket/.test(app));
-  assert.equal((app.match(/fetch\(/g) || []).length, 1);
+  // Due sole fetch: l'invio al foglio e la lettura dei caratteri del sito (cartella fonts/ttf, stesso indirizzo dell'app).
+  assert.equal((app.match(/fetch\(/g) || []).length, 2);
   assert.ok(app.includes('fetch(URL_INVIO'));
+  assert.ok(app.includes("fetch('fonts/ttf/' + n + '.ttf')"));
   const url = (config.match(/urlInvio:\s*'([^']*)'/) || [])[1];
   assert.ok(url === '' || /^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec$/.test(url), 'urlInvio: ' + url);
   assert.ok(!/https?:\/\//.test(html), 'nessuna risorsa esterna: font e script sono locali');

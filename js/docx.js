@@ -112,8 +112,8 @@
     let pr = '';
     if (x.keepNext) pr += '<w:keepNext/>';
     if (x.bordoSotto) pr += '<w:pBdr><w:bottom w:val="single" w:sz="' + x.bordoSotto.sz + '" w:space="2" w:color="' + esadecimale(x.bordoSotto.colore) + '"/></w:pBdr>';
-    pr += '<w:spacing w:before="' + (x.prima || 0) + '" w:after="' + (x.dopo === undefined ? 40 : x.dopo) + '" w:line="' + (x.interlinea || 264) + '" w:lineRule="auto"/>';
-    if (x.sx || x.sporgenza) pr += '<w:ind w:left="' + (x.sx || 0) + '"' + (x.sporgenza ? ' w:hanging="' + x.sporgenza + '"' : '') + '/>';
+    pr += '<w:spacing w:before="' + (x.prima || 0) + '" w:after="' + (x.dopo === undefined ? 40 : x.dopo) + '" w:line="' + (x.interlinea || INTERLINEA) + '" w:lineRule="auto"/>';
+    if (x.sx || x.sporgenza || x.destra) pr += '<w:ind w:left="' + (x.sx || 0) + '"' + (x.destra ? ' w:right="' + x.destra + '"' : '') + (x.sporgenza ? ' w:hanging="' + x.sporgenza + '"' : '') + '/>';
     if (x.allinea) pr += '<w:jc w:val="' + x.allinea + '"/>';
     return '<w:p><w:pPr>' + pr + '</w:pPr>' + (contenuto || '') + '</w:p>';
   }
@@ -158,7 +158,8 @@
 
   // ---------- Documento ----------
   const LARGHEZZA = 10092; // A4 meno i margini, in ventesimi di punto
-  const FONT = { moderno: 'Calibri', classico: 'Garamond', semplice: 'Arial' };
+  const FONT = { moderno: 'Fira Sans', classico: 'EB Garamond', semplice: 'Arial' };
+  const INTERLINEA = 340; // come il foglio a schermo (1,45)
   const GRIGIO = '595959';
   const ABILITA = ['Ascolto', 'Lettura', 'Interazione', 'Produzione orale', 'Produzione scritta'];
 
@@ -191,8 +192,8 @@
     const nomeStile = eu
       ? { font: font, b: true, sz: sz(2.2), colore: '000000' }
       : (m.carattere === 'moderno'
-        ? { font: 'Arial Narrow', b: true, caps: true, sz: sz(3), colore: colore }
-        : { font: font, b: m.carattere === 'semplice', caps: m.carattere === 'classico', sz: sz(2.6), colore: colore, spaziatura: m.carattere === 'classico' ? 20 : 0 });
+        ? { font: 'Anton', caps: true, sz: sz(3), colore: colore }
+        : { font: font, b: m.carattere === 'semplice', caps: true, sz: m.carattere === 'semplice' ? sz(2.5) : sz(3), colore: colore, spaziatura: m.carattere === 'classico' ? 26 : 0 });
     const testoIntest = [];
     testoIntest.push(paragrafo(corsa(m.nome || 'Il tuo nome', nomeStile), { dopo: 60, interlinea: 240 }));
     if (!eu && m.occupazione) testoIntest.push(paragrafo(corsa(m.occupazione, { font: font, sz: sz(1.15) }), { dopo: 80 }));
@@ -212,7 +213,7 @@
     }
     if (m.foto) {
       const rid = aggiungiImmagine(m.foto.dati, m.foto.est);
-      const wf = 1700;
+      const wf = 2000; // foto di 30 mm più un po' di spazio
       corpo.push(tabella([wf, LARGHEZZA - wf], [riga([
         cella(paragrafo(immagine(rid, 1080000, 1368000, 'Foto', nImg + 10), { dopo: 0 }), { larghezza: wf }),
         cella(testoIntest.join(''), { larghezza: LARGHEZZA - wf, verticale: 'center' })
@@ -232,12 +233,12 @@
       corpo.push(paragrafo(corsa(s.titolo, stile), { keepNext: true, prima: eu ? 300 : 260, dopo: 100, bordoSotto: bordo }));
       (s.blocchi || []).forEach(function (b) {
         if (b.t === 'par') {
-          corpo.push(paragrafo(corse(b.runs, Object.assign({}, normale, b.grassetto ? { b: true } : {})), { dopo: 60 }));
+          corpo.push(paragrafo(corse(b.runs, Object.assign({}, normale, b.grassetto ? { b: true } : {})), b.stretto ? { dopo: 60, destra: Math.max(0, LARGHEZZA - Math.round(68 * 0.55 * base * 10)) } : { dopo: 60 }));
         } else if (b.t === 'voce') {
           corpo.push(paragrafo(eu ? corse(b.runs, normale) : corsa('•\t', normale) + corse(b.runs, normale), eu ? { dopo: 40 } : { dopo: 40, sx: 284, sporgenza: 284 }));
         } else if (b.t === 'riga') {
           const dx = [];
-          if (b.titolo) dx.push(paragrafo(corsa(b.titolo, { font: font, b: true, sz: base }), { dopo: 20 }));
+          if (b.titolo) dx.push(paragrafo(corsa(b.titolo, m.carattere === 'classico' ? { font: font, i: true, sz: base } : { font: font, b: true, sz: base }), { dopo: 20 }));
           if (b.sotto) dx.push(paragrafo(corsa(b.sotto, { font: font, sz: sz(0.94), colore: eu ? '000000' : GRIGIO }), { dopo: 20 }));
           if (b.runs && b.runs.length) dx.push(paragrafo(corse(b.runs, normale), { dopo: 20 }));
           corpo.push(tabella([colPeriodo, LARGHEZZA - colPeriodo], [riga([
@@ -281,35 +282,78 @@
 
     const sezioneFinale = '<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1020" w:right="907" w:bottom="1020" w:left="907" w:header="567" w:footer="567" w:gutter="0"/></w:sectPr>';
     const xml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document ' + NS + '><w:body>' + corpo.join('') + sezioneFinale + '</w:body></w:document>';
-    return { xml: xml, rapporti: rapporti, media: media, font: font, base: base };
+    const famiglie = [font].concat(!eu && m.carattere === 'moderno' ? ['Anton'] : []);
+    return { xml: xml, rapporti: rapporti, media: media, font: font, base: base, famiglie: famiglie };
   }
 
-  function creaDocx(modello) {
+  // Ogni file di carattere incorporato è «offuscato» come richiede il formato: i primi 32 byte si combinano (XOR) con la chiave GUID.
+  function offusca(dati, guid) {
+    const hex = guid.replace(/[{}-]/g, '');
+    const chiave = [];
+    for (let i = 0; i < 16; i++) chiave.push(parseInt(hex.substr(30 - 2 * i, 2), 16));
+    const out = new Uint8Array(dati);
+    for (let i = 0; i < 32 && i < out.length; i++) out[i] ^= chiave[i % 16];
+    return out;
+  }
+
+  // incorporati: { 'Fira Sans': { r, b }, 'Anton': { r }, 'EB Garamond': { r, i } } con i byte dei file TrueType.
+  // Si incorporano solo le famiglie che il documento usa: Word e LibreOffice le usano anche dove il carattere non è installato.
+  function creaDocx(modello, incorporati) {
     const d = creaDocumento(modello);
+    const SLOT = { r: 'embedRegular', b: 'embedBold', i: 'embedItalic' };
+    const voci = [];
+    const fontRel = [];
+    const fontFile = [];
+    let nFont = 0;
+    d.famiglie.forEach(function (nome) {
+      const f = incorporati && incorporati[nome];
+      if (!f) return;
+      let xmlFont = '<w:font w:name="' + esc(nome) + '"><w:charset w:val="00"/><w:family w:val="swiss"/><w:pitch w:val="variable"/>';
+      ['r', 'b', 'i'].forEach(function (s) {
+        if (!f[s]) return;
+        nFont++;
+        const guid = '{B1C0A5E0-0001-4A11-9C00-' + ('000000000000' + nFont).slice(-12) + '}';
+        fontFile.push({ nome: 'word/fonts/font' + nFont + '.odttf', dati: offusca(f[s], guid) });
+        fontRel.push('<Relationship Id="rId' + nFont + '" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/font" Target="fonts/font' + nFont + '.odttf"/>');
+        xmlFont += '<w:' + SLOT[s] + ' r:id="rId' + nFont + '" w:fontKey="' + guid + '"/>';
+      });
+      voci.push(xmlFont + '</w:font>');
+    });
+    const incorporato = nFont > 0;
+    const tabellaFont = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:fonts xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">' + voci.join('') + '</w:fonts>';
+    const impostazioni = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:settings xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">' + (incorporato ? '<w:embedTrueTypeFonts/><w:saveSubsetFonts/>' : '') + '</w:settings>';
     const stili = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">' +
       '<w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="' + esc(d.font) + '" w:hAnsi="' + esc(d.font) + '" w:cs="' + esc(d.font) + '"/><w:sz w:val="' + d.base + '"/><w:szCs w:val="' + d.base + '"/><w:lang w:val="it-IT"/></w:rPr></w:rPrDefault>' +
       '<w:pPrDefault><w:pPr><w:spacing w:after="40" w:line="264" w:lineRule="auto"/></w:pPr></w:pPrDefault></w:docDefaults>' +
       '<w:style w:type="paragraph" w:default="1" w:styleId="Normale"><w:name w:val="Normal"/><w:qFormat/></w:style></w:styles>';
     const tipi = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">' +
       '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/>' +
-      '<Default Extension="png" ContentType="image/png"/><Default Extension="jpeg" ContentType="image/jpeg"/>' +
+      '<Default Extension="png" ContentType="image/png"/><Default Extension="jpeg" ContentType="image/jpeg"/><Default Extension="odttf" ContentType="application/vnd.openxmlformats-officedocument.obfuscatedFont"/>' +
       '<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>' +
-      '<Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/></Types>';
+      '<Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/>' +
+      '<Override PartName="/word/fontTable.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.fontTable+xml"/>' +
+      '<Override PartName="/word/settings.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.settings+xml"/></Types>';
     const radiceRel = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
       '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>';
     const docRel = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
-      '<Relationship Id="rIdStili" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>' + d.rapporti.join('') + '</Relationships>';
+      '<Relationship Id="rIdStili" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>' +
+      '<Relationship Id="rIdFont" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/fontTable" Target="fontTable.xml"/>' +
+      '<Relationship Id="rIdImp" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/settings" Target="settings.xml"/>' + d.rapporti.join('') + '</Relationships>';
+    const relFont = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' + fontRel.join('') + '</Relationships>';
     const file = [
       { nome: '[Content_Types].xml', dati: utf8(tipi) },
       { nome: '_rels/.rels', dati: utf8(radiceRel) },
       { nome: 'word/document.xml', dati: utf8(d.xml) },
       { nome: 'word/styles.xml', dati: utf8(stili) },
-      { nome: 'word/_rels/document.xml.rels', dati: utf8(docRel) }
-    ].concat(d.media);
+      { nome: 'word/_rels/document.xml.rels', dati: utf8(docRel) },
+      { nome: 'word/fontTable.xml', dati: utf8(tabellaFont) },
+      { nome: 'word/settings.xml', dati: utf8(impostazioni) },
+      { nome: 'word/_rels/fontTable.xml.rels', dati: utf8(relFont) }
+    ].concat(d.media, fontFile);
     return zip(file);
   }
 
-  const DOCX = { creaDocx: creaDocx, crc32: crc32, zip: zip, esc: esc };
+  const DOCX = { creaDocx: creaDocx, crc32: crc32, zip: zip, esc: esc, offusca: offusca };
   if (typeof module !== 'undefined' && module.exports) module.exports = DOCX;
   else radice.BC_DOCX = DOCX;
 })(typeof window !== 'undefined' ? window : globalThis);

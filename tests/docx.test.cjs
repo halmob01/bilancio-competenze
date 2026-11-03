@@ -75,3 +75,28 @@ test('nessuna richiesta di rete nel modulo Word', () => {
   const t = fs.readFileSync(path.join(__dirname, '../js/docx.js'), 'utf8');
   assert.ok(!/fetch\(|XMLHttpRequest|sendBeacon|WebSocket|innerHTML/.test(t));
 });
+
+test('i caratteri sono incorporati nel Word e offuscati come richiede il formato', () => {
+  const regolare = new Uint8Array(100).map((_, i) => i + 1);
+  const grassetto = new Uint8Array(100).map((_, i) => 200 - i);
+  const m = Object.assign({}, MODELLO, { carattere: 'moderno', layout: 'europass' });
+  const f = leggiZip(X.creaDocx(m, { 'Fira Sans': { r: regolare, b: grassetto }, 'Anton': { r: regolare } }));
+  assert.ok(f['word/fonts/font1.odttf'] && f['word/fonts/font2.odttf']);
+  assert.ok(!f['word/fonts/font3.odttf'], 'Anton non serve nel modello Europass: non si incorpora');
+  const tab = Buffer.from(f['word/fontTable.xml']).toString('utf8');
+  assert.ok(tab.includes('w:name="Fira Sans"') && tab.includes('embedRegular') && tab.includes('embedBold') && !tab.includes('Anton'));
+  const guid = /w:fontKey="(\{[^}]+\})"/.exec(tab)[1];
+  const scritto = f['word/fonts/font1.odttf'];
+  assert.notDeepEqual(Array.from(scritto.subarray(0, 32)), Array.from(regolare.subarray(0, 32)), 'i primi 32 byte sono offuscati');
+  assert.deepEqual(Array.from(scritto.subarray(32)), Array.from(regolare.subarray(32)), 'il resto è invariato');
+  assert.deepEqual(Array.from(X.offusca(scritto, guid)), Array.from(regolare), 'l\'operazione è reversibile');
+  const tipi = Buffer.from(f['[Content_Types].xml']).toString('utf8');
+  assert.ok(tipi.includes('obfuscatedFont') && tipi.includes('fontTable'));
+  const imp = Buffer.from(f['word/settings.xml']).toString('utf8');
+  assert.ok(imp.includes('embedTrueTypeFonts'));
+});
+
+test('senza caratteri da incorporare il Word resta valido (carattere Semplice, Arial)', () => {
+  const f = leggiZip(X.creaDocx(Object.assign({}, MODELLO, { carattere: 'semplice' }), {}));
+  assert.ok(f['word/document.xml'] && !Object.keys(f).some((n) => n.includes('odttf')));
+});

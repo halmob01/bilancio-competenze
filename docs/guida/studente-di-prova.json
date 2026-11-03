@@ -1,0 +1,188 @@
+{
+  "versione": 1,
+  "codice": "provaprova12345678ab",
+  "aggiornato": "2026-11-03T10:42:00.000Z",
+  "inviato": "",
+  "profilo": {
+    "nome": "Marco Rossi",
+    "classe": "4B",
+    "indirizzo": "informatica"
+  },
+  "anni": {
+    "anno1": "Il primo laboratorio di reti: ho crimpato i cavi e sbagliato l'ordine dei colori due volte.",
+    "anno2": "Ho montato un computer da zero con un compagno.",
+    "anno3": "Progetto di gruppo: un piccolo sito per un'associazione del quartiere.",
+    "anno4": "Preparazione al tirocinio e prime configurazioni di rete.",
+    "tirocinio": "Due mesi in uno studio che fa assistenza informatica."
+  },
+  "esperienze": [
+    {
+      "id": "e1",
+      "titolo": "Rete dell'ufficio in tirocinio",
+      "quando": "tirocinio",
+      "contesto": "Studio di assistenza informatica a Milano, con il tutor aziendale.",
+      "azione": "Ho configurato due stampanti di rete e aggiornato i computer della segreteria.",
+      "prova": "Il documento di procedura che ho scritto e il giudizio del tutor.",
+      "difficolta": "Una stampante non veniva vista dalla rete: ho dovuto imparare a leggere i log.",
+      "aiuto": "Il tutor mi ha mostrato dove guardare e poi ho cercato nella documentazione.",
+      "autonomia": "autonomo_noto",
+      "situazioni": [
+        "fare",
+        "verificare"
+      ]
+    },
+    {
+      "id": "e2",
+      "titolo": "Sito per l'associazione del quartiere",
+      "quando": "anno3",
+      "contesto": "Progetto di gruppo a scuola, in quattro.",
+      "azione": "Ho scritto le pagine e collegato il modulo di contatto.",
+      "prova": "Il sito pubblicato e la relazione del progetto.",
+      "difficolta": "All'inizio rifacevamo il lavoro degli altri: abbiamo diviso i compiti.",
+      "aiuto": "Il docente di laboratorio e un compagno più esperto.",
+      "autonomia": "con_aiuto",
+      "situazioni": [
+        "collaborare"
+      ]
+    }
+  ],
+  "sofare": {
+    "capire": {
+      "livello": "autonomo_noto",
+      "esempio": "Al tirocinio ho capito da una telefonata confusa che il problema era il cavo, non il computer.",
+      "esperienze": [
+        "e1"
+      ],
+      "come": "Ho imparato a fare domande precise."
+    },
+    "fare": {
+      "livello": "autonomo_nuovo",
+      "esempio": "Ho installato e configurato un sistema operativo e due stampanti di rete.",
+      "esperienze": [
+        "e1"
+      ],
+      "come": "Provando, sbagliando e rifacendo."
+    },
+    "collaborare": {
+      "livello": "con_aiuto",
+      "esempio": "Nel progetto del sito ci siamo divisi i compiti in quattro.",
+      "esperienze": [
+        "e2"
+      ],
+      "come": "Il docente ci ha fatto fare una lista dei compiti."
+    },
+    "verificare": {
+      "livello": "autonomo_noto",
+      "esempio": "Prima di modificare la rete faccio una copia di sicurezza e dopo provo che tutto funzioni.",
+      "esperienze": [],
+      "come": "Dopo un errore al tirocinio."
+    },
+    "spiegare": {
+      "livello": "non_ancora",
+      "esempio": "",
+      "esperienze": [],
+      "come": "Mi servirebbe più pratica a spiegare a chi non è esperto."
+    },
+    "migliorare": {
+      "livello": "mai",
+      "esempio": "",
+      "esperienze": [],
+      "come": "Mi piacerebbe provarlo in un progetto lungo."
+    }
+  },
+  "sguardo": {
+    "scuola": "I laboratori mi sono serviti più delle ore di teoria. Avrei voluto più casi veri.",
+    "tirocinio": "In azienda i tempi sono più stretti. All'inizio il tutor non aveva tempo: ho imparato a fare domande precise.",
+    "ancora": "Devo imparare a stimare i tempi di un lavoro. Posso chiedere al tutor di farmelo provare."
+  },
+  "orientamento": {
+    "presentati": "Mi chiamo Marco, faccio il quarto anno di Informatica.",
+    "racconto": "Al tirocinio ho configurato le stampanti di un ufficio e scritto una procedura per gli utenti.",
+    "difficile": "All'inizio non capivo i log di rete: mi è servito leggerli con calma, più volte.",
+    "consiglio": "Venite a vedere i laboratori e chiedete agli studenti, non solo ai docenti.",
+    "testo": "Mi chiamo Marco, faccio il quarto anno di Informatica.\n\nAl tirocinio ho configurato le stampanti di un ufficio e scritto una procedura per gli utenti.\n\nAll'inizio non capivo i log di rete: mi è servito leggerli con calma, più volte.\n\nVenite a vedere i laboratori e chiedete agli studenti, non solo ai docenti."
+  },
+  "cv": {
+    "telefono": "333 1234567",
+    "email": "marco.rossi@example.it",
+    "citta": "via Roma 1, Rozzano (MI)",
+    "nascita": "14/03/2009",
+    "patente": "AM",
+    "occupazione": "Tecnico informatico",
+    "nazionalita": "Italiana",
+    "foto": "",
+    "profilo": "Studente del quarto anno di Informatica. In tirocinio ho configurato computer e stampanti di rete e scritto una procedura per gli utenti. **Paziente**, ordinato, curioso.",
+    "formato": {
+      "impaginazione": "europass",
+      "colore": "europass",
+      "carattere": "moderno",
+      "dimensione": "normale",
+      "firma": true,
+      "luogo": "Milano"
+    },
+    "formazione": [
+      {
+        "id": "f1",
+        "periodo": "2023 – oggi",
+        "titolo": "Percorso IeFP, indirizzo Informatica",
+        "ente": "CFP, Milano"
+      }
+    ],
+    "lavoro": [
+      {
+        "id": "l1",
+        "tipo": "tirocinio",
+        "azienda": "Studio Rete Sicura",
+        "citta": "Milano, Italia",
+        "mansione": "Aiuto tecnico informatico",
+        "dal": "2025-03",
+        "al": "2025-05",
+        "inCorso": false,
+        "compiti": "Configurare **stampanti di rete**, aggiornare i computer della segreteria, scrivere la procedura per gli utenti."
+      }
+    ],
+    "competenze": "Configurazione di reti locali\nAssistenza ai computer degli utenti",
+    "lingue": "",
+    "digitali": "Word buono, Excel base, sistemi operativi",
+    "altro": "Squadra di calcio dal 2019",
+    "lingueElenco": [
+      {
+        "id": "g1",
+        "nome": "Italiano",
+        "madre": true,
+        "livelli": {
+          "ascolto": "",
+          "lettura": "",
+          "interazione": "",
+          "orale": "",
+          "scritto": ""
+        }
+      },
+      {
+        "id": "g2",
+        "nome": "Inglese",
+        "madre": false,
+        "livelli": {
+          "ascolto": "B1",
+          "lettura": "B1",
+          "interazione": "A2",
+          "orale": "A2",
+          "scritto": "A2"
+        }
+      },
+      {
+        "id": "g3",
+        "nome": "Arabo",
+        "madre": false,
+        "livelli": {
+          "ascolto": "C2",
+          "lettura": "B1",
+          "interazione": "C2",
+          "orale": "C2",
+          "scritto": "A2"
+        }
+      }
+    ],
+    "consenso": false
+  }
+}

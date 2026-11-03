@@ -69,6 +69,7 @@ La CI controlla la sintassi ed esegue i test (contenuti, regola dell'esempio obb
 
 ## Documentazione
 
+- [Guida breve con screenshot](docs/GUIDA.md)
 - [Identità visiva V1](design.md)
 - [Raccogliere le risposte in un Foglio Google](docs/FOGLIO-GOOGLE.md)
 - [Stato del prototipo e decisioni aperte](docs/STATO-PROTOTIPO.md)

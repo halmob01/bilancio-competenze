@@ -29,6 +29,9 @@
     { id: 'fuori', testo: 'Fuori da scuola' }
   ];
 
+  // Anni di frequenza: da qui il percorso mostra solo gli anni già vissuti.
+  const ANNI = QUANDO.slice(0, 4);
+
   // Situazioni comuni ai tre indirizzi (design.md §7: capire / fare / collaborare /
   // verificare / spiegare / migliorare). Gli esempi cambiano per indirizzo;
   // «anche» ricorda che competenze professionali e di base si intrecciano.
@@ -113,13 +116,16 @@
       id: 'scuola',
       domanda: 'Che cosa ti è servito davvero della scuola? Che cosa avresti cambiato?',
       aiuto: 'Pensa a un laboratorio, una materia, un docente, un modo di lavorare. Puoi essere critico: questo bilancio non è una valutazione della scuola su di te.',
-      esempio: '«Nell\'azienda in cui ho fatto il tirocinio al terzo anno ho imparato più che in aula, perché facevo lavori veri e se sbagliavo dovevo rifare. A scuola avrei voluto meno teoria ripetuta e più casi veri.»'
+      esempio: '«Nell\'azienda in cui ho fatto il tirocinio ho imparato più che in aula, perché facevo lavori veri e se sbagliavo dovevo rifare. A scuola avrei voluto meno teoria ripetuta e più casi veri.»'
     },
     {
       id: 'tirocinio',
       domanda: 'Che cosa ti ha insegnato il tirocinio che a scuola non avevi visto? Che cosa non ha funzionato?',
       aiuto: 'Se non hai ancora fatto il tirocinio, racconta un\'altra esperienza di lavoro o scrivi che cosa ti aspetti.',
-      esempio: '«In azienda i tempi erano molto più stretti. Il tutor all\'inizio non aveva tempo per me; ho imparato a fare domande precise.»'
+      esempio: '«In azienda i tempi erano molto più stretti. Il tutor all\'inizio non aveva tempo per me; ho imparato a fare domande precise.»',
+      // Dal secondo anno i tirocini possono essere più di uno: stesse domande, al plurale.
+      domandaPlurale: 'Che cosa ti hanno insegnato i tirocini che a scuola non avevi visto? Che cosa non ha funzionato?',
+      aiutoPlurale: 'Se non hai ancora fatto i tirocini, racconta un\'altra esperienza di lavoro o scrivi che cosa ti aspetti. Puoi parlare di tutti i tirocini che hai fatto, anche mettendoli a confronto.'
     },
     {
       id: 'ancora',
@@ -137,7 +143,7 @@
       titolo: 'Il tuo percorso',
       schermate: [
         { id: 'chi', titolo: 'Da dove parti' },
-        { id: 'anni', titolo: 'Quattro anni in poche righe' }
+        { id: 'anni', titolo: 'Il tuo percorso in poche righe' }
       ]
     },
     {
@@ -187,12 +193,12 @@
     {
       id: 'presentati',
       etichetta: 'Chi sei e che cosa studi, in due righe.',
-      esempio: '«Mi chiamo Sara, faccio il quarto anno di Informatica.»'
+      esempio: '«Mi chiamo Sara e frequento Informatica.»'
     },
     {
       id: 'racconto',
       etichetta: 'Un\'esperienza che racconteresti a un ragazzo o una ragazza di terza media.',
-      esempio: '«Al terzo anno abbiamo rimesso in funzione i computer di un\'associazione del quartiere…»'
+      esempio: '«In un progetto di laboratorio abbiamo rimesso in funzione i computer di un\'associazione del quartiere…»'
     },
     {
       id: 'difficile',
@@ -210,21 +216,21 @@
   const ESEMPI_ESPERIENZA = {
     elettrico: {
       titolo: 'Impianto di una cucina in laboratorio',
-      quando: 'III anno',
+      quando: 'anno3', // id del periodo: se è un anno non ancora vissuto, l'esempio mostra l'anno dello studente
       azione: 'Ho tracciato le linee, posato le canaline e collegato prese e punti luce secondo lo schema.',
       prova: 'Le foto dell\'impianto e la scheda di collaudo firmata dal docente.',
       difficolta: 'Non sapevo dimensionare le sezioni dei cavi: ho rifatto il calcolo con il docente.'
     },
     informatica: {
       titolo: 'Rete dell\'ufficio durante il tirocinio',
-      quando: 'Tirocinio o alternanza',
+      quando: 'tirocinio',
       azione: 'Ho configurato due stampanti di rete e aggiornato i computer della segreteria.',
       prova: 'Il documento di procedura che ho scritto e il giudizio del tutor aziendale.',
       difficolta: 'Una stampante non veniva vista dalla rete: ho dovuto chiedere al tecnico come leggere i log.'
     },
     estetica: {
       titolo: 'Prima cliente esterna in salone',
-      quando: 'II anno',
+      quando: 'anno2',
       azione: 'Ho accolto la cliente, ho fatto l\'analisi della pelle e una pulizia del viso completa.',
       prova: 'La scheda cliente compilata e il commento della docente di laboratorio.',
       difficolta: 'Ero in ritardo sui tempi: ho imparato a preparare la cabina prima dell\'arrivo.'
@@ -296,6 +302,7 @@
     INDIRIZZI: INDIRIZZI,
     AUTONOMIA: AUTONOMIA,
     QUANDO: QUANDO,
+    ANNI: ANNI,
     SITUAZIONI: SITUAZIONI,
     SGUARDO: SGUARDO,
     SEZIONI: SEZIONI,

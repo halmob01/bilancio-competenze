@@ -224,7 +224,7 @@
   function gruppoScelte(o) {
     return h('fieldset', { class: 'campo' },
       h('legend', { text: o.legenda }),
-      h('div', { class: 'scelte' + (o.riga ? ' scelte--riga' : '') },
+      h('div', { class: 'scelte' + (o.riga ? ' scelte--riga' : '') + (o.quattro ? ' scelte--quattro' : '') },
         o.opzioni.map(function (op) {
           const id = o.nome + '-' + op.id;
           const selezionata = o.multipla ? o.valore.indexOf(op.id) !== -1 : o.valore === op.id;
@@ -305,7 +305,7 @@
     const iniziato = !!stato.aggiornato;
     return h('div', { class: 'home' },
       h('h1', { text: 'Bilancio di competenze' }),
-      h('p', { class: 'home__sottotitolo', text: 'Quattro anni. Che cosa hai imparato?' }),
+      h('p', { class: 'home__sottotitolo', text: 'Che cosa hai imparato finora?' }),
       h('p', { class: 'home__testo misura', text: 'Ricostruisci le esperienze del tuo percorso, riconosci ciò che sai fare e individua quello che devi ancora imparare. Alla fine avrai un bilancio scritto con le tue parole e un breve testo per presentarti agli open day. Se vuoi puoi anche preparare un curriculum da stampare.' }),
       h('div', { class: 'home__azioni' },
         h('button', { type: 'button', class: 'pulsante', onclick: function () {
@@ -333,6 +333,12 @@
     ];
     const risposta = [
       gruppoScelte({
+        legenda: 'Che anno frequenti?', nome: 'anno', riga: true, quattro: true,
+        opzioni: D.ANNI.map(function (x) { return { id: x.id, testo: x.testo }; }),
+        valore: stato.profilo.anno,
+        aggiorna: function (id) { stato.profilo.anno = id; modificato(); }
+      }),
+      gruppoScelte({
         legenda: 'Quale indirizzo frequenti?', nome: 'indirizzo',
         opzioni: D.INDIRIZZI.map(function (x) { return { id: x.id, testo: x.nome }; }),
         valore: stato.profilo.indirizzo,
@@ -344,17 +350,32 @@
     return [testa(metaSchermata(), 'Da dove parti'), corpo(intro, risposta)];
   }
 
+  // Dal secondo anno i tirocini possono essere più di uno (uno in prima e uno in seconda, due in terza):
+  // si chiedono due e si scrive al plurale. Se l'anno non è scelto si chiedono due.
+  function tirociniPlurali() {
+    return stato.profilo.anno !== 'anno1';
+  }
+  function etichettaRicordo(k) {
+    if (k === 'tirocinio') return tirociniPlurali() ? 'Primo tirocinio' : 'Tirocinio o alternanza';
+    if (k === 'tirocinio2') return 'Secondo tirocinio';
+    return L.nomeQuando(k);
+  }
+
   function schermataAnni() {
-    const nomi = { anno1: 'I anno', anno2: 'II anno', anno3: 'III anno', anno4: 'IV anno', tirocinio: 'Tirocinio o alternanza' };
+    const nomi = { anno1: 'I anno', anno2: 'II anno', anno3: 'III anno', anno4: 'IV anno', tirocinio: etichettaRicordo('tirocinio'), tirocinio2: etichettaRicordo('tirocinio2') };
+    // Si chiede solo degli anni già vissuti; quelli nascosti restano nei dati se lo studente cambia anno.
+    const campi = L.anniDelPercorso(stato.profilo.anno).concat(tirociniPlurali() ? ['tirocinio', 'tirocinio2'] : ['tirocinio']);
     const intro = [
-      h('p', { text: 'Per ogni anno scrivi che cosa ricordi: un laboratorio, una persona, un lavoro, un momento difficile. Bastano poche parole.' }),
+      h('p', { text: stato.profilo.anno === 'anno1'
+        ? 'Scrivi che cosa ricordi di questo primo anno: un laboratorio, una persona, un lavoro, un momento difficile. Bastano poche parole.'
+        : 'Per ogni anno scrivi che cosa ricordi: un laboratorio, una persona, un lavoro, un momento difficile. Bastano poche parole.' }),
       aiuto('Non serve essere completi. Queste righe ti aiuteranno a ritrovare le esperienze nella prossima sezione.', 'Se un anno non l\'hai frequentato qui, lascia il campo vuoto.'),
       esempio('Vedi un esempio', h('p', { text: '«I anno: il primo circuito con il deviatore su un pannello di prova. Ho sbagliato i collegamenti e li ho rifatti due volte.»' }))
     ];
-    const risposta = h('div', { class: 'anni' }, Object.keys(nomi).map(function (k) {
-      return campo({ id: 'f-' + k, etichetta: nomi[k], area: true, righe: 3, valore: stato.anni[k], aggiorna: function (v) { stato.anni[k] = v; } });
+    const risposta = h('div', { class: 'anni' }, campi.map(function (k) {
+      return campo({ id: 'f-' + k, etichetta: nomi[k], suggerimento: k === 'tirocinio2' ? 'Se ne hai fatto uno solo, lascia vuoto questo campo.' : null, area: true, righe: 3, valore: stato.anni[k], aggiorna: function (v) { stato.anni[k] = v; } });
     }));
-    return [testa(metaSchermata(), 'Quattro anni in poche righe'), corpo(intro, risposta)];
+    return [testa(metaSchermata(), stato.profilo.anno === 'anno1' ? 'Il tuo primo anno in poche righe' : 'Il tuo percorso in poche righe'), corpo(intro, risposta)];
   }
 
   // ---------- 02 Le esperienze ----------
@@ -366,6 +387,15 @@
     return m;
   }
 
+  // Il periodo dell'esperienza: solo gli anni già vissuti, il tirocinio e «fuori da scuola».
+  // Un valore già scelto resta sempre disponibile, anche se poi lo studente cambia anno.
+  function opzioniQuando(attuale) {
+    const visibili = L.anniDelPercorso(stato.profilo.anno);
+    return D.QUANDO.filter(function (x) {
+      return x.id === attuale || x.id === 'tirocinio' || x.id === 'fuori' || visibili.indexOf(x.id) !== -1;
+    });
+  }
+
   function moduloEsperienza(e) {
     const p = 'f-esp-' + e.id + '-';
     const testoCampo = function (chiave, etichetta, suggerimento, area) {
@@ -374,7 +404,7 @@
     return h('div', { class: 'scheda__modulo' },
       testoCampo('titolo', 'Titolo', 'Poche parole per riconoscerla, per esempio «Quadro elettrico in laboratorio».', false),
       gruppoScelte({
-        legenda: 'Quando', nome: p + 'quando', riga: true, opzioni: D.QUANDO, valore: e.quando,
+        legenda: 'Quando', nome: p + 'quando', riga: true, opzioni: opzioniQuando(e.quando), valore: e.quando,
         aggiorna: function (id) { e.quando = id; modificato(); }
       }),
       testoCampo('azione', 'Che cosa hai fatto tu, concretamente?', 'Racconta le tue azioni, non quelle del gruppo in generale.', true),
@@ -430,6 +460,15 @@
     });
   }
 
+  // L'esempio non deve parlare di un anno che lo studente non ha ancora vissuto:
+  // in quel caso mostra l'anno che frequenta.
+  function quandoEsempio(id) {
+    const anni = D.ANNI.map(function (x) { return x.id; });
+    const scelto = stato.profilo.anno;
+    const nelFuturo = scelto && anni.indexOf(id) !== -1 && anni.indexOf(id) > anni.indexOf(scelto);
+    return L.nomeQuando(nelFuturo ? scelto : id);
+  }
+
   function schermataEsperienze() {
     const es = indirizziVisibili().map(function (ind) {
       const x = D.ESEMPI_ESPERIENZA[ind.id];
@@ -437,7 +476,7 @@
         h('p', { class: 'meta', text: 'Esempio · ' + ind.nome }),
         h('dl', null,
           h('dt', { text: 'Titolo' }), h('dd', { text: x.titolo }),
-          h('dt', { text: 'Quando' }), h('dd', { text: x.quando }),
+          h('dt', { text: 'Quando' }), h('dd', { text: quandoEsempio(x.quando) }),
           h('dt', { text: 'Azione' }), h('dd', { text: x.azione }),
           h('dt', { text: 'Prova' }), h('dd', { text: x.prova }),
           h('dt', { text: 'Difficoltà' }), h('dd', { text: x.difficolta })));
@@ -447,8 +486,8 @@
       h('p', { text: 'Scegli almeno due esperienze: a scuola, in laboratorio, in tirocinio o fuori. Per ognuna racconta che cosa hai fatto tu, come puoi dimostrarlo e che cosa è stato difficile.' }),
       aiuto('L\'esempio serve solo a capire che cosa scrivere. Nel bilancio entra soltanto quello che hai fatto davvero.'),
       esempio('Vedi un esempio (non è una tua esperienza)', es),
-      anni.length ? esempio('I tuoi appunti sui quattro anni', h('dl', null, anni.map(function (k) {
-        return [h('dt', { text: L.nomeQuando(k) || 'Tirocinio' }), h('dd', { text: stato.anni[k] })];
+      anni.length ? esempio('I tuoi appunti sul percorso', h('dl', null, anni.map(function (k) {
+        return [h('dt', { text: etichettaRicordo(k) }), h('dd', { text: stato.anni[k] })];
       }))) : null
     ];
     const pieneAbbastanza = stato.esperienze.length >= L.MAX_ESPERIENZE;
@@ -543,10 +582,12 @@
 
   // ---------- 04 Uno sguardo critico ----------
   function schermataSguardo(g) {
-    const intro = [aiuto(g.aiuto), esempio('Vedi un esempio', h('p', { text: g.esempio }))];
+    const plurale = tirociniPlurali() && g.domandaPlurale;
+    const domanda = plurale ? g.domandaPlurale : g.domanda;
+    const intro = [aiuto(plurale ? g.aiutoPlurale : g.aiuto), esempio('Vedi un esempio', h('p', { text: g.esempio }))];
     const risposta = campo({ id: 'f-sg-' + g.id, etichettaDa: 'titolo-schermata', area: true, lungo: true, valore: stato.sguardo[g.id],
       aggiorna: function (v) { stato.sguardo[g.id] = v; } });
-    return [testa(metaSchermata(), g.domanda), corpo(intro, risposta)];
+    return [testa(metaSchermata(), domanda), corpo(intro, risposta)];
   }
 
   // ---------- 05 Bilancio ----------
@@ -569,7 +610,8 @@
     const b = L.componiBilancio(stato);
     const ind = D.INDIRIZZI.find(function (x) { return x.id === stato.profilo.indirizzo; });
     const data = stato.aggiornato ? new Date(stato.aggiornato).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
-    const intestazione = [ind ? 'Indirizzo ' + ind.nome : '', stato.profilo.classe, data ? 'Aggiornato il ' + data : ''].filter(Boolean).join(' · ');
+    const annoScelto = D.ANNI.find(function (x) { return x.id === stato.profilo.anno; });
+    const intestazione = [ind ? 'Indirizzo ' + ind.nome : '', annoScelto ? annoScelto.testo : '', stato.profilo.classe, data ? 'Aggiornato il ' + data : ''].filter(Boolean).join(' · ');
 
     const soFare = b.soFare.map(function (x) {
       return h('li', { class: 'voce' },
@@ -623,9 +665,9 @@
 
   // ---------- 06 Curriculum vitae ----------
   const PROFILO_ESEMPI = {
-    elettrico: '«Studente del quarto anno di Elettrico. Ho realizzato impianti civili in laboratorio e in tirocinio, con attenzione alla sicurezza. Cerco un\'azienda dove continuare a imparare. Preciso, affidabile, curioso.»',
-    informatica: '«Studente del quarto anno di Informatica. In tirocinio ho configurato computer e stampanti di rete e scritto una procedura per gli utenti. Mi piace capire perché un sistema non funziona. Paziente, ordinato, curioso.»',
-    estetica: '«Studentessa del quarto anno di Estetica. So accogliere la cliente e seguire un trattamento dalla preparazione della cabina al congedo, con cura dell\'igiene. Puntuale, empatica, precisa.»'
+    elettrico: '«Studente di Elettrico. Ho realizzato impianti civili in laboratorio e in tirocinio, con attenzione alla sicurezza. Cerco un\'azienda dove continuare a imparare. Preciso, affidabile, curioso.»',
+    informatica: '«Studente di Informatica. In tirocinio ho configurato computer e stampanti di rete e scritto una procedura per gli utenti. Mi piace capire perché un sistema non funziona. Paziente, ordinato, curioso.»',
+    estetica: '«Studentessa di Estetica. So accogliere la cliente e seguire un trattamento dalla preparazione della cabina al congedo, con cura dell\'igiene. Puntuale, empatica, precisa.»'
   };
 
   // Il testo del curriculum può avere parole in grassetto scritte tra due asterischi: **così**.
@@ -1211,9 +1253,7 @@
 
   // Il curriculum contiene recapiti personali e resta sul dispositivo.
   function senzaCV(st) {
-    const copia = Object.assign({}, st);
-    delete copia.cv;
-    return copia;
+    return L.statoPerIlFoglio(st);
   }
 
   let invioInCorso = false;

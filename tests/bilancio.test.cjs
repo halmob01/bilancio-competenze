@@ -177,7 +177,7 @@ test('l\'unica richiesta di rete è l\'invio al foglio configurato', () => {
 // ---------- Curriculum ----------
 function cvCompilato() {
   const s = L.statoVuoto();
-  s.profilo = { nome: 'Luca Rossi', classe: '4A', indirizzo: 'elettrico' };
+  s.profilo = { nome: 'Luca Rossi', classe: '4A', indirizzo: 'elettrico', anno: 'anno4' };
   Object.assign(s.cv, { citta: 'Rozzano', telefono: '333 1234567', email: 'luca.rossi@example.org', profilo: 'Studente del quarto anno.' });
   s.cv.formazione = [{ id: 'f1', periodo: '2023 – oggi', titolo: 'Formazione professionale, Elettrico', ente: 'Ente di formazione, Milano' }, { id: 'f2', periodo: '', titolo: '', ente: '' }];
   return { s };
@@ -272,7 +272,10 @@ test('il curriculum sopravvive alla copia e i dati non validi vengono scartati',
 test('l\'invio al docente non include il curriculum', () => {
   const app = fs.readFileSync(path.join(__dirname, '../js/app.js'), 'utf8');
   assert.ok(app.includes('body: JSON.stringify(senzaCV(stato))'));
-  assert.ok(/delete copia\.cv/.test(app));
+  const st = L.statoVuoto();
+  st.cv.telefono = '333 1234567';
+  assert.ok(!('cv' in L.statoPerIlFoglio(st)), 'il curriculum non parte mai');
+  assert.ok(st.cv.telefono, 'e resta sul dispositivo');
   const script = fs.readFileSync(path.join(__dirname, '../apps-script/Codice.gs'), 'utf8');
   assert.ok(!/\.cv\b|telefono|email/i.test(script.replace(/Dati completi|^\s*\/\/.*$/gm, '')), 'lo script del foglio non legge dati del curriculum');
 });
@@ -394,4 +397,49 @@ test('il logo Europass è nel repository ed è usato solo dal modello Europass',
   assert.ok(fs.existsSync(path.join(__dirname, '../img/europass-logo.png')));
   assert.equal(app.split('img/europass-logo.png').length - 1, 1);
   assert.ok(app.indexOf('img/europass-logo.png') > app.indexOf('function cvEuropass'));
+});
+
+test('il percorso si adatta all\'anno frequentato', () => {
+  assert.deepEqual(L.anniDelPercorso(''), ['anno1', 'anno2', 'anno3', 'anno4'], 'senza anno scelto si mostrano tutti');
+  assert.deepEqual(L.anniDelPercorso('anno1'), ['anno1']);
+  assert.deepEqual(L.anniDelPercorso('anno3'), ['anno1', 'anno2', 'anno3']);
+  assert.deepEqual(L.anniDelPercorso('anno9'), ['anno1', 'anno2', 'anno3', 'anno4']);
+  assert.equal(L.normalizza({ profilo: { anno: 'anno2' } }).profilo.anno, 'anno2');
+  assert.equal(L.normalizza({ profilo: { anno: 'quinto' } }).profilo.anno, '');
+  // Un primo anno basta che racconti il suo anno: non gli si chiedono tre righe che non può avere.
+  const s = L.statoVuoto();
+  s.profilo.indirizzo = 'estetica'; s.profilo.anno = 'anno1'; s.anni.anno1 = 'Il primo laboratorio.';
+  assert.equal(L.statoSezione(s, 'percorso'), 'completa');
+  s.profilo.anno = 'anno3';
+  assert.equal(L.statoSezione(s, 'percorso'), 'in_corso', 'al terzo anno ne servono tre');
+  s.anni.anno2 = 'b'; s.anni.tirocinio = 'c';
+  assert.equal(L.statoSezione(s, 'percorso'), 'completa');
+});
+
+test('nessun riferimento al quarto anno nell\'interfaccia e nei testi dell\'app', () => {
+  ['js/app.js', 'js/dati.js', 'js/bilancio.js', 'index.html', 'README.md'].forEach((f) => {
+    const t = fs.readFileSync(path.join(__dirname, '..', f), 'utf8');
+    assert.ok(!/quart[oa] anno|quattro anni|studenti di quarta/i.test(t), f);
+  });
+});
+
+test('due tirocini: nel foglio finiscono nella colonna che lo script già conosce', () => {
+  const s = L.statoVuoto();
+  s.anni.tirocinio = 'Un mese in un negozio di computer.';
+  s.anni.tirocinio2 = 'Due mesi in uno studio.';
+  const f = L.statoPerIlFoglio(s);
+  assert.equal(f.anni.tirocinio, 'Primo tirocinio: Un mese in un negozio di computer.\n\nSecondo tirocinio: Due mesi in uno studio.');
+  assert.ok(!('tirocinio2' in f.anni), 'la forma dei dati inviati resta quella di sempre');
+  assert.equal(s.anni.tirocinio2, 'Due mesi in uno studio.', 'i dati dello studente non cambiano');
+  const solo2 = L.statoVuoto(); solo2.anni.tirocinio2 = 'Solo il secondo.';
+  assert.equal(L.statoPerIlFoglio(solo2).anni.tirocinio, 'Secondo tirocinio: Solo il secondo.');
+  const uno = L.statoVuoto(); uno.anni.tirocinio = 'Uno solo.';
+  assert.equal(L.statoPerIlFoglio(uno).anni.tirocinio, 'Uno solo.', 'con un solo tirocinio il testo non cambia');
+  assert.equal(L.normalizza({ anni: { tirocinio2: 'x' } }).anni.tirocinio2, 'x');
+});
+
+test('i testi d\'esempio non parlano di anni che lo studente può non aver ancora vissuto', () => {
+  const dati = fs.readFileSync(path.join(__dirname, '../js/dati.js'), 'utf8');
+  assert.ok(!/\bal (terzo|secondo|primo) anno/i.test(dati));
+  Object.values(D.ESEMPI_ESPERIENZA).forEach((x) => assert.ok(D.QUANDO.some((q) => q.id === x.quando), 'il periodo dell\'esempio è un id valido'));
 });

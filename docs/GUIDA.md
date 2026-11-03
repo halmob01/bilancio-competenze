@@ -1,6 +1,6 @@
 # Guida breve al Bilancio di competenze
 
-Percorso per gli studenti del quarto anno IeFP, in circa tre ore e in sette sezioni. Le schermate qui sotto mostrano uno **studente di prova** (Marco Rossi, Informatica) con il percorso già compilato. Per provarlo da soli: «Salva e stampa», poi «Carica una copia» e scegliere [`guida/studente-di-prova.json`](guida/studente-di-prova.json). **Non premere «Invia al docente» con lo studente di prova**: la riga arriverebbe nel foglio vero.
+Percorso per gli studenti IeFP di tutti gli anni, in circa tre ore e in sette sezioni. Le schermate qui sotto mostrano uno **studente di prova** (Marco Rossi, Informatica) con il percorso già compilato. Per provarlo da soli: «Salva e stampa», poi «Carica una copia» e scegliere [`guida/studente-di-prova.json`](guida/studente-di-prova.json). **Non premere «Invia al docente» con lo studente di prova**: la riga arriverebbe nel foglio vero.
 
 **Come funziona in generale.** Le risposte si salvano da sole nel browser e ci si può tornare in ogni momento. Nessuna domanda è obbligatoria e si può sempre andare avanti. Non ci sono voti né punteggi.
 
@@ -12,7 +12,7 @@ Titolo, tre righe di spiegazione e le sette sezioni. Chi ha già iniziato trova 
 
 ## 01 Il tuo percorso
 
-Indirizzo, nome e classe, poi cinque righe libere (un campo per ogni anno e uno per il tirocinio) per far riaffiorare i ricordi.
+Anno frequentato, indirizzo, nome e classe, poi alcune righe libere per far riaffiorare i ricordi: un campo per ogni anno già vissuto più uno per il tirocinio. Scegliendo l'anno il percorso si adatta: un primo anno vede solo il primo anno, un terzo anno i primi tre. Anche l'elenco dei periodi nelle esperienze segue l'anno, e dal secondo anno si chiedono due tirocini.
 
 ![Il tuo percorso](guida/02-percorso.png)
 

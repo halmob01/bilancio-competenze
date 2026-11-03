@@ -6,7 +6,8 @@
   "profilo": {
     "nome": "Marco Rossi",
     "classe": "4B",
-    "indirizzo": "informatica"
+    "indirizzo": "informatica",
+    "anno": "anno4"
   },
   "anni": {
     "anno1": "Il primo laboratorio di reti: ho crimpato i cavi e sbagliato l'ordine dei colori due volte.",

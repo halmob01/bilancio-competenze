@@ -321,3 +321,15 @@ test('un bilancio con tutte le situazioni compilate arriva intero al foglio', ()
     assert.equal(r[h.indexOf(x.verbo + ' — esempio')], 'Esempio ' + x.id);
   });
 });
+
+test('i due tirocini arrivano insieme nel foglio', () => {
+  const g = ambiente();
+  const s = statoCompilato();
+  s.anni.tirocinio = 'Negozio di computer.';
+  s.anni.tirocinio2 = 'Studio di assistenza.';
+  assert.equal(g.invia(L.statoPerIlFoglio(s)).ok, true);
+  const [h, r] = g.righe();
+  const cella = r[h.findIndex((x) => /Tirocinio/.test(x))];
+  assert.match(cella, /Primo tirocinio: Negozio di computer\./);
+  assert.match(cella, /Secondo tirocinio: Studio di assistenza\./);
+});

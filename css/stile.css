@@ -202,6 +202,8 @@ legend { padding: 0; font-weight: 600; font-size: 17px; margin-bottom: 10px; }
 /* Scelte (radio e checkbox) come righe testuali esplicite */
 .scelte { display: grid; gap: 8px; }
 .scelte--riga { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+.scelte--quattro { grid-template-columns: repeat(2, 1fr); }
+@media (min-width: 560px) { .scelte--quattro { grid-template-columns: repeat(4, 1fr); } .scelte--quattro .scelta span { padding: 10px 10px; gap: 8px; } }
 .scelta { position: relative; display: block; }
 .scelta input { position: absolute; opacity: 0; width: 1px; height: 1px; }
 .scelta span {

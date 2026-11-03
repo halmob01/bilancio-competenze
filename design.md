@@ -1,7 +1,7 @@
 # Bilancio di competenze — Brand identity & UI design system
 
 **Stato:** proposta V1 da sottoporre a revisione; non è ancora un'interfaccia implementata.  
-**Progetto:** bilancio riflessivo delle competenze per studenti del quarto anno IeFP (Elettrico, Informatica, Estetica), con doppio esito: autovalutazione e racconto per orientamento/open day.  
+**Progetto:** bilancio riflessivo delle competenze per studenti IeFP di tutti gli anni (Elettrico, Informatica, Estetica), con doppio esito: autovalutazione e racconto per orientamento/open day.  
 **Scelta di fondo:** **colori da Babel** + **font, struttura editoriale, proporzioni e spazio da sito-filosofia**. Nessuna nuova palette inventata.
 
 ## 1. Fonti reali e provenienza
@@ -22,7 +22,7 @@ Il design deve aiutare a ricordare esperienze, fornire prove di competenza e for
 ### Identità verbale
 
 Nome progetto: **Bilancio di competenze**.  
-Sottotitolo operativo suggerito: **Quattro anni. Che cosa hai imparato?**  
+Sottotitolo operativo suggerito: **Che cosa hai imparato finora?**  
 Testo d'avvio: «Ricostruisci le esperienze del tuo percorso, riconosci ciò che sai fare e individua quello che devi ancora imparare.»  
 Tono: diretto, rispettoso, non enfatico; domande concrete e non slogan motivazionali.
 
@@ -109,7 +109,7 @@ Componenti:
 
 ### Home
 Titolo `BILANCIO DI COMPETENZE` (Anton)  
-Sottotitolo `Quattro anni. Che cosa hai imparato?` (Fira Sans)  
+Sottotitolo `Che cosa hai imparato finora?` (Fira Sans)  
 Spiegazione sobria in 2 frasi. Pulsante nero `Inizia`. Piccola indicazione «Puoi tornare sulle risposte per correggerle».
 
 ### Sezione «Le esperienze»
@@ -199,4 +199,4 @@ I font dovranno essere self-hosted, come in sito-filosofia, senza copiare file b
 
 ---
 
-**Decisione da portare avanti:** Babel = tavolozza; sito-filosofia = sistema editoriale. Il risultato è autonomo, destinato a studenti di quarta e non infantile. Questa identità è una proposta V1, pronta per essere criticata prima dell'implementazione.
+**Decisione da portare avanti:** Babel = tavolozza; sito-filosofia = sistema editoriale. Il risultato è autonomo, destinato a studenti di tutti gli anni IeFP e non infantile. Questa identità è una proposta V1, pronta per essere criticata prima dell'implementazione.

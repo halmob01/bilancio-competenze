@@ -266,12 +266,14 @@
   ];
 
   // Lingue: lo studente sceglie frasi in italiano semplice, mai i codici europei.
-  // Il codice (A1-B2) serve solo alla tabella del formato Europass; «breve» è la parola usata negli altri modelli.
+  // Il codice (A1-C2) serve solo alla tabella del formato Europass; «breve» è la parola usata negli altri modelli.
   const LINGUA_LIVELLI = [
     { id: 'A1', scelta: 'Poche parole e frasi semplici', breve: 'base' },
     { id: 'A2', scelta: 'Frasi semplici di tutti i giorni', breve: 'elementare' },
     { id: 'B1', scelta: 'Me la cavo nel quotidiano', breve: 'intermedio' },
-    { id: 'B2', scelta: 'Mi esprimo con sicurezza', breve: 'buono' }
+    { id: 'B2', scelta: 'Mi esprimo con sicurezza', breve: 'buono' },
+    { id: 'C1', scelta: 'Quasi come un madrelingua', breve: 'ottimo' },
+    { id: 'C2', scelta: 'Come un madrelingua', breve: 'come un madrelingua' }
   ];
   // Le cinque abilità del formato Europass, con parole di tutti i giorni.
   const LINGUA_ABILITA = [

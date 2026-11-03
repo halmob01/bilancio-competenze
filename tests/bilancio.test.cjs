@@ -377,7 +377,9 @@ test('lingue scelte con frasi semplici: il livello europeo resta dietro le quint
   assert.equal(L.statoSezione(s, 'cv'), 'in_corso');
   const n = L.normalizza(JSON.parse(JSON.stringify(s)));
   assert.equal(n.cv.lingueElenco.length, 4);
-  assert.equal(L.normalizza({ cv: { lingueElenco: [{ nome: 'X', livelli: { ascolto: 'C9', lettura: 'B2' } }] } }).cv.lingueElenco[0].livelli.ascolto, '');
+  assert.equal(L.normalizza({ cv: { lingueElenco: [{ nome: 'X', livelli: { ascolto: 'C9', lettura: 'C2' } }] } }).cv.lingueElenco[0].livelli.ascolto, '');
+  assert.deepEqual(D.LINGUA_LIVELLI.map((x) => x.id), ['A1', 'A2', 'B1', 'B2', 'C1', 'C2']);
+  assert.equal(D.LINGUA_LIVELLI[5].scelta, 'Come un madrelingua');
   assert.equal(L.normalizza({ cv: { lingueElenco: new Array(30).fill({ nome: 'Y' }) } }).cv.lingueElenco.length, L.MAX_LINGUE);
 });
 

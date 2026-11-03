@@ -265,7 +265,26 @@
     { id: 'grande', nome: 'Grande', scala: 1.08 }
   ];
 
+  // Lingue: lo studente sceglie frasi in italiano semplice, mai i codici europei.
+  // Il codice (A1-B2) serve solo alla tabella del formato Europass; «breve» è la parola usata negli altri modelli.
+  const LINGUA_LIVELLI = [
+    { id: 'A1', scelta: 'Poche parole e frasi semplici', breve: 'base' },
+    { id: 'A2', scelta: 'Frasi semplici di tutti i giorni', breve: 'elementare' },
+    { id: 'B1', scelta: 'Me la cavo nel quotidiano', breve: 'intermedio' },
+    { id: 'B2', scelta: 'Mi esprimo con sicurezza', breve: 'buono' }
+  ];
+  // Le cinque abilità del formato Europass, con parole di tutti i giorni.
+  const LINGUA_ABILITA = [
+    { id: 'ascolto', domanda: 'Quando ascolto, capisco', breve: 'ascolto' },
+    { id: 'lettura', domanda: 'Quando leggo, capisco', breve: 'lettura' },
+    { id: 'interazione', domanda: 'Quando parlo con qualcuno', breve: 'conversazione' },
+    { id: 'orale', domanda: 'Quando racconto o presento qualcosa a voce', breve: 'esposizione orale' },
+    { id: 'scritto', domanda: 'Quando scrivo', breve: 'scrittura' }
+  ];
+
   const DATI = {
+    LINGUA_LIVELLI: LINGUA_LIVELLI,
+    LINGUA_ABILITA: LINGUA_ABILITA,
     CV_COLORI: CV_COLORI,
     CV_TIPI_LAVORO: CV_TIPI_LAVORO,
     CV_IMPAGINAZIONI: CV_IMPAGINAZIONI,

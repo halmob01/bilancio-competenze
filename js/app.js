@@ -811,6 +811,60 @@
     return [testa(metaSchermata(), 'Le esperienze di lavoro'), corpo(intro, risposta)];
   }
 
+  // ----- Lingue: si sceglie tra frasi in italiano semplice, mai tra i codici europei -----
+  function selezioneLivello(o) {
+    return h('div', { class: 'campo' },
+      h('label', { for: o.id, text: o.etichetta }),
+      h('select', { id: o.id, onchange: function (e) { o.aggiorna(e.target.value); } },
+        h('option', { value: '', text: 'Scegli…' }),
+        D.LINGUA_LIVELLI.map(function (x) { return h('option', { value: x.id, text: x.scelta, selected: o.valore === x.id }); })));
+  }
+
+  function sezioneLingue() {
+    const c = stato.cv;
+    if (!c.lingueElenco.length) c.lingueElenco.push(L.linguaVuota());
+    return h('div', { class: 'lingue' },
+      h('h3', { class: 'lingue__titolo', text: 'Lingue' }),
+      h('ul', { class: 'schede', 'aria-label': 'Le tue lingue' }, c.lingueElenco.map(function (g, i) {
+        const p = 'f-cv-lg-' + g.id + '-';
+        const valori = D.LINGUA_ABILITA.map(function (a) { return g.livelli[a.id]; });
+        const tuttiUguali = valori[0] && valori.every(function (v) { return v === valori[0]; });
+        const diversi = valori.filter(Boolean).length > 0 && !tuttiUguali;
+        return h('li', { class: 'scheda scheda--aperta' },
+          h('div', { class: 'scheda__testa' },
+            h('span', { class: 'meta', text: String(i + 1).padStart(2, '0') }),
+            h('h4', { class: 'scheda__titolo', text: pieno(g.nome) ? g.nome : 'Nuova lingua' })),
+          h('div', { class: 'scheda__modulo' },
+            campo({ id: p + 'nome', etichetta: 'Lingua', max: 60, suggerimento: i === 0 ? 'Per esempio Italiano, Inglese, Spagnolo, Arabo.' : null, valore: g.nome, aggiorna: function (v) { g.nome = v; } }),
+            casella({ id: p + 'madre', testo: 'È la mia lingua madre', valore: g.madre,
+              aggiorna: function (v) { g.madre = v; modificato(); ridisegna(p + 'madre'); } }),
+            g.madre ? null : [
+              selezioneLivello({ id: p + 'generale', etichetta: 'Come te la cavi con questa lingua?', valore: tuttiUguali ? valori[0] : '',
+                aggiorna: function (v) {
+                  D.LINGUA_ABILITA.forEach(function (a) { g.livelli[a.id] = v; });
+                  modificato(); ridisegna(p + 'generale');
+                } }),
+              h('details', { class: 'dettagli', open: diversi },
+                h('summary', { text: 'Scegli abilità per abilità' }),
+                h('div', { class: 'dettagli__corpo' }, D.LINGUA_ABILITA.map(function (a) {
+                  return selezioneLivello({ id: p + a.id, etichetta: a.domanda, valore: g.livelli[a.id],
+                    aggiorna: function (v) { g.livelli[a.id] = v; modificato(); } });
+                })))]),
+          h('div', { class: 'scheda__azioni' },
+            c.lingueElenco.length > 1 ? h('button', { type: 'button', class: 'pulsante pulsante--testo', 'aria-label': 'Elimina la lingua ' + (pieno(g.nome) ? g.nome : i + 1),
+              onclick: function () {
+                c.lingueElenco = c.lingueElenco.filter(function (x) { return x.id !== g.id; });
+                modificato(); ridisegna('aggiungi-lingua');
+              } }, 'Elimina') : null));
+      })),
+      h('div', null, h('button', { type: 'button', class: 'pulsante pulsante--secondario', id: 'aggiungi-lingua', disabled: c.lingueElenco.length >= L.MAX_LINGUE,
+        onclick: function () {
+          const g = L.linguaVuota();
+          c.lingueElenco.push(g);
+          modificato(); ridisegna('f-cv-lg-' + g.id + '-nome');
+        } }, 'Aggiungi un\'altra lingua')));
+  }
+
   function schermataCVCompetenze() {
     const c = stato.cv;
     const intro = [
@@ -831,7 +885,7 @@
         if (nuove.length) c.competenze = (pieno(c.competenze) ? c.competenze.replace(/\s+$/, '') + '\n' : '') + nuove.join('\n');
         modificato(); ridisegna('f-cv-competenze');
       } }, 'Proponi dalle mie risposte')),
-      campo({ id: 'f-cv-lingue', etichetta: 'Lingue', area: true, righe: 3, suggerimento: 'Una per riga, con il livello. Per esempio: «Italiano: madrelingua» e «Inglese: B1». Con il livello europeo (da A1 a C2) il modello Europass compila la tabella delle lingue.', valore: c.lingue, aggiorna: function (v) { c.lingue = v; } }),
+      sezioneLingue(),
       campo({ id: 'f-cv-digitali', etichetta: 'Software e capacità digitali', area: true, righe: 3, suggerimento: 'Per esempio: Word buono, Excel base, programmi usati in azienda.', valore: c.digitali, aggiorna: function (v) { c.digitali = v; } }),
       campo({ id: 'f-cv-altro', etichetta: 'Interessi', area: true, righe: 3, suggerimento: 'Interessi e competenze maturate fuori da scuola: passioni, progetti, associazioni, volontariato.', valore: c.altro, aggiorna: function (v) { c.altro = v; } }),
       casella({ id: 'f-cv-consenso', testo: 'Aggiungi in fondo la frase sul trattamento dei dati personali', valore: c.consenso,
@@ -895,7 +949,7 @@
           h('tbody', null, lin.altre.map(function (l) {
             return h('tr', null, h('th', { scope: 'row', text: l.lingua }),
               l.livelli
-                ? l.livelli.map(function (x) { return h('td', { text: x }); })
+                ? l.livelli.map(function (x) { return h('td', { text: x || '–' }); })
                 : h('td', { colspan: '5', class: 'eu-testo', text: l.testo || '' }));
           })))) : null,
         lin.altre.some(function (l) { return l.livelli; })

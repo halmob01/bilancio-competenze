@@ -359,3 +359,30 @@ test('nessun campo è obbligatorio per andare avanti e non restano scritte «fac
   assert.ok(!/\(facoltativ[oa]\)/.test(app));
   assert.ok(!/class: 'pulsante navigazione__avanti'[^)]*disabled/.test(app), 'il pulsante Avanti non si disabilita mai');
 });
+
+test('lingue scelte con frasi semplici: il livello europeo resta dietro le quinte', () => {
+  const s = L.statoVuoto();
+  const it = Object.assign(L.linguaVuota(), { nome: 'Italiano', madre: true });
+  const en = Object.assign(L.linguaVuota(), { nome: 'Inglese' });
+  Object.keys(en.livelli).forEach((k) => { en.livelli[k] = 'B1'; });
+  const fr = Object.assign(L.linguaVuota(), { nome: 'Francese' });
+  Object.assign(fr.livelli, { ascolto: 'A2', lettura: 'B1', interazione: 'A1' });
+  s.cv.lingueElenco = [it, en, fr, Object.assign(L.linguaVuota(), { nome: '   ' })];
+  const d = L.componiCV(s);
+  assert.deepEqual(d.lingue, ['Italiano: madrelingua', 'Inglese: intermedio', 'Francese: ascolto elementare, lettura intermedio, conversazione base']);
+  assert.deepEqual(d.lingueEu.madre, ['Italiano']);
+  assert.deepEqual(d.lingueEu.altre[0].livelli, ['B1', 'B1', 'B1', 'B1', 'B1']);
+  assert.deepEqual(d.lingueEu.altre[1].livelli, ['A2', 'B1', 'A1', '', '']);
+  D.LINGUA_LIVELLI.forEach((x) => assert.ok(!/^[ABC][12]$/.test(x.scelta) && x.scelta.length > 10, 'frasi, non codici'));
+  assert.equal(L.statoSezione(s, 'cv'), 'in_corso');
+  const n = L.normalizza(JSON.parse(JSON.stringify(s)));
+  assert.equal(n.cv.lingueElenco.length, 4);
+  assert.equal(L.normalizza({ cv: { lingueElenco: [{ nome: 'X', livelli: { ascolto: 'C9', lettura: 'B2' } }] } }).cv.lingueElenco[0].livelli.ascolto, '');
+  assert.equal(L.normalizza({ cv: { lingueElenco: new Array(30).fill({ nome: 'Y' }) } }).cv.lingueElenco.length, L.MAX_LINGUE);
+});
+
+test('senza elenco di lingue valgono ancora le righe di testo delle versioni precedenti', () => {
+  const s = L.statoVuoto();
+  s.cv.lingue = 'Italiano: madrelingua';
+  assert.deepEqual(L.componiCV(s).lingue, ['Italiano: madrelingua']);
+});

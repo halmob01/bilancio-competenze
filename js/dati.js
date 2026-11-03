@@ -15,9 +15,9 @@
   const AUTONOMIA = [
     { id: 'mai', testo: 'Non l\'ho mai affrontato', breve: 'mai affrontato', dichiara: false },
     { id: 'non_ancora', testo: 'Non lo so ancora fare', breve: 'non ancora', dichiara: false },
-    { id: 'con_aiuto', testo: 'Lo faccio con l\'aiuto di qualcuno', breve: 'con aiuto', dichiara: true },
-    { id: 'autonomo_noto', testo: 'Lo faccio in autonomia in situazioni che conosco', breve: 'in autonomia, in situazioni note', dichiara: true },
-    { id: 'autonomo_nuovo', testo: 'Lo faccio in autonomia anche in situazioni nuove', breve: 'in autonomia, anche in situazioni nuove', dichiara: true }
+    { id: 'con_aiuto', testo: 'Lo faccio se qualcuno mi aiuta', breve: 'con aiuto', dichiara: true },
+    { id: 'autonomo_noto', testo: 'Lo faccio da solo se la situazione è già nota', breve: 'in autonomia, in situazioni note', dichiara: true },
+    { id: 'autonomo_nuovo', testo: 'Lo faccio da solo anche se la situazione è nuova', breve: 'in autonomia, anche in situazioni nuove', dichiara: true }
   ];
 
   const QUANDO = [
@@ -38,7 +38,7 @@
       cv: 'Comprensione di consegne, schemi e documentazione tecnica',
       verbo: 'Capire',
       domanda: 'Quando ricevi un compito, riesci a capire che cosa ti viene chiesto?',
-      anche: 'Qui entrano anche la lettura di testi tecnici, in italiano e in inglese, e l\'ascolto di chi ti dà le indicazioni.',
+      anche: 'Qui entrano anche la lettura di testi tecnici, in italiano e in inglese e l\'ascolto di chi ti dà le indicazioni.',
       esempi: {
         elettrico: 'Leggere lo schema di un impianto civile e capire quali circuiti realizzare prima di prendere in mano i cavi.',
         informatica: 'Capire dal racconto di un utente che cosa non funziona sul suo computer, anche quando lo spiega in modo confuso.',
@@ -86,7 +86,7 @@
       cv: 'Capacità di spiegare e documentare il lavoro svolto',
       verbo: 'Spiegare',
       domanda: 'Sai spiegare a qualcuno quello che hai fatto o come si fa?',
-      anche: 'Qui entrano anche la scrittura di una relazione o di un rapporto, e l\'uso di un linguaggio adatto a chi ascolta.',
+      anche: 'Qui entrano anche la scrittura di una relazione o di un rapporto e l\'uso di un linguaggio adatto a chi ascolta.',
       esempi: {
         elettrico: 'Spiegare al cliente come funziona il nuovo impianto o compilare il rapporto di un intervento.',
         informatica: 'Spiegare a un utente non esperto una procedura passo per passo, oppure scriverla in un breve documento.',
@@ -148,7 +148,8 @@
     {
       id: 'sofare',
       titolo: 'Che cosa so fare',
-      schermate: SITUAZIONI.map(function (s) { return { id: s.id, titolo: s.verbo }; })
+      // Una sola schermata con sei blocchi: gli id delle situazioni restano quelli di sempre.
+      schermate: [{ id: 'situazioni', titolo: 'Che cosa sai fare' }]
     },
     {
       id: 'sguardo',
@@ -163,6 +164,7 @@
     {
       id: 'cv',
       titolo: 'Curriculum vitae',
+      facoltativa: true,
       schermate: [
         { id: 'contatti', titolo: 'I tuoi dati' },
         { id: 'profilo', titolo: 'Che lavoro cerchi' },
@@ -195,7 +197,7 @@
     },
     {
       id: 'difficile',
-      etichetta: 'Una cosa che è stata difficile, e come l\'hai affrontata.',
+      etichetta: 'Una cosa che è stata difficile e come l\'hai affrontata.',
       esempio: '«All\'inizio non capivo gli schemi. Mi è servito rifarli a mano, più volte.»'
     },
     {

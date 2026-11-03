@@ -7,14 +7,14 @@ Data: 28 ottobre 2026.
 Il percorso completo in sei sezioni, utilizzabile da smartphone e da computer, con salvataggio locale, copia scaricabile e ricaricabile, stampa del dossier. L'identità visiva segue `design.md`:
 
 - palette Babel (`--bc-paper`, `--bc-ink`, `--bc-red` solo come segnale, `--bc-mist` per i blocchi d'aiuto, `--bc-blush` per gli avvisi);
-- Anton per apertura e nome nel dossier, Geist per tutta l'interfaccia, EB Garamond solo per le citazioni del dossier e il testo per l'open day, Geist Mono per i metadati;
+- Anton per apertura e nome nel dossier, Fira Sans per tutta l'interfaccia, EB Garamond solo per le citazioni del dossier e il testo per l'open day, Fira Mono per i metadati;
 - indice laterale da 1200px, barra sottile con nome della sezione e stato su mobile; colonna introduzione (5/12) e colonna risposta (7/12) separate da un filetto da 1000px;
 - pulsanti pill da almeno 44–48px, scelte come righe testuali esplicite, focus sempre visibile, `prefers-reduced-motion` rispettato, animazione d'ingresso di 220ms solo al cambio di schermata.
 
 ## Scelte fatte in autonomia, da confermare
 
 1. **Sei sezioni.** `design.md` nomina esplicitamente Esperienze, Che cosa so fare, Bilancio e Orientamento. Ho aggiunto «Il tuo percorso» (indirizzo e ricordi dei quattro anni, che fanno da promemoria per le esperienze) e «Uno sguardo critico» (scuola, tirocinio, che cosa devo ancora imparare), per dare spazio ai giudizi anche critici richiesti dal §2.
-2. **Soglie di completamento.** Percorso: indirizzo e almeno tre righe fra anni e tirocinio. Esperienze: almeno due schede con titolo, quando e azione. Che cosa so fare: tutte e sei le situazioni con una risposta, e un esempio dove si dichiara di saper fare. Lo stato «Completa» è un'indicazione per lo studente, non blocca la navigazione.
+2. **Soglie di completamento.** Percorso: indirizzo e almeno tre righe fra anni e tirocinio. Esperienze: almeno due schede con titolo, quando e azione. Che cosa so fare: tutte e sei le situazioni con una risposta e un esempio dove si dichiara di saper fare. Lo stato «Completa» è un'indicazione per lo studente, non blocca la navigazione.
 3. **«Con aiuto» rientra in «So fare»**, con l'indicazione «con aiuto» ben visibile. In alternativa si potrebbe spostarlo in una voce «Sto imparando».
 4. **Un campo per tre significati.** Nella sezione 03 il secondo campo cambia domanda con la risposta: «Come l'hai imparato?» se lo sai fare, «Che cosa ti servirebbe?» se non ancora, «Ti piacerebbe affrontarlo?» se mai. Se lo studente cambia risposta, il testo già scritto resta.
 5. **Raccolta in un Foglio Google** tramite Apps Script del docente, una riga per studente aggiornata a ogni invio (vedi `docs/FOGLIO-GOOGLE.md`).
@@ -37,3 +37,16 @@ Il percorso completo in sei sezioni, utilizzabile da smartphone e da computer, c
 - Leggibilità su telefoni economici e con zoom del testo al 200%.
 - Navigazione con lettore di schermo (VoiceOver, TalkBack): la struttura è semantica ma non è stata provata con tecnologie assistive reali.
 - Verifica del contrasto dell'indicatore rosso sui radio selezionati: lo stato è comunicato anche dal bordo nero più spesso, non dal solo colore.
+
+## Revisione UX del 3 novembre 2026
+
+Modifiche solo all'interfaccia e ai testi visibili. **Lo script del docente (`apps-script/Codice.gs`) non è stato toccato** e i dati inviati hanno la stessa forma di prima: stessa versione, stessi id di situazioni, livelli, periodi e indirizzi. Due test (`tests/apps-script.test.cjs`) bloccano questo contratto: se gli id dell'app e quelli dello script divergono, i test falliscono.
+
+- **Font.** Fira Sans per interfaccia e metadati (niente più Geist e niente carattere monospazio): le famiglie scendono a tre.
+- **Desktop.** Contenitore centrato di 1240px, home a due colonne con l'indice a destra, barra di avanzamento allineata al contenuto.
+- **Percorso più corto.** «Che cosa so fare» è una sola schermata con sei blocchi (da «Torna alla risposta» nel bilancio ci si porta sul blocco giusto). Il curriculum è segnato come facoltativo. Nelle esperienze restano in vista sei campi; contesto, autonomia e situazioni stanno in «Aggiungi dettagli». Nelle situazioni si può riprendere il testo da un'esperienza.
+- **Lessico.** Frasi di autonomia più corte; «da documentare» diventa «manca ancora un esempio»; meno testo di contorno; una sola indicazione di avanzamento.
+- **Errori e conferme.** Al posto di `alert` e `confirm` del browser ci sono dialoghi dell'app. Se per l'invio mancano nome o indirizzo, la prima schermata lo dice subito e il dialogo porta lì.
+- **Usabilità.** Metadati a 14px senza maiuscolo; «Le tue risposte» diventa «Salva e stampa»; «Avanti» resta visibile su schermi stretti; i campi di testo crescono mentre si scrive; i tre indirizzi sono in colonna.
+
+Non toccati: `apps-script/Code.gs` e `Index.html` (versione alternativa con accesso a codice, non collegata all'app); conviene decidere con il docente se tenerla.

@@ -13,11 +13,13 @@ function conEsperienza(stato, campi) {
   return e;
 }
 
-test('sette sezioni, una sola domanda principale per schermata', () => {
+test('sette sezioni, schermate con un solo compito', () => {
   assert.equal(D.SEZIONI.length, 7);
   assert.deepEqual(D.SEZIONI.map((x) => x.id), ['percorso', 'esperienze', 'sofare', 'sguardo', 'bilancio', 'cv', 'orientamento']);
   D.SEZIONI.forEach((s) => assert.ok(s.schermate.length >= 1, s.id));
-  assert.deepEqual(D.SEZIONI[2].schermate.map((x) => x.id), ['capire', 'fare', 'collaborare', 'verificare', 'spiegare', 'migliorare']);
+  // Le sei situazioni sono blocchi di un'unica schermata: i loro id non cambiano mai (li legge lo script del docente).
+  assert.deepEqual(D.SEZIONI[2].schermate.map((x) => x.id), ['situazioni']);
+  assert.deepEqual(D.SITUAZIONI.map((x) => x.id), ['capire', 'fare', 'collaborare', 'verificare', 'spiegare', 'migliorare']);
 });
 
 test('ogni situazione ha un esempio per ciascun indirizzo', () => {

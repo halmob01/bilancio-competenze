@@ -272,7 +272,10 @@ test('il curriculum sopravvive alla copia e i dati non validi vengono scartati',
 test('l\'invio al docente non include il curriculum', () => {
   const app = fs.readFileSync(path.join(__dirname, '../js/app.js'), 'utf8');
   assert.ok(app.includes('body: JSON.stringify(senzaCV(stato))'));
-  assert.ok(/delete copia\.cv/.test(app));
+  const st = L.statoVuoto();
+  st.cv.telefono = '333 1234567';
+  assert.ok(!('cv' in L.statoPerIlFoglio(st)), 'il curriculum non parte mai');
+  assert.ok(st.cv.telefono, 'e resta sul dispositivo');
   const script = fs.readFileSync(path.join(__dirname, '../apps-script/Codice.gs'), 'utf8');
   assert.ok(!/\.cv\b|telefono|email/i.test(script.replace(/Dati completi|^\s*\/\/.*$/gm, '')), 'lo script del foglio non legge dati del curriculum');
 });
@@ -418,4 +421,25 @@ test('nessun riferimento al quarto anno nell\'interfaccia e nei testi dell\'app'
     const t = fs.readFileSync(path.join(__dirname, '..', f), 'utf8');
     assert.ok(!/quart[oa] anno|quattro anni|studenti di quarta/i.test(t), f);
   });
+});
+
+test('due tirocini: nel foglio finiscono nella colonna che lo script già conosce', () => {
+  const s = L.statoVuoto();
+  s.anni.tirocinio = 'Un mese in un negozio di computer.';
+  s.anni.tirocinio2 = 'Due mesi in uno studio.';
+  const f = L.statoPerIlFoglio(s);
+  assert.equal(f.anni.tirocinio, 'Primo tirocinio: Un mese in un negozio di computer.\n\nSecondo tirocinio: Due mesi in uno studio.');
+  assert.ok(!('tirocinio2' in f.anni), 'la forma dei dati inviati resta quella di sempre');
+  assert.equal(s.anni.tirocinio2, 'Due mesi in uno studio.', 'i dati dello studente non cambiano');
+  const solo2 = L.statoVuoto(); solo2.anni.tirocinio2 = 'Solo il secondo.';
+  assert.equal(L.statoPerIlFoglio(solo2).anni.tirocinio, 'Secondo tirocinio: Solo il secondo.');
+  const uno = L.statoVuoto(); uno.anni.tirocinio = 'Uno solo.';
+  assert.equal(L.statoPerIlFoglio(uno).anni.tirocinio, 'Uno solo.', 'con un solo tirocinio il testo non cambia');
+  assert.equal(L.normalizza({ anni: { tirocinio2: 'x' } }).anni.tirocinio2, 'x');
+});
+
+test('i testi d\'esempio non parlano di anni che lo studente può non aver ancora vissuto', () => {
+  const dati = fs.readFileSync(path.join(__dirname, '../js/dati.js'), 'utf8');
+  assert.ok(!/\bal (terzo|secondo|primo) anno/i.test(dati));
+  Object.values(D.ESEMPI_ESPERIENZA).forEach((x) => assert.ok(D.QUANDO.some((q) => q.id === x.quando), 'il periodo dell\'esempio è un id valido'));
 });

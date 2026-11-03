@@ -34,7 +34,7 @@
       aggiornato: '',
       inviato: '',
       profilo: { nome: '', classe: '', indirizzo: '', anno: '' },
-      anni: { anno1: '', anno2: '', anno3: '', anno4: '', tirocinio: '' },
+      anni: { anno1: '', anno2: '', anno3: '', anno4: '', tirocinio: '', tirocinio2: '' },
       esperienze: [],
       sofare: sofare,
       sguardo: sguardo,
@@ -207,6 +207,20 @@
     });
 
     return s;
+  }
+
+  // Quello che parte per il foglio del docente: senza curriculum e con i due tirocini nella colonna
+  // «Tirocinio» che lo script già conosce (la forma dei dati resta quella di sempre).
+  function statoPerIlFoglio(stato) {
+    const copia = Object.assign({}, stato);
+    delete copia.cv;
+    const anni = Object.assign({}, stato.anni);
+    const t1 = (anni.tirocinio || '').trim();
+    const t2 = (anni.tirocinio2 || '').trim();
+    delete anni.tirocinio2;
+    if (t2) anni.tirocinio = (t1 ? 'Primo tirocinio: ' + t1 + '\n\n' : '') + 'Secondo tirocinio: ' + t2;
+    copia.anni = anni;
+    return copia;
   }
 
   // Anni da mostrare in base all'anno frequentato: se non è stato scelto, tutti.
@@ -538,6 +552,7 @@
     suggerisciCompetenze: suggerisciCompetenze,
     lingueEuropass: lingueEuropass,
     anniDelPercorso: anniDelPercorso,
+    statoPerIlFoglio: statoPerIlFoglio,
     componiCV: componiCV,
     avanzamento: avanzamento,
     nomeQuando: nomeQuando

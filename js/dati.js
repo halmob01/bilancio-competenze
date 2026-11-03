@@ -29,6 +29,9 @@
     { id: 'fuori', testo: 'Fuori da scuola' }
   ];
 
+  // Anni di frequenza: da qui il percorso mostra solo gli anni già vissuti.
+  const ANNI = QUANDO.slice(0, 4);
+
   // Situazioni comuni ai tre indirizzi (design.md §7: capire / fare / collaborare /
   // verificare / spiegare / migliorare). Gli esempi cambiano per indirizzo;
   // «anche» ricorda che competenze professionali e di base si intrecciano.
@@ -137,7 +140,7 @@
       titolo: 'Il tuo percorso',
       schermate: [
         { id: 'chi', titolo: 'Da dove parti' },
-        { id: 'anni', titolo: 'Quattro anni in poche righe' }
+        { id: 'anni', titolo: 'Il tuo percorso in poche righe' }
       ]
     },
     {
@@ -187,7 +190,7 @@
     {
       id: 'presentati',
       etichetta: 'Chi sei e che cosa studi, in due righe.',
-      esempio: '«Mi chiamo Sara, faccio il quarto anno di Informatica.»'
+      esempio: '«Mi chiamo Sara e frequento Informatica.»'
     },
     {
       id: 'racconto',
@@ -296,6 +299,7 @@
     INDIRIZZI: INDIRIZZI,
     AUTONOMIA: AUTONOMIA,
     QUANDO: QUANDO,
+    ANNI: ANNI,
     SITUAZIONI: SITUAZIONI,
     SGUARDO: SGUARDO,
     SEZIONI: SEZIONI,

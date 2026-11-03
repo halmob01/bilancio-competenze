@@ -1,8 +1,8 @@
 # Bilancio di competenze
 
-**Quattro anni. Che cosa hai imparato?**
+**Che cosa hai imparato finora?**
 
-Applicazione statica per il bilancio riflessivo delle competenze degli studenti del quarto anno IeFP (Elettrico, Informatica, Estetica), con un doppio esito: un dossier di autovalutazione non valutativo e un breve testo per presentarsi agli open day.
+Applicazione statica per il bilancio riflessivo delle competenze degli studenti IeFP di tutti gli anni (Elettrico, Informatica, Estetica), con un doppio esito: un dossier di autovalutazione non valutativo e un breve testo per presentarsi agli open day.
 
 **Prototipo V1, non ancora collaudato con studenti.** Implementa l'identità visiva proposta in [`design.md`](design.md); i contenuti didattici sono una prima stesura da rivedere con i docenti dei tre indirizzi.
 
@@ -10,7 +10,7 @@ Applicazione statica per il bilancio riflessivo delle competenze degli studenti 
 
 | | Sezione | Schermate |
 |---|---|---|
-| 01 | Il tuo percorso | indirizzo, nome e classe facoltativi; quattro anni e tirocinio in poche righe |
+| 01 | Il tuo percorso | anno frequentato, indirizzo, nome e classe; gli anni già vissuti e il tirocinio in poche righe (il percorso mostra solo gli anni fino a quello frequentato) |
 | 02 | Le esperienze che ricordi | schede esperienza: quando, contesto, azione, prova, difficoltà, aiuto, autonomia |
 | 03 | Che cosa so fare | una schermata con sei situazioni comuni ai tre indirizzi: capire, fare, collaborare, verificare, spiegare, migliorare |
 | 04 | Uno sguardo critico | scuola, tirocinio, che cosa devo ancora imparare |

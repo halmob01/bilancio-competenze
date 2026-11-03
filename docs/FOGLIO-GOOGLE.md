@@ -38,7 +38,7 @@ Dopo il commit su `main`, GitHub Pages pubblica la nuova versione in uno o due m
 Nel foglio «Risposte» (creato al primo invio), con le prime tre colonne bloccate:
 
 - ricevuto, codice, nome, classe, indirizzo, ultima modifica;
-- i ricordi dei quattro anni e del tirocinio;
+- i ricordi degli anni frequentati e del tirocinio;
 - numero di esperienze e testo di tutte le schede;
 - per ognuna delle sei situazioni: livello, esempio (con le esperienze collegate) e come l'ha imparato / che cosa serve;
 - scuola, tirocinio, che cosa devo ancora imparare;

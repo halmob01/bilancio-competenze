@@ -33,7 +33,7 @@
       codice: nuovoCodice(),
       aggiornato: '',
       inviato: '',
-      profilo: { nome: '', classe: '', indirizzo: '' },
+      profilo: { nome: '', classe: '', indirizzo: '', anno: '' },
       anni: { anno1: '', anno2: '', anno3: '', anno4: '', tirocinio: '' },
       esperienze: [],
       sofare: sofare,
@@ -113,6 +113,7 @@
     s.profilo.nome = testo(p.nome, 80);
     s.profilo.classe = testo(p.classe, 40);
     s.profilo.indirizzo = inElenco(p.indirizzo, DATI.INDIRIZZI);
+    s.profilo.anno = inElenco(p.anno, DATI.ANNI);
 
     const a = grezzo.anni || {};
     Object.keys(s.anni).forEach(function (k) { s.anni[k] = testo(a[k], MAX_LUNGO); });
@@ -208,6 +209,13 @@
     return s;
   }
 
+  // Anni da mostrare in base all'anno frequentato: se non è stato scelto, tutti.
+  function anniDelPercorso(anno) {
+    const ids = DATI.ANNI.map(function (x) { return x.id; });
+    const i = ids.indexOf(anno);
+    return i === -1 ? ids : ids.slice(0, i + 1);
+  }
+
   function pieno(v) {
     return typeof v === 'string' && v.trim() !== '';
   }
@@ -243,9 +251,10 @@
     if (sezId === 'percorso') {
       conta(stato.profilo.indirizzo !== '');
       Object.keys(stato.anni).forEach(function (k) { conta(pieno(stato.anni[k])); });
-      // Un anno o il tirocinio possono restare vuoti: basta raccontarne tre.
+      // Un anno o il tirocinio possono restare vuoti: bastano tre righe, o una per ogni anno già vissuto se sono meno di tre.
       const anniPieni = Object.keys(stato.anni).filter(function (k) { return pieno(stato.anni[k]); }).length;
-      if (stato.profilo.indirizzo !== '' && anniPieni >= 3) return 'completa';
+      const servono = Math.min(3, anniDelPercorso(stato.profilo.anno).length);
+      if (stato.profilo.indirizzo !== '' && anniPieni >= servono) return 'completa';
     } else if (sezId === 'esperienze') {
       const complete = stato.esperienze.filter(esperienzaCompleta).length;
       if (complete >= 2) return 'completa';
@@ -528,6 +537,7 @@
     periodoLavoro: periodoLavoro,
     suggerisciCompetenze: suggerisciCompetenze,
     lingueEuropass: lingueEuropass,
+    anniDelPercorso: anniDelPercorso,
     componiCV: componiCV,
     avanzamento: avanzamento,
     nomeQuando: nomeQuando

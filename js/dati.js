@@ -239,6 +239,10 @@
     { id: 'rosso', nome: 'Rosso', hex: '#b3261e' },
     { id: 'viola', nome: 'Viola', hex: '#6b2d7b' }
   ];
+  const CV_IMPAGINAZIONI = [
+    { id: 'originale', nome: 'Originale' },
+    { id: 'modello', nome: 'Come il modello della scuola' }
+  ];
   const CV_CARATTERI = [
     { id: 'moderno', nome: 'Moderno' },
     { id: 'classico', nome: 'Classico' },
@@ -252,6 +256,7 @@
 
   const DATI = {
     CV_COLORI: CV_COLORI,
+    CV_IMPAGINAZIONI: CV_IMPAGINAZIONI,
     CV_CARATTERI: CV_CARATTERI,
     CV_DIMENSIONI: CV_DIMENSIONI,
     ESEMPI_ESPERIENZA: ESEMPI_ESPERIENZA,

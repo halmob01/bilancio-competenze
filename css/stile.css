@@ -272,14 +272,16 @@ dialog > * + * { margin-top: 14px; }
 
 /* ---------- Curriculum ---------- */
 .cv {
-  --cv-colore: #000; --cv-s: 1;
+  --cv-colore: #000; --cv-titoli: #666; --cv-s: 1;
+  display: flex; flex-direction: column;
   background: var(--bc-white); border: 1px solid var(--bc-ink-10); border-radius: var(--radius-card);
   padding: clamp(20px, 4vw, 56px); max-width: 860px;
   font-size: calc(16px * var(--cv-s)); line-height: 1.5; font-family: var(--f-sans);
 }
 .cv--modificabile { cursor: text; }
 .cv--modificabile:focus-within { outline: 2px solid var(--bc-ink-30); outline-offset: 4px; }
-.cv__testa { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 16px 24px; border-bottom: 2px solid var(--cv-colore); padding-bottom: 16px; }
+.cv__testa { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 16px 24px; border-bottom: 1px solid var(--cv-colore); padding-bottom: 16px; }
+.cv--impag-modello .cv__testa { border-bottom-width: 2px; }
 .cv__foto { width: 30mm; height: 38mm; min-width: 96px; min-height: 120px; object-fit: cover; border-radius: 2px; flex: none; }
 .cv__intestazione { flex: 1 1 260px; min-width: 0; }
 .cv__nome { font-family: var(--f-display); text-transform: uppercase; color: var(--cv-colore); font-size: calc(clamp(34px, 6vw, 56px) * var(--cv-s)); line-height: .95; margin-bottom: 6px; overflow-wrap: anywhere; }
@@ -287,7 +289,15 @@ dialog > * + * { margin-top: 14px; }
 .cv__contatti { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 4px 20px; font-size: .94em; }
 .cv__contatti .meta { margin-right: 4px; font-size: .8em; }
 .cv__parte { padding: 18px 0 4px; }
-.cv__parte h3 { font-family: var(--f-mono); font-weight: 400; font-size: .8em; letter-spacing: .08em; text-transform: uppercase; color: var(--cv-colore); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--cv-colore); }
+.cv__parte h3 { font-family: var(--f-mono); font-weight: 400; font-size: .8em; letter-spacing: .08em; text-transform: uppercase; color: var(--cv-titoli); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--bc-ink-10); }
+.cv--impag-modello .cv__parte h3 { border-bottom-color: var(--cv-colore); }
+.cv--impag-originale .t-mod, .cv--impag-modello .t-orig { display: none; }
+/* Ordine delle sezioni, deciso dall'impaginazione */
+.cv__parte--profilo { order: 1; }
+.cv__parte--competenze { order: 4; } .cv__parte--lingue { order: 5; } .cv__parte--digitali { order: 6; } .cv__parte--altro { order: 7; }
+.cv--impag-originale .cv__parte--formazione { order: 2; } .cv--impag-originale .cv__parte--esperienze { order: 3; }
+.cv--impag-modello .cv__parte--esperienze { order: 2; } .cv--impag-modello .cv__parte--formazione { order: 3; }
+.cv__consenso { order: 8; } .cv__firma { order: 9; }
 .cv__riga { display: grid; grid-template-columns: 1fr; gap: 2px; padding: 8px 0; }
 @media (min-width: 640px) { .cv__riga { grid-template-columns: 9.5em 1fr; gap: 16px; } }
 .cv__periodo { font-family: var(--f-mono); font-size: .8em; color: var(--bc-ink-60); padding-top: .2em; }

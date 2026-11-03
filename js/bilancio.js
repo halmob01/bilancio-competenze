@@ -48,7 +48,7 @@
       telefono: '', email: '', citta: '', nascita: '', patente: '',
       occupazione: '', nazionalita: '', foto: '',
       profilo: '',
-      formato: { colore: 'nero', carattere: 'moderno', dimensione: 'normale', firma: false, luogo: '' },
+      formato: { impaginazione: 'originale', colore: 'nero', carattere: 'moderno', dimensione: 'normale', firma: false, luogo: '' },
       formazione: [],
       esperienze: {},
       competenze: '', lingue: '', digitali: '', altro: '',
@@ -150,6 +150,7 @@
     // La foto resta un piccolo JPEG ridimensionato dall'app: altro non viene accettato.
     s.cv.foto = (typeof c.foto === 'string' && c.foto.length <= MAX_FOTO && /^data:image\/jpeg;base64,[A-Za-z0-9+\/=]+$/.test(c.foto)) ? c.foto : '';
     const f0 = c.formato && typeof c.formato === 'object' ? c.formato : {};
+    s.cv.formato.impaginazione = inElenco(f0.impaginazione, DATI.CV_IMPAGINAZIONI) || 'originale';
     s.cv.formato.colore = inElenco(f0.colore, DATI.CV_COLORI) || 'nero';
     s.cv.formato.carattere = inElenco(f0.carattere, DATI.CV_CARATTERI) || 'moderno';
     s.cv.formato.dimensione = inElenco(f0.dimensione, DATI.CV_DIMENSIONI) || 'normale';

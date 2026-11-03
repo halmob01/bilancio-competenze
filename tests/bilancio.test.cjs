@@ -233,7 +233,7 @@ test('il curriculum sopravvive alla copia e i dati non validi vengono scartati',
   const { s, tir } = cvCompilato();
   s.cv.esperienze[tir.id] = { dove: 'Azienda', periodo: '2025', mansione: 'Aiuto', compiti: 'Cablaggio', incluso: true };
   s.cv.foto = 'data:image/jpeg;base64,/9j/4AAQSkZJRg==';
-  s.cv.formato = { colore: 'blu', carattere: 'classico', dimensione: 'piccolo', firma: true, luogo: 'Milano' };
+  s.cv.formato = { impaginazione: 'modello', colore: 'blu', carattere: 'classico', dimensione: 'piccolo', firma: true, luogo: 'Milano' };
   assert.deepEqual(L.normalizza(JSON.parse(JSON.stringify(s))), s);
   const n = L.normalizza({
     esperienze: [{ id: 'a', titolo: 'T' }],
@@ -285,9 +285,11 @@ test('la foto accetta solo un piccolo JPEG e l\'aspetto solo valori previsti', (
   assert.equal(L.normalizza({ cv: { foto: 'data:image/jpeg;base64,' + 'A'.repeat(200000) } }).cv.foto, '', 'troppo grande');
 
   const n = L.normalizza({ cv: { formato: { colore: 'fucsia', carattere: 'comic', dimensione: 'enorme', firma: 'sì', luogo: 'Milano' } } });
-  assert.deepEqual(n.cv.formato, { colore: 'nero', carattere: 'moderno', dimensione: 'normale', firma: false, luogo: 'Milano' });
-  const v = L.normalizza({ cv: { formato: { colore: 'blu', carattere: 'classico', dimensione: 'grande', firma: true } } });
-  assert.deepEqual([v.cv.formato.colore, v.cv.formato.carattere, v.cv.formato.dimensione, v.cv.formato.firma], ['blu', 'classico', 'grande', true]);
+  assert.deepEqual(n.cv.formato, { impaginazione: 'originale', colore: 'nero', carattere: 'moderno', dimensione: 'normale', firma: false, luogo: 'Milano' });
+  const v = L.normalizza({ cv: { formato: { impaginazione: 'modello', colore: 'blu', carattere: 'classico', dimensione: 'grande', firma: true } } });
+  assert.deepEqual([v.cv.formato.impaginazione, v.cv.formato.colore, v.cv.formato.carattere, v.cv.formato.dimensione, v.cv.formato.firma], ['modello', 'blu', 'classico', 'grande', true]);
+  assert.equal(L.normalizza({ cv: { formato: { impaginazione: 'caotica' } } }).cv.formato.impaginazione, 'originale');
+  assert.equal(L.statoVuoto().cv.formato.impaginazione, 'originale', 'di default l\'impaginazione originale');
 });
 
 test('i colori del curriculum sono leggibili sul foglio bianco', () => {

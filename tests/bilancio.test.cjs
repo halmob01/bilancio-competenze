@@ -386,3 +386,10 @@ test('senza elenco di lingue valgono ancora le righe di testo delle versioni pre
   s.cv.lingue = 'Italiano: madrelingua';
   assert.deepEqual(L.componiCV(s).lingue, ['Italiano: madrelingua']);
 });
+
+test('il logo Europass è nel repository ed è usato solo dal modello Europass', () => {
+  const app = fs.readFileSync(path.join(__dirname, '../js/app.js'), 'utf8');
+  assert.ok(fs.existsSync(path.join(__dirname, '../img/europass-logo.png')));
+  assert.equal(app.split('img/europass-logo.png').length - 1, 1);
+  assert.ok(app.indexOf('img/europass-logo.png') > app.indexOf('function cvEuropass'));
+});

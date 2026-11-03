@@ -355,6 +355,7 @@ dialog > * + * { margin-top: 14px; }
 .cv--impag-europass .cv__sotto { color: var(--bc-ink); }
 @media (min-width: 640px) { .cv--impag-europass .cv__riga { grid-template-columns: 12em 1fr; } }
 .cv--impag-europass .cv__elenco { list-style: none; padding-left: 0; }
+.eu-logo { height: 38px; width: auto; align-self: flex-start; margin-bottom: 16px; }
 .eu-madre { margin-bottom: 10px; }
 .eu-lingue-scroll { overflow-x: auto; }
 .eu-lingue { width: 100%; border-collapse: collapse; font-size: .9em; }

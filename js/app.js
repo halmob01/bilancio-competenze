@@ -956,6 +956,7 @@
           ? h('p', { class: 'eu-nota', text: 'Livelli: A1 e A2: utente base · B1 e B2: utente autonomo · C1 e C2: utente avanzato. Quadro comune europeo di riferimento per la conoscenza delle lingue.' }) : null);
     }
     const art = h('article', { class: 'cv', 'aria-label': 'Il tuo curriculum' },
+      h('img', { class: 'eu-logo', src: 'img/europass-logo.png', alt: 'Europass', contenteditable: 'false' }),
       h('header', { class: 'cv__testa' },
         d.foto ? h('img', { class: 'cv__foto', src: d.foto, alt: '', contenteditable: 'false' }) : null,
         h('div', { class: 'cv__intestazione' },

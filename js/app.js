@@ -26,6 +26,28 @@
   const $ = function (id) { return document.getElementById(id); };
   const principale = $('principale');
 
+  // Messaggi e conferme in un dialogo dell'app, al posto di alert e confirm del browser.
+  function messaggio(testo, o) {
+    const d = $('dialogo-messaggio');
+    const opz = o || {};
+    if (d.open) d.close();
+    $('messaggio-testo').textContent = testo;
+    $('messaggio-ok').textContent = opz.ok || 'Va bene';
+    $('messaggio-annulla').textContent = opz.annulla || 'Annulla';
+    $('messaggio-annulla').hidden = !opz.conferma;
+    $('messaggio-ok').onclick = function () { d.close(); if (opz.conferma) opz.conferma(); };
+    $('messaggio-annulla').onclick = function () { d.close(); };
+    d.showModal();
+  }
+  function avvisa(testo) { messaggio(testo); }
+  function chiedi(testo, ok, conferma, annulla) { messaggio(testo, { ok: ok, conferma: conferma, annulla: annulla }); }
+
+  // Il campo di testo cresce con quello che si scrive.
+  function adattaAltezza(el) {
+    el.style.height = 'auto';
+    if (el.scrollHeight > el.clientHeight) el.style.height = (el.scrollHeight + 2) + 'px';
+  }
+
   // ---------- Costruzione del DOM ----------
   function h(tag, props) {
     const el = document.createElement(tag);
@@ -114,9 +136,13 @@
 
   function vaiA(sezioneId, schermataId, esperienzaId) {
     const s = D.SEZIONI.findIndex(function (x) { return x.id === sezioneId; });
-    const k = Math.max(0, D.SEZIONI[s].schermate.findIndex(function (x) { return x.id === schermataId; }));
+    const trovata = D.SEZIONI[s].schermate.findIndex(function (x) { return x.id === schermataId; });
+    const k = Math.max(0, trovata);
     esperienzaAperta = esperienzaId || null;
     vai(s, k, { tieniEsperienza: true });
+    // Una situazione di «Che cosa so fare» è un blocco della schermata: ci si porta lì.
+    const ancora = trovata === -1 ? $('blocco-' + schermataId) : null;
+    if (ancora) { ancora.scrollIntoView(); ancora.focus({ preventScroll: true }); }
   }
 
   function passo(delta) {
@@ -144,7 +170,7 @@
       },
         h('span', { class: 'meta rail__num', text: String(i + 1).padStart(2, '0') }),
         h('span', { class: 'rail__nome', text: s.titolo }),
-        h('span', { class: 'meta rail__stato', text: STATO_TESTO[av.stati[i]] })
+        h('span', { class: 'meta rail__stato', text: (s.facoltativa ? 'Facoltativo · ' : '') + STATO_TESTO[av.stati[i]] })
       ));
     });
   }
@@ -155,7 +181,7 @@
     const el = $('indice-elenco');
     el.textContent = '';
     aggiungi(el, vociIndice('indice-dialogo__voce'));
-    if (vista) $('tappa-stato').textContent = STATO_TESTO[L.statoSezione(stato, D.SEZIONI[vista.s].id)];
+    if (vista) $('tappa-stato').textContent = (D.SEZIONI[vista.s].facoltativa ? 'Facoltativo · ' : '') + STATO_TESTO[L.statoSezione(stato, D.SEZIONI[vista.s].id)];
   }
 
   function aggiornaTestata() {
@@ -165,7 +191,7 @@
     if (!lavoro) return;
     const i = posizione();
     $('barra').style.width = ((i + 1) / SEQUENZA.length * 100) + '%';
-    $('tappa-nome').textContent = 'Sezione ' + (vista.s + 1) + ' di ' + D.SEZIONI.length + ' · ' + D.SEZIONI[vista.s].titolo;
+    $('tappa-nome').textContent = D.SEZIONI[vista.s].titolo;
   }
 
   // ---------- Elementi ricorrenti ----------
@@ -180,7 +206,7 @@
         'aria-describedby': sugg ? id + '-sugg' : null,
         'aria-labelledby': o.etichettaDa || null,
         value: o.valore || '',
-        oninput: function (e) { o.aggiorna(e.target.value); modificato(); }
+        oninput: function (e) { o.aggiorna(e.target.value); adattaAltezza(e.target); modificato(); }
       });
     } else {
       controllo = h('input', {
@@ -250,9 +276,8 @@
   }
 
   function metaSchermata(extra) {
-    const s = D.SEZIONI[vista.s];
     return String(vista.s + 1).padStart(2, '0') + ' / ' + String(D.SEZIONI.length).padStart(2, '0') +
-      ' · ' + s.titolo + (extra ? ' · ' + extra : '');
+      (extra ? ' · ' + extra : '');
   }
 
   function corpo(intro, risposta, pieno) {
@@ -267,8 +292,7 @@
     const sez = D.SEZIONI[vista.s];
     return h('nav', { class: 'navigazione', 'aria-label': 'Navigazione tra le schermate' },
       h('button', { type: 'button', class: 'pulsante pulsante--secondario', onclick: function () { passo(-1); } }, 'Indietro'),
-      h('span', { class: 'meta', text: 'Sezione ' + (vista.s + 1) + ' di ' + D.SEZIONI.length +
-        (sez.schermate.length > 1 ? ' · schermata ' + (vista.k + 1) + ' di ' + sez.schermate.length : '') }),
+      sez.schermate.length > 1 ? h('span', { class: 'meta', text: 'Passo ' + (vista.k + 1) + ' di ' + sez.schermate.length }) : null,
       ultima
         ? (URL_INVIO
           ? h('button', { type: 'button', class: 'pulsante navigazione__avanti', onclick: inviaAlDocente }, 'Invia al docente')
@@ -282,7 +306,7 @@
     return h('div', { class: 'home' },
       h('h1', { text: 'Bilancio di competenze' }),
       h('p', { class: 'home__sottotitolo', text: 'Quattro anni. Che cosa hai imparato?' }),
-      h('p', { class: 'home__testo misura', text: 'Ricostruisci le esperienze del tuo percorso, riconosci ciò che sai fare e individua quello che devi ancora imparare. Alla fine avrai un bilancio scritto con le tue parole, un breve testo per presentarti agli open day e un curriculum vitae da stampare.' }),
+      h('p', { class: 'home__testo misura', text: 'Ricostruisci le esperienze del tuo percorso, riconosci ciò che sai fare e individua quello che devi ancora imparare. Alla fine avrai un bilancio scritto con le tue parole e un breve testo per presentarti agli open day. Se vuoi puoi anche preparare un curriculum da stampare.' }),
       h('div', { class: 'home__azioni' },
         h('button', { type: 'button', class: 'pulsante', onclick: function () {
           vai(ripresa ? ripresa.s : 0, ripresa ? ripresa.k : 0);
@@ -296,24 +320,26 @@
         h('ol', null, D.SEZIONI.map(function (s, i) {
           return h('li', null,
             h('span', { class: 'meta', text: String(i + 1).padStart(2, '0') }),
-            h('span', { text: s.titolo }));
+            h('span', { text: s.titolo }),
+            s.facoltativa ? h('span', { class: 'meta', text: 'Facoltativo' }) : null);
         }))));
   }
 
   // ---------- 01 Il tuo percorso ----------
   function schermataChi() {
     const intro = [
-      h('p', { text: 'Queste informazioni servono a intestare il tuo bilancio e a mostrarti esempi del tuo indirizzo.' }),
-      aiuto('Il nome è facoltativo: compare solo sul documento che stampi o scarichi.')
+      h('p', { text: URL_INVIO
+        ? 'Indirizzo e nome servono a intestare il tuo bilancio e a inviarlo al docente. L\'indirizzo ti mostra anche esempi adatti a te.'
+        : 'Queste informazioni servono a intestare il tuo bilancio e a mostrarti esempi del tuo indirizzo. Il nome compare solo sul documento che stampi o scarichi.' })
     ];
     const risposta = [
       gruppoScelte({
-        legenda: 'Quale indirizzo frequenti?', nome: 'indirizzo', riga: true,
+        legenda: 'Quale indirizzo frequenti?', nome: 'indirizzo',
         opzioni: D.INDIRIZZI.map(function (x) { return { id: x.id, testo: x.nome }; }),
         valore: stato.profilo.indirizzo,
         aggiorna: function (id) { stato.profilo.indirizzo = id; modificato(); }
       }),
-      campo({ id: 'f-nome', etichetta: 'Nome e cognome (facoltativo)', max: 80, autocomplete: 'name', valore: stato.profilo.nome, aggiorna: function (v) { stato.profilo.nome = v; } }),
+      campo({ id: 'f-nome', etichetta: URL_INVIO ? 'Nome e cognome' : 'Nome e cognome (facoltativo)', suggerimento: URL_INVIO ? 'Serve per inviare il bilancio al docente.' : null, max: 80, autocomplete: 'name', valore: stato.profilo.nome, aggiorna: function (v) { stato.profilo.nome = v; } }),
       campo({ id: 'f-classe', etichetta: 'Classe (facoltativo)', max: 40, valore: stato.profilo.classe, aggiorna: function (v) { stato.profilo.classe = v; } })
     ];
     return [testa(metaSchermata(), 'Da dove parti'), corpo(intro, risposta)];
@@ -352,24 +378,27 @@
         legenda: 'Quando', nome: p + 'quando', riga: true, opzioni: D.QUANDO, valore: e.quando,
         aggiorna: function (id) { e.quando = id; modificato(); }
       }),
-      testoCampo('contesto', 'Dove eri e con chi?', null, true),
       testoCampo('azione', 'Che cosa hai fatto tu, concretamente?', 'Racconta le tue azioni, non quelle del gruppo in generale.', true),
       testoCampo('prova', 'Come potresti dimostrarlo?', 'Una foto, un lavoro finito, una relazione, una scheda, il giudizio del tutor o del docente.', true),
       testoCampo('difficolta', 'Che cosa non sapevi fare prima? Che cosa è stato difficile?', null, true),
       testoCampo('aiuto', 'Quale aiuto ti è servito?', 'Da chi o da che cosa: un compagno, il tutor, un manuale, un video, un errore.', true),
-      gruppoScelte({
-        legenda: 'Oggi, quanto sapresti rifarlo?', nome: p + 'autonomia', opzioni: D.AUTONOMIA, valore: e.autonomia,
-        aggiorna: function (id) { e.autonomia = id; modificato(); }
-      }),
-      gruppoScelte({
-        legenda: 'In quali situazioni rientra? (facoltativo)', nome: p + 'situazioni', riga: true, multipla: true,
-        opzioni: D.SITUAZIONI.map(function (s) { return { id: s.id, testo: s.verbo }; }), valore: e.situazioni,
-        aggiorna: function (id, attiva) {
-          e.situazioni = e.situazioni.filter(function (x) { return x !== id; });
-          if (attiva) e.situazioni.push(id);
-          modificato();
-        }
-      }),
+      h('details', { class: 'dettagli', open: pieno(e.contesto) || !!e.autonomia || e.situazioni.length > 0 },
+        h('summary', { text: 'Aggiungi dettagli (facoltativo)' }),
+        h('div', { class: 'dettagli__corpo' },
+          testoCampo('contesto', 'Dove eri e con chi?', null, true),
+          gruppoScelte({
+            legenda: 'Oggi, quanto sapresti rifarlo?', nome: p + 'autonomia', opzioni: D.AUTONOMIA, valore: e.autonomia,
+            aggiorna: function (id) { e.autonomia = id; modificato(); }
+          }),
+          gruppoScelte({
+            legenda: 'In quali situazioni rientra?', nome: p + 'situazioni', riga: true, multipla: true,
+            opzioni: D.SITUAZIONI.map(function (s) { return { id: s.id, testo: s.verbo }; }), valore: e.situazioni,
+            aggiorna: function (id, attiva) {
+              e.situazioni = e.situazioni.filter(function (x) { return x !== id; });
+              if (attiva) e.situazioni.push(id);
+              modificato();
+            }
+          }))),
       h('div', null, h('button', { type: 'button', class: 'pulsante pulsante--secondario pulsante--piccolo', onclick: function () {
         esperienzaAperta = null; ridisegna('esp-' + e.id + '-modifica');
       } }, 'Chiudi la scheda')));
@@ -392,13 +421,14 @@
   }
 
   function eliminaEsperienza(e) {
-    if (!window.confirm('Eliminare l\'esperienza «' + (e.titolo || 'senza titolo') + '»? Non si può annullare.')) return;
-    stato.esperienze = stato.esperienze.filter(function (x) { return x.id !== e.id; });
-    Object.keys(stato.sofare).forEach(function (k) {
-      stato.sofare[k].esperienze = stato.sofare[k].esperienze.filter(function (id) { return id !== e.id; });
+    chiedi('Eliminare l\'esperienza «' + (e.titolo || 'senza titolo') + '»? Non si può annullare.', 'Elimina', function () {
+      stato.esperienze = stato.esperienze.filter(function (x) { return x.id !== e.id; });
+      Object.keys(stato.sofare).forEach(function (k) {
+        stato.sofare[k].esperienze = stato.sofare[k].esperienze.filter(function (id) { return id !== e.id; });
+      });
+      modificato();
+      ridisegna('aggiungi-esperienza');
     });
-    modificato();
-    ridisegna('aggiungi-esperienza');
   }
 
   function schermataEsperienze() {
@@ -440,22 +470,20 @@
   }
 
   // ---------- 03 Che cosa so fare ----------
-  function schermataSituazione(sit) {
+  function bloccoSituazione(sit) {
     const r = stato.sofare[sit.id];
     const l = D.AUTONOMIA.find(function (a) { return a.id === r.livello; });
     const p = 'f-sf-' + sit.id + '-';
-
-    const intro = [
-      h('p', { text: sit.anche }),
-      esempio('Vedi un esempio', esempiPerIndirizzo(sit.esempi)),
-      aiuto('Scegli la frase più vicina alla verità di oggi. Se dichiari di saperlo fare, serve almeno un esempio concreto: senza esempio la competenza resta «da documentare».')
-    ];
+    const conAzione = stato.esperienze.filter(function (e) { return pieno(e.azione); });
 
     const avviso = h('p', { class: 'avviso', id: p + 'avviso', role: 'note', hidden: !(l && l.dichiara && !L.haProva(stato, sit.id)) },
-      'Manca ancora un esempio: scrivilo qui sotto o collega un\'esperienza. Per ora nel bilancio comparirà come «da documentare».');
+      'Manca ancora un esempio: scrivilo qui sotto o collega un\'esperienza. Per ora nel bilancio la voce resta in sospeso.');
     function aggiornaAvviso() { avviso.hidden = !(l && l.dichiara && !L.haProva(stato, sit.id)); }
 
-    const risposta = [
+    const parti = [
+      h('h3', { id: 'blocco-' + sit.id, tabindex: '-1', text: sit.domanda }),
+      h('p', { class: 'blocco__nota', text: sit.anche }),
+      esempio('Vedi un esempio', esempiPerIndirizzo(sit.esempi)),
       gruppoScelte({
         legenda: 'Quanto lo sai fare oggi?', nome: p + 'livello', opzioni: D.AUTONOMIA, valore: r.livello,
         aggiorna: function (id, _, idInput) { r.livello = id; modificato(); ridisegna(idInput); }
@@ -463,10 +491,26 @@
     ];
 
     if (l && l.dichiara) {
-      risposta.push(
+      parti.push(
         avviso,
         campo({ id: p + 'esempio', etichetta: 'Un esempio concreto: quando l\'hai fatto e che cosa hai fatto?', area: true, valore: r.esempio,
           aggiorna: function (v) { r.esempio = v; aggiornaAvviso(); } }),
+        conAzione.length ? h('div', { class: 'campo' },
+          h('label', { for: p + 'riprendi', text: 'Riprendi il testo da una tua esperienza (facoltativo)' }),
+          h('select', { id: p + 'riprendi', onchange: function (ev) {
+            const sc = conAzione.find(function (x) { return x.id === ev.target.value; });
+            ev.target.value = '';
+            if (!sc) return;
+            const applica = function () {
+              r.esempio = sc.azione.trim();
+              if (r.esperienze.indexOf(sc.id) === -1) r.esperienze.push(sc.id);
+              modificato(); ridisegna(p + 'esempio');
+            };
+            if (pieno(r.esempio)) chiedi('Sostituire l\'esempio già scritto con il testo della scheda?', 'Sostituisci', applica);
+            else applica();
+          } },
+            h('option', { value: '', text: 'Scegli una scheda…' }),
+            conAzione.map(function (x) { return h('option', { value: x.id, text: pieno(x.titolo) ? x.titolo : 'Esperienza senza titolo' }); }))) : null,
         stato.esperienze.length
           ? gruppoScelte({
             legenda: 'Collega una o più delle tue esperienze (facoltativo)', nome: p + 'esperienze', multipla: true,
@@ -482,12 +526,20 @@
             h('button', { type: 'button', class: 'pulsante pulsante--testo', onclick: function () { vaiA('esperienze', 'elenco'); } }, 'Vai alle esperienze')),
         campo({ id: p + 'come', etichetta: 'Come l\'hai imparato? Chi o che cosa ti ha aiutato?', area: true, valore: r.come, aggiorna: function (v) { r.come = v; } }));
     } else if (l && l.id === 'non_ancora') {
-      risposta.push(campo({ id: p + 'come', etichetta: 'Che cosa ti servirebbe per impararlo? (facoltativo)', area: true, valore: r.come, aggiorna: function (v) { r.come = v; } }));
+      parti.push(campo({ id: p + 'come', etichetta: 'Che cosa ti servirebbe per impararlo? (facoltativo)', area: true, valore: r.come, aggiorna: function (v) { r.come = v; } }));
     } else if (l && l.id === 'mai') {
-      risposta.push(campo({ id: p + 'come', etichetta: 'Ti piacerebbe affrontarlo? In quale occasione? (facoltativo)', area: true, valore: r.come, aggiorna: function (v) { r.come = v; } }));
+      parti.push(campo({ id: p + 'come', etichetta: 'Ti piacerebbe affrontarlo? In quale occasione? (facoltativo)', area: true, valore: r.come, aggiorna: function (v) { r.come = v; } }));
     }
+    return h('section', { class: 'blocco', 'aria-labelledby': 'blocco-' + sit.id }, parti);
+  }
 
-    return [testa(metaSchermata(sit.verbo), sit.domanda), corpo(intro, risposta)];
+  function schermataSofare() {
+    const intro = [
+      h('p', { text: 'Sei domande sulle situazioni di lavoro più comuni. Per ognuna scegli la frase più vicina alla verità di oggi.' }),
+      aiuto('Se dici di saperlo fare, scrivi anche un esempio: senza esempio la voce resta in sospeso nel bilancio. Non c\'è una risposta giusta: «non l\'ho mai affrontato» è una risposta come le altre.')
+    ];
+    const risposta = h('div', { class: 'blocchi' }, D.SITUAZIONI.map(bloccoSituazione));
+    return [testa(metaSchermata(), 'Che cosa sai fare, oggi?'), corpo(intro, risposta)];
   }
 
   // ---------- 04 Uno sguardo critico ----------
@@ -528,7 +580,7 @@
         interattivo ? h('p', { class: 'voce__fonte' }, h('button', { type: 'button', class: 'pulsante pulsante--testo', onclick: function () { vaiA(x.rif.sezione, x.rif.schermata); } }, 'Torna alla risposta')) : null);
     });
     const daDoc = b.daDocumentare.length ? [
-      h('h4', { text: 'Da documentare' }),
+      h('h4', { text: 'Manca ancora un esempio' }),
       h('p', { class: 'nota', text: 'Hai indicato di saperlo fare, ma manca ancora un esempio.' }),
       h('ul', { class: 'voci' }, b.daDocumentare.map(function (x) { return voce('', x.situazione + ' — ' + x.livello, x.rif, interattivo); }))
     ] : [];
@@ -587,7 +639,7 @@
   // Ridimensiona la foto nel browser (JPEG piccolo): non viene mai inviata altrove.
   function caricaFoto(file) {
     if (!file) return;
-    if (file.size > 15 * 1024 * 1024) { window.alert('La foto è troppo grande: scegline una più piccola.'); return; }
+    if (file.size > 15 * 1024 * 1024) { avvisa('La foto è troppo grande: scegline una più piccola.'); return; }
     const fine = function (img) {
       const lato = 480;
       const k = Math.min(1, lato / Math.max(img.width, img.height));
@@ -599,7 +651,7 @@
       modificato();
       ridisegna('f-cv-foto');
     };
-    const errore = function () { window.alert('Non riesco a leggere questa foto: prova con un\'altra.'); };
+    const errore = function () { avvisa('Non riesco a leggere questa foto: prova con un\'altra.'); };
     if (window.createImageBitmap) {
       window.createImageBitmap(file, { imageOrientation: 'from-image' }).then(fine, errore);
     } else {
@@ -730,19 +782,23 @@
                 const sc = conAzione.find(function (x) { return x.id === e.target.value; });
                 e.target.value = '';
                 if (!sc) return;
-                if (pieno(l.compiti) && !window.confirm('Sostituire i compiti già scritti con il testo della scheda?')) return;
-                l.compiti = sc.azione.trim();
-                if (!pieno(l.mansione) && pieno(sc.titolo)) l.mansione = sc.titolo.trim();
-                modificato(); ridisegna(p + 'compiti');
+                const applica = function () {
+                  l.compiti = sc.azione.trim();
+                  if (!pieno(l.mansione) && pieno(sc.titolo)) l.mansione = sc.titolo.trim();
+                  modificato(); ridisegna(p + 'compiti');
+                };
+                if (pieno(l.compiti)) chiedi('Sostituire i compiti già scritti con il testo della scheda?', 'Sostituisci', applica);
+                else applica();
               } },
                 h('option', { value: '', text: 'Scegli una scheda…' }),
                 conAzione.map(function (x) { return h('option', { value: x.id, text: pieno(x.titolo) ? x.titolo : 'Esperienza senza titolo' }); }))) : null),
           h('div', { class: 'scheda__azioni' },
             c.lavoro.length > 1 ? h('button', { type: 'button', class: 'pulsante pulsante--testo', 'aria-label': 'Elimina l\'esperienza ' + (i + 1),
               onclick: function () {
-                if (!window.confirm('Eliminare questa esperienza dal curriculum?')) return;
-                c.lavoro = c.lavoro.filter(function (x) { return x.id !== l.id; });
-                modificato(); ridisegna('aggiungi-lavoro');
+                chiedi('Eliminare questa esperienza dal curriculum?', 'Elimina', function () {
+                  c.lavoro = c.lavoro.filter(function (x) { return x.id !== l.id; });
+                  modificato(); ridisegna('aggiungi-lavoro');
+                });
               } }, 'Elimina') : null));
       })),
       h('div', null, h('button', { type: 'button', class: 'pulsante pulsante--secondario', id: 'aggiungi-lavoro', disabled: c.lavoro.length >= L.MAX_LAVORO,
@@ -770,7 +826,7 @@
       campo({ id: 'f-cv-competenze', etichetta: 'Competenze professionali', area: true, righe: 5, suggerimento: 'Una per riga.', valore: c.competenze, aggiorna: function (v) { c.competenze = v; } }),
       h('div', null, h('button', { type: 'button', class: 'pulsante pulsante--secondario pulsante--piccolo', onclick: function () {
         const sug = L.suggerisciCompetenze(stato);
-        if (!sug.length) { window.alert('Non hai ancora competenze dichiarate e documentate nella sezione 03. Scrivile tu qui sotto.'); return; }
+        if (!sug.length) { avvisa('Non hai ancora competenze dichiarate e documentate nella sezione 03. Scrivile tu qui sotto.'); return; }
         const gia = c.competenze.split('\n').map(function (x) { return x.trim(); });
         const nuove = sug.filter(function (x) { return gia.indexOf(x) === -1; });
         if (nuove.length) c.competenze = (pieno(c.competenze) ? c.competenze.replace(/\s+$/, '') + '\n' : '') + nuove.join('\n');
@@ -924,8 +980,7 @@
         h('button', { type: 'button', class: 'pulsante', onclick: function () { stampa('cv'); } }, 'Stampa il curriculum'),
         h('button', { type: 'button', class: 'pulsante pulsante--testo', onclick: function () { vaiA('cv', 'contatti'); } }, 'Modifica i dati'),
         riuso ? h('button', { type: 'button', class: 'pulsante pulsante--testo', onclick: function () {
-          if (!window.confirm('Annullare le correzioni scritte a mano sul foglio?')) return;
-          cvManuale = null; ridisegna();
+          chiedi('Annullare le correzioni scritte a mano sul foglio?', 'Annulla le correzioni', function () { cvManuale = null; ridisegna(); }, 'Tieni le correzioni');
         } }, 'Annulla le correzioni sul foglio') : null),
       h('p', { class: 'nota', text: 'Dalla finestra di stampa puoi anche scegliere «Salva come PDF». Il curriculum resta su questo dispositivo e non viene inviato al docente.' }),
       doc
@@ -959,11 +1014,10 @@
       h('div', { class: 'home__azioni' },
         h('button', { type: 'button', class: 'pulsante pulsante--secondario', onclick: function () {
           const bozza = L.componiOrientamento(stato);
-          if (!bozza) { window.alert('Rispondi prima ad almeno una domanda della schermata precedente.'); return; }
-          if (pieno(stato.orientamento.testo) && !window.confirm('Sostituire il testo attuale con la bozza delle tue risposte?')) return;
-          stato.orientamento.testo = bozza;
-          modificato();
-          ridisegna('f-or-testo');
+          if (!bozza) { avvisa('Rispondi prima ad almeno una domanda della schermata precedente.'); return; }
+          const applica = function () { stato.orientamento.testo = bozza; modificato(); ridisegna('f-or-testo'); };
+          if (pieno(stato.orientamento.testo)) chiedi('Sostituire il testo attuale con la bozza delle tue risposte?', 'Sostituisci', applica);
+          else applica();
         } }, 'Componi una bozza dalle risposte'),
         h('button', { type: 'button', class: 'pulsante pulsante--secondario', onclick: stampa }, 'Stampa bilancio e testo')),
       campo({ id: 'f-or-testo', etichetta: 'Il tuo testo', area: true, lungo: true, libro: true, valore: stato.orientamento.testo,
@@ -979,7 +1033,7 @@
     switch (sez.id) {
       case 'percorso': return sch.id === 'chi' ? schermataChi() : schermataAnni();
       case 'esperienze': return schermataEsperienze();
-      case 'sofare': return schermataSituazione(D.SITUAZIONI.find(function (s) { return s.id === sch.id; }));
+      case 'sofare': return schermataSofare();
       case 'sguardo': return schermataSguardo(D.SGUARDO.find(function (g) { return g.id === sch.id; }));
       case 'bilancio': return schermataBilancio();
       case 'cv': return { contatti: schermataCVContatti, profilo: schermataCVProfilo, formazione: schermataCVFormazione, esperienze: schermataCVEsperienze, competenze: schermataCVCompetenze, anteprima: schermataCVAnteprima }[sch.id]();
@@ -1003,6 +1057,7 @@
     }
     aggiornaTestata();
     aggiornaIndice();
+    principale.querySelectorAll('textarea').forEach(adattaAltezza);
   }
 
   // ---------- Copia, stampa, cancellazione ----------
@@ -1040,13 +1095,18 @@
   function inviaAlDocente() {
     if (!URL_INVIO || invioInCorso) return;
     if (!pieno(stato.profilo.nome) || !stato.profilo.indirizzo) {
-      window.alert('Per inviare le risposte al docente servono il tuo nome e l\'indirizzo. Li trovi nella prima schermata.');
-      if ($('dialogo-risposte').open) $('dialogo-risposte').close();
-      vaiA('percorso', 'chi');
+      chiedi('Per inviare le risposte al docente servono il tuo nome e l\'indirizzo. Li trovi nella prima schermata.', 'Vai alla prima schermata', function () {
+        if ($('dialogo-risposte').open) $('dialogo-risposte').close();
+        vaiA('percorso', 'chi');
+      }, 'Più tardi');
       return;
     }
-    if (!window.confirm('Inviare le risposte al foglio del docente? Potrai correggerle e inviarle di nuovo: la tua riga verrà aggiornata.')) return;
+    chiedi('Inviare le risposte al foglio del docente? Potrai correggerle e inviarle di nuovo: la tua riga verrà aggiornata.', 'Invia', eseguiInvio);
+  }
 
+  // Il contenuto e il modo dell'invio sono quelli di sempre: lo script del docente non cambia.
+  function eseguiInvio() {
+    if (invioInCorso) return;
     clearTimeout(timerSalva);
     scriviArchivio();
     invioInCorso = true;
@@ -1066,11 +1126,11 @@
         $('salvato').textContent = 'Inviato alle ' + new Date(stato.inviato).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
         if ($('dialogo-risposte').open) aggiornaDialogo();
         if (vista) ridisegna();
-        window.alert('Risposte inviate al docente.');
+        avvisa('Risposte inviate al docente.');
       })
       .catch(function (err) {
         $('salvato').textContent = 'Invio non riuscito';
-        window.alert(err && err.message === 'nome'
+        avvisa(err && err.message === 'nome'
           ? 'Invio non riuscito: manca il nome.'
           : 'Invio non riuscito. Controlla la connessione e riprova; se non funziona, scarica una copia e consegnala al docente.');
       })
@@ -1101,18 +1161,21 @@
     lettore.onload = function () {
       let dati;
       try { dati = JSON.parse(lettore.result); } catch (e) {
-        window.alert('Il file non è una copia valida del bilancio.');
+        avvisa('Il file non è una copia valida del bilancio.');
         return;
       }
       if (!dati || dati.versione !== L.VERSIONE || !dati.profilo) {
-        window.alert('Il file non è una copia valida del bilancio.');
+        avvisa('Il file non è una copia valida del bilancio.');
         return;
       }
-      if (stato.aggiornato && !window.confirm('Sostituire le risposte attuali con quelle del file?')) return;
-      stato = L.normalizza(dati);
-      scriviArchivio();
-      $('dialogo-risposte').close();
-      vai(null);
+      const applica = function () {
+        stato = L.normalizza(dati);
+        scriviArchivio();
+        $('dialogo-risposte').close();
+        vai(null);
+      };
+      if (stato.aggiornato) chiedi('Sostituire le risposte attuali con quelle del file?', 'Sostituisci', applica);
+      else applica();
     };
     lettore.readAsText(file);
   }
@@ -1133,15 +1196,16 @@
   }
 
   function cancellaTutto() {
-    if (!window.confirm('Cancellare tutte le risposte da questo browser? Se non hai scaricato una copia, andranno perse.')) return;
-    clearTimeout(timerSalva);
-    timerSalva = null;
-    try { localStorage.removeItem(CHIAVE); localStorage.removeItem(CHIAVE_POSIZIONE); } catch (e) { /* niente da fare */ }
-    stato = L.statoVuoto();
-    ripresa = null;
-    $('salvato').textContent = 'Risposte cancellate';
-    $('dialogo-risposte').close();
-    vai(null);
+    chiedi('Cancellare tutte le risposte da questo browser? Se non hai scaricato una copia, andranno perse.', 'Cancella tutto', function () {
+      clearTimeout(timerSalva);
+      timerSalva = null;
+      try { localStorage.removeItem(CHIAVE); localStorage.removeItem(CHIAVE_POSIZIONE); } catch (e) { /* niente da fare */ }
+      stato = L.statoVuoto();
+      ripresa = null;
+      $('salvato').textContent = 'Risposte cancellate';
+      $('dialogo-risposte').close();
+      vai(null);
+    });
   }
 
   // ---------- Avvio ----------

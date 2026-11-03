@@ -12,10 +12,10 @@ Applicazione statica per il bilancio riflessivo delle competenze degli studenti 
 |---|---|---|
 | 01 | Il tuo percorso | indirizzo, nome e classe facoltativi; quattro anni e tirocinio in poche righe |
 | 02 | Le esperienze che ricordi | schede esperienza: quando, contesto, azione, prova, difficoltà, aiuto, autonomia |
-| 03 | Che cosa so fare | sei situazioni comuni ai tre indirizzi: capire, fare, collaborare, verificare, spiegare, migliorare |
+| 03 | Che cosa so fare | una schermata con sei situazioni comuni ai tre indirizzi: capire, fare, collaborare, verificare, spiegare, migliorare |
 | 04 | Uno sguardo critico | scuola, tirocinio, che cosa devo ancora imparare |
 | 05 | Bilancio | dossier: So fare / Ho imparato così / Posso dimostrarlo / Devo ancora imparare |
-| 06 | Curriculum vitae | sul modello della scuola: dati, foto, occupazione desiderata e profilo, formazione, tirocini e lavori (tipo, azienda, città, date, mansione, compiti; quante voci servono), competenze, lingue, interessi; aspetto modificabile, correzioni sul foglio, stampa su A4 |
+| 06 | Curriculum vitae (facoltativo) | sul modello della scuola: dati, foto, occupazione desiderata e profilo, formazione, tirocini e lavori (tipo, azienda, città, date, mansione, compiti; quante voci servono), competenze, lingue, interessi; aspetto modificabile, correzioni sul foglio, stampa su A4 |
 | 07 | Orientamento | quattro domande guida, poi il testo per l'open day |
 
 Regole didattiche applicate (da `design.md` §9):
@@ -53,7 +53,7 @@ Regole didattiche applicate (da `design.md` §9):
 - `css/tokens.css` — token di `design.md` §10 (palette Babel, tipografia e griglia di sito-filosofia) e `@font-face`.
 - `css/stile.css` — componenti e stampa.
 - `apps-script/Codice.gs` — script da incollare nel Foglio Google del docente.
-- `fonts/` — Anton, Fira Sans, Fira Mono, EB Garamond (sottoinsieme latino, SIL Open Font License; licenze accanto ai file).
+- `fonts/` — Anton, Fira Sans, EB Garamond (sottoinsieme latino, SIL Open Font License; licenze accanto ai file).
 
 ## Prova e verifica
 

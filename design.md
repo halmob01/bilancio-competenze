@@ -56,9 +56,9 @@ Font effettivamente dichiarati in `sito-filosofia/css/tokens.css` e caricati da 
 - **Anton** (display): titoli principali, numeri di sezione e grandi parole isolabili. Mai per lunghi paragrafi. Font condensato, senza bisogno di fingere pesi che non possiede.
 - **Fira Sans** (interfaccia): domande, spiegazioni brevi, pulsanti, selettori, risposta scritta, microtesti.
 - **EB Garamond** (narrativa, con misura): brevi estratti del racconto personale, testo conclusivo destinato all'open day, blocchi di lettura; **non** per etichette o form.
-- **Fira Mono** (metadati): `01 / 06`, «TIROCINIO», «SALVATO», indicatori e piccoli dettagli editoriali.
+- **Fira Sans** (metadati): `01 / 06`, «TIROCINIO», «SALVATO», indicatori e piccoli dettagli editoriali.
 
-Corrispondenza con fonti: `--f-display: Anton`, `--f-sans: Fira Sans`, `--f-libro: EB Garamond`, `--f-mono: Fira Mono`.
+Corrispondenza con fonti: `--f-display: Anton`, `--f-sans: Fira Sans`, `--f-libro: EB Garamond`, `--f-mono: Fira Sans`.
 
 Scala proposta **adattata alla funzione**, mantenendo le proporzioni del sito-filosofia:
 - H1 apertura Anton uppercase: `clamp(56px, 10vw, 120px)`, line-height `0.90`.
@@ -66,7 +66,7 @@ Scala proposta **adattata alla funzione**, mantenendo le proporzioni del sito-fi
 - Domanda principale Fira Sans 600: `clamp(24px, 3.2vw, 36px)`, line-height `1.15`.
 - Corpo istruzioni Fira Sans 400: `clamp(17px, 1.5vw, 19px)`, line-height `1.55–1.62`.
 - Racconto conclusivo EB Garamond: `clamp(20px, 2vw, 23px)`, line-height `1.48`.
-- Metadati Fira Mono: `12–14px` con spaziatura misurata.
+- Metadati Fira Sans: `12–14px` con spaziatura misurata.
 
 Non impiegare EB Garamond per un lungo questionario su smartphone: il centro dell'esperienza deve rimanere Fira Sans.
 
@@ -88,7 +88,7 @@ Metafore visive: **indice editoriale**, **timeline del percorso**, **nota a marg
 
 Componenti:
 1. **Apertura** — Anton su fondo carta; un sommario breve in Fira Sans; piccolo segno rosso. No hero fotografico.
-2. **Indice di percorso** — 6 sezioni, numerazione Fira Mono `01—06`; sul desktop rail laterale discreto; sul mobile barra sottile con nome tappa e stato.
+2. **Indice di percorso** — 6 sezioni, numerazione Fira Sans `01—06`; sul desktop rail laterale discreto; sul mobile barra sottile con nome tappa e stato.
 3. **Domanda** — titolo Fira Sans, una consegna alla volta, esempio concreto apribile e non imposto.
 4. **Scheda esperienza** — superficie carta o bianca, bordo sottile, angoli lievemente arrotondati (raggio 8px); contesto, azione, prova, difficoltà, autonomia.
 5. **Scala di autonomia** — selettore a opzioni testuali esplicite; mai sola scala numerica o emoji.
@@ -113,7 +113,7 @@ Sottotitolo `Quattro anni. Che cosa hai imparato?` (Fira Sans)
 Spiegazione sobria in 2 frasi. Pulsante nero `Inizia`. Piccola indicazione «Puoi tornare sulle risposte per correggerle».
 
 ### Sezione «Le esperienze»
-`01 / 06` (Fira Mono); titolo «Le esperienze che ricordi» (Fira Sans).  
+`01 / 06` (Fira Sans); titolo «Le esperienze che ricordi» (Fira Sans).  
 Timeline I–IV anno e tirocinio non rigidamente legati a una sola annualità. Possibilità di aggiungere esperienze multiple. Nei casi suggeriti distinguere tra *esempio* e *cosa ho fatto davvero*.
 
 ### Sezione «Che cosa so fare»
@@ -165,7 +165,7 @@ Il comportamento non deve distrarre mentre si leggono e si scrivono risposte per
   --f-display: "Anton", Impact, "Arial Narrow", sans-serif;
   --f-sans: "Fira Sans", system-ui, sans-serif;
   --f-libro: "EB Garamond", Garamond, serif;
-  --f-mono: "Fira Mono", ui-monospace, monospace;
+  --f-mono: "Fira Sans", ui-monospace, monospace;
 
   /* sito-filosofia — griglia e ritmo */
   --cols: 4;

@@ -15,9 +15,9 @@
   const AUTONOMIA = [
     { id: 'mai', testo: 'Non l\'ho mai affrontato', breve: 'mai affrontato', dichiara: false },
     { id: 'non_ancora', testo: 'Non lo so ancora fare', breve: 'non ancora', dichiara: false },
-    { id: 'con_aiuto', testo: 'Lo faccio con l\'aiuto di qualcuno', breve: 'con aiuto', dichiara: true },
-    { id: 'autonomo_noto', testo: 'Lo faccio in autonomia in situazioni che conosco', breve: 'in autonomia, in situazioni note', dichiara: true },
-    { id: 'autonomo_nuovo', testo: 'Lo faccio in autonomia anche in situazioni nuove', breve: 'in autonomia, anche in situazioni nuove', dichiara: true }
+    { id: 'con_aiuto', testo: 'Lo faccio se qualcuno mi aiuta', breve: 'con aiuto', dichiara: true },
+    { id: 'autonomo_noto', testo: 'Lo faccio da solo se la situazione è già nota', breve: 'in autonomia, in situazioni note', dichiara: true },
+    { id: 'autonomo_nuovo', testo: 'Lo faccio da solo anche se la situazione è nuova', breve: 'in autonomia, anche in situazioni nuove', dichiara: true }
   ];
 
   const QUANDO = [
@@ -148,7 +148,8 @@
     {
       id: 'sofare',
       titolo: 'Che cosa so fare',
-      schermate: SITUAZIONI.map(function (s) { return { id: s.id, titolo: s.verbo }; })
+      // Una sola schermata con sei blocchi: gli id delle situazioni restano quelli di sempre.
+      schermate: [{ id: 'situazioni', titolo: 'Che cosa sai fare' }]
     },
     {
       id: 'sguardo',
@@ -163,6 +164,7 @@
     {
       id: 'cv',
       titolo: 'Curriculum vitae',
+      facoltativa: true,
       schermate: [
         { id: 'contatti', titolo: 'I tuoi dati' },
         { id: 'profilo', titolo: 'Che lavoro cerchi' },

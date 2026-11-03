@@ -22,7 +22,7 @@
     <div class="testata__riga">
       <button type="button" class="testata__nome" id="vai-home">Bilancio di competenze</button>
       <span class="meta testata__salvato" id="salvato" role="status" aria-live="polite"></span>
-      <button type="button" class="pulsante pulsante--secondario pulsante--piccolo" id="apri-risposte">Le tue risposte</button>
+      <button type="button" class="pulsante pulsante--secondario pulsante--piccolo" id="apri-risposte">Salva e stampa</button>
     </div>
     <div class="avanzamento" id="avanzamento" hidden><div class="avanzamento__barra" id="barra"></div></div>
     <div class="tappa-mobile" id="tappa-mobile" hidden>
@@ -35,7 +35,7 @@
   <main id="principale" tabindex="-1"></main>
 
   <dialog id="dialogo-risposte" aria-labelledby="dialogo-risposte-titolo">
-    <h2 id="dialogo-risposte-titolo">Le tue risposte</h2>
+    <h2 id="dialogo-risposte-titolo">Salva e stampa</h2>
     <p id="testo-dialogo">Sono salvate solo su questo dispositivo, in questo browser. Nessun dato viene inviato a un server.</p>
     <div id="esito-dialogo"></div>
     <p>Per riprendere il lavoro su un altro dispositivo scarica una copia e poi caricala da lì.</p>
@@ -58,6 +58,14 @@
     <h2 id="dialogo-indice-titolo">Indice</h2>
     <ol id="indice-elenco"></ol>
     <button type="button" class="pulsante pulsante--testo" id="chiudi-indice">Chiudi</button>
+  </dialog>
+
+  <dialog id="dialogo-messaggio" aria-labelledby="messaggio-testo">
+    <p id="messaggio-testo"></p>
+    <div class="dialogo__azioni">
+      <button type="button" class="pulsante pulsante--secondario" id="messaggio-annulla">Annulla</button>
+      <button type="button" class="pulsante" id="messaggio-ok">Va bene</button>
+    </div>
   </dialog>
 
   <div id="stampa"></div>

@@ -37,3 +37,16 @@ Il percorso completo in sei sezioni, utilizzabile da smartphone e da computer, c
 - Leggibilità su telefoni economici e con zoom del testo al 200%.
 - Navigazione con lettore di schermo (VoiceOver, TalkBack): la struttura è semantica ma non è stata provata con tecnologie assistive reali.
 - Verifica del contrasto dell'indicatore rosso sui radio selezionati: lo stato è comunicato anche dal bordo nero più spesso, non dal solo colore.
+
+## Revisione UX del 3 novembre 2026
+
+Modifiche solo all'interfaccia e ai testi visibili. **Lo script del docente (`apps-script/Codice.gs`) non è stato toccato** e i dati inviati hanno la stessa forma di prima: stessa versione, stessi id di situazioni, livelli, periodi e indirizzi. Due test (`tests/apps-script.test.cjs`) bloccano questo contratto: se gli id dell'app e quelli dello script divergono, i test falliscono.
+
+- **Font.** Fira Sans per interfaccia e metadati (niente più Geist e niente carattere monospazio): le famiglie scendono a tre.
+- **Desktop.** Contenitore centrato di 1240px, home a due colonne con l'indice a destra, barra di avanzamento allineata al contenuto.
+- **Percorso più corto.** «Che cosa so fare» è una sola schermata con sei blocchi (da «Torna alla risposta» nel bilancio ci si porta sul blocco giusto). Il curriculum è segnato come facoltativo. Nelle esperienze restano in vista sei campi; contesto, autonomia e situazioni stanno in «Aggiungi dettagli». Nelle situazioni si può riprendere il testo da un'esperienza.
+- **Lessico.** Frasi di autonomia più corte; «da documentare» diventa «manca ancora un esempio»; meno testo di contorno; una sola indicazione di avanzamento.
+- **Errori e conferme.** Al posto di `alert` e `confirm` del browser ci sono dialoghi dell'app. Se per l'invio mancano nome o indirizzo, la prima schermata lo dice subito e il dialogo porta lì.
+- **Usabilità.** Metadati a 14px senza maiuscolo; «Le tue risposte» diventa «Salva e stampa»; «Avanti» resta visibile su schermi stretti; i campi di testo crescono mentre si scrive; i tre indirizzi sono in colonna.
+
+Non toccati: `apps-script/Code.gs` e `Index.html` (versione alternativa con accesso a codice, non collegata all'app); conviene decidere con il docente se tenerla.

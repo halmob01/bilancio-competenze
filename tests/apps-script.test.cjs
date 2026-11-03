@@ -295,3 +295,29 @@ test('modifiche sulle altre celle o fogli non ridisegnano la scheda', () => {
   assert.doesNotThrow(() => g.onEdit({ range: ris.getRange('B1') }));
   assert.doesNotThrow(() => g.onEdit({}));
 });
+
+// ---------- Contratto tra app e script del docente ----------
+// L'app e lo script riconoscono situazioni, livelli, periodi e indirizzi per id: se gli id cambiano
+// da una parte sola il foglio smette di leggere le risposte. Questo test lo impedisce.
+test('gli id dell\'app coincidono con quelli che lo script del docente conosce', () => {
+  const D = require('../js/dati.js');
+  const g = ambiente();
+  const lista = (x) => JSON.parse(JSON.stringify(x));
+  assert.deepEqual(lista(g.SITUAZIONI.map((x) => x[0])), D.SITUAZIONI.map((x) => x.id));
+  assert.deepEqual(lista(Object.keys(g.LIVELLI)).sort(), D.AUTONOMIA.map((x) => x.id).sort());
+  assert.deepEqual(lista(Object.keys(g.QUANDO)).sort(), D.QUANDO.map((x) => x.id).sort());
+  assert.deepEqual(lista(Object.keys(g.INDIRIZZI)).sort(), D.INDIRIZZI.map((x) => x.id).sort());
+  assert.equal(L.statoVuoto().versione, 1);
+});
+
+test('un bilancio con tutte le situazioni compilate arriva intero al foglio', () => {
+  const D = require('../js/dati.js');
+  const g = ambiente();
+  const s = statoCompilato();
+  D.SITUAZIONI.forEach((x) => { s.sofare[x.id] = { livello: 'autonomo_nuovo', esempio: 'Esempio ' + x.id, esperienze: [], come: 'Come ' + x.id }; });
+  assert.equal(g.invia(s).ok, true);
+  const [h, r] = g.righe();
+  D.SITUAZIONI.forEach((x) => {
+    assert.equal(r[h.indexOf(x.verbo + ' — esempio')], 'Esempio ' + x.id);
+  });
+});

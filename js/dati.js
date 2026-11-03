@@ -122,7 +122,10 @@
       id: 'tirocinio',
       domanda: 'Che cosa ti ha insegnato il tirocinio che a scuola non avevi visto? Che cosa non ha funzionato?',
       aiuto: 'Se non hai ancora fatto il tirocinio, racconta un\'altra esperienza di lavoro o scrivi che cosa ti aspetti.',
-      esempio: '«In azienda i tempi erano molto più stretti. Il tutor all\'inizio non aveva tempo per me; ho imparato a fare domande precise.»'
+      esempio: '«In azienda i tempi erano molto più stretti. Il tutor all\'inizio non aveva tempo per me; ho imparato a fare domande precise.»',
+      // Dal terzo anno i tirocini sono più di uno: stesse domande, al plurale.
+      domandaPlurale: 'Che cosa ti hanno insegnato i tirocini che a scuola non avevi visto? Che cosa non ha funzionato?',
+      aiutoPlurale: 'Se non hai ancora fatto i tirocini, racconta un\'altra esperienza di lavoro o scrivi che cosa ti aspetti. Puoi parlare di tutti i tirocini che hai fatto, anche mettendoli a confronto.'
     },
     {
       id: 'ancora',

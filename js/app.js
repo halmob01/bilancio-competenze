@@ -350,8 +350,16 @@
     return [testa(metaSchermata(), 'Da dove parti'), corpo(intro, risposta)];
   }
 
+  // Dal terzo anno i tirocini sono più di uno: si scrive al plurale.
+  function tirociniPlurali() {
+    return stato.profilo.anno === 'anno3' || stato.profilo.anno === 'anno4';
+  }
+  function etichettaTirocinio() {
+    return tirociniPlurali() ? 'Tirocini o alternanza' : 'Tirocinio o alternanza';
+  }
+
   function schermataAnni() {
-    const nomi = { anno1: 'I anno', anno2: 'II anno', anno3: 'III anno', anno4: 'IV anno', tirocinio: 'Tirocinio o alternanza' };
+    const nomi = { anno1: 'I anno', anno2: 'II anno', anno3: 'III anno', anno4: 'IV anno', tirocinio: etichettaTirocinio() };
     // Si chiede solo degli anni già vissuti; quelli nascosti restano nei dati se lo studente cambia anno.
     const campi = L.anniDelPercorso(stato.profilo.anno).concat('tirocinio');
     const intro = [
@@ -360,7 +368,7 @@
       esempio('Vedi un esempio', h('p', { text: '«I anno: il primo circuito con il deviatore su un pannello di prova. Ho sbagliato i collegamenti e li ho rifatti due volte.»' }))
     ];
     const risposta = h('div', { class: 'anni' }, campi.map(function (k) {
-      return campo({ id: 'f-' + k, etichetta: nomi[k], area: true, righe: 3, valore: stato.anni[k], aggiorna: function (v) { stato.anni[k] = v; } });
+      return campo({ id: 'f-' + k, etichetta: nomi[k], suggerimento: (k === 'tirocinio' && tirociniPlurali()) ? 'Se ne hai fatti più di uno, scrivi qui di tutti.' : null, area: true, righe: 3, valore: stato.anni[k], aggiorna: function (v) { stato.anni[k] = v; } });
     }));
     return [testa(metaSchermata(), stato.profilo.anno === 'anno1' ? 'Il tuo primo anno in poche righe' : 'Il tuo percorso in poche righe'), corpo(intro, risposta)];
   }
@@ -465,7 +473,7 @@
       aiuto('L\'esempio serve solo a capire che cosa scrivere. Nel bilancio entra soltanto quello che hai fatto davvero.'),
       esempio('Vedi un esempio (non è una tua esperienza)', es),
       anni.length ? esempio('I tuoi appunti sul percorso', h('dl', null, anni.map(function (k) {
-        return [h('dt', { text: L.nomeQuando(k) || 'Tirocinio' }), h('dd', { text: stato.anni[k] })];
+        return [h('dt', { text: k === 'tirocinio' ? etichettaTirocinio() : L.nomeQuando(k) }), h('dd', { text: stato.anni[k] })];
       }))) : null
     ];
     const pieneAbbastanza = stato.esperienze.length >= L.MAX_ESPERIENZE;
@@ -560,10 +568,12 @@
 
   // ---------- 04 Uno sguardo critico ----------
   function schermataSguardo(g) {
-    const intro = [aiuto(g.aiuto), esempio('Vedi un esempio', h('p', { text: g.esempio }))];
+    const plurale = tirociniPlurali() && g.domandaPlurale;
+    const domanda = plurale ? g.domandaPlurale : g.domanda;
+    const intro = [aiuto(plurale ? g.aiutoPlurale : g.aiuto), esempio('Vedi un esempio', h('p', { text: g.esempio }))];
     const risposta = campo({ id: 'f-sg-' + g.id, etichettaDa: 'titolo-schermata', area: true, lungo: true, valore: stato.sguardo[g.id],
       aggiorna: function (v) { stato.sguardo[g.id] = v; } });
-    return [testa(metaSchermata(), g.domanda), corpo(intro, risposta)];
+    return [testa(metaSchermata(), domanda), corpo(intro, risposta)];
   }
 
   // ---------- 05 Bilancio ----------

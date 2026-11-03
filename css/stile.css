@@ -321,14 +321,12 @@ dialog > * + * { margin-top: 14px; }
 .cv__parte { padding: 18px 0 4px; }
 .cv__parte h3 { font-weight: 600; font-size: .85em; letter-spacing: .08em; text-transform: uppercase; color: var(--cv-titoli); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--bc-ink-10); }
 .cv--impag-modello .cv__parte h3 { border-bottom-color: var(--cv-colore); }
-.cv--impag-originale .t-mod, .cv--impag-originale .t-eu, .cv--impag-modello .t-orig, .cv--impag-modello .t-eu,
-.cv--impag-europass .t-orig, .cv--impag-europass .t-mod { display: none; }
+.cv--impag-originale .t-mod, .cv--impag-modello .t-orig { display: none; }
 /* Ordine delle sezioni, deciso dall'impaginazione */
 .cv__parte--profilo { order: 1; }
 .cv__parte--competenze { order: 4; } .cv__parte--lingue { order: 5; } .cv__parte--digitali { order: 6; } .cv__parte--altro { order: 7; }
 .cv--impag-originale .cv__parte--formazione { order: 2; } .cv--impag-originale .cv__parte--esperienze { order: 3; }
-.cv--impag-modello .cv__parte--esperienze, .cv--impag-europass .cv__parte--esperienze { order: 2; }
-.cv--impag-modello .cv__parte--formazione, .cv--impag-europass .cv__parte--formazione { order: 3; }
+.cv--impag-modello .cv__parte--esperienze { order: 2; } .cv--impag-modello .cv__parte--formazione { order: 3; }
 .cv__consenso { order: 8; } .cv__firma { order: 9; }
 .cv__riga { display: grid; grid-template-columns: 1fr; gap: 2px; padding: 8px 0; }
 @media (min-width: 640px) { .cv__riga { grid-template-columns: 9.5em 1fr; gap: 16px; } }
@@ -342,17 +340,28 @@ dialog > * + * { margin-top: 14px; }
 .cv__firma { margin-top: 20px; font-size: .94em; }
 .cv__firma-riga { display: inline-block; width: 12em; border-bottom: 1px solid var(--bc-ink); vertical-align: bottom; }
 .cv--senza-firma .cv__firma { display: none; }
-/* Europass: titolo di sezione a sinistra con filetto, date nella colonna sinistra, contatti in elenco */
-.cv--impag-europass .cv__testa { border-bottom: 0; padding-bottom: 8px; }
-.cv--impag-europass .cv__nome { font-family: var(--f-sans); font-weight: 600; text-transform: none; letter-spacing: 0; font-size: calc(clamp(26px, 4.4vw, 38px) * var(--cv-s)); line-height: 1.1; }
-.cv--impag-europass .cv__occupazione { font-weight: 600; }
+/* Europass: struttura propria (vedi cvEuropass in app.js). Blu ufficiale #0E4194 come colore iniziale. */
+.cv--impag-europass .cv__testa { border-bottom: 0; padding-bottom: 4px; align-items: center; }
+.cv--impag-europass .cv__nome { font-family: var(--f-sans); font-weight: 700; text-transform: none; letter-spacing: 0; color: var(--bc-ink); font-size: calc(clamp(26px, 4.4vw, 36px) * var(--cv-s)); line-height: 1.1; margin-bottom: 8px; }
 .cv--impag-europass .cv__contatti { flex-direction: column; gap: 2px; }
-.cv--impag-europass .cv__contatti .meta { font-weight: 600; color: var(--cv-colore); font-size: .9em; }
+.cv--impag-europass .cv__contatti .meta { font-weight: 700; color: var(--bc-ink); font-size: .95em; margin-right: 6px; }
+.cv--impag-europass .eu-anagrafica { margin-top: 6px; font-size: .95em; }
 .cv--impag-europass .cv__parte { padding-top: 22px; }
-.cv--impag-europass .cv__parte h3 { font-size: .95em; letter-spacing: .04em; color: var(--cv-colore); border-bottom: 2px solid var(--cv-colore); }
-.cv--impag-europass .cv__periodo { font-weight: 600; color: var(--bc-ink); }
+.cv--impag-europass .cv__parte h3 { font-size: .95em; font-weight: 700; letter-spacing: .03em; color: var(--cv-titoli); border-bottom: 1px solid var(--cv-titoli); }
+.cv--impag-europass .cv__periodo { font-size: .95em; font-weight: 400; color: var(--bc-ink); }
+.cv--impag-europass .cv__titolo { font-weight: 700; }
 .cv--impag-europass .cv__sotto { color: var(--bc-ink); }
-@media (min-width: 640px) { .cv--impag-europass .cv__riga { grid-template-columns: 11em 1fr; } }
+@media (min-width: 640px) { .cv--impag-europass .cv__riga { grid-template-columns: 12em 1fr; } }
+.cv--impag-europass .cv__elenco { list-style: none; padding-left: 0; }
+.eu-madre { margin-bottom: 10px; }
+.eu-lingue-scroll { overflow-x: auto; }
+.eu-lingue { width: 100%; border-collapse: collapse; font-size: .9em; }
+.eu-lingue th, .eu-lingue td { border: 1px solid var(--cv-titoli); padding: 5px 8px; text-align: center; font-weight: 400; }
+.eu-lingue thead th { background: #e9eef8; color: var(--cv-titoli); font-weight: 700; }
+.eu-lingue thead th.eu-abilita { font-size: .85em; font-weight: 400; color: var(--bc-ink); }
+.eu-lingue tbody th { text-align: left; font-weight: 700; }
+.eu-lingue .eu-testo { text-align: left; }
+.eu-nota { margin-top: 8px; font-size: .8em; color: var(--bc-ink-60); }
 /* Caratteri */
 .cv--classico { font-family: var(--f-libro); }
 .cv--classico .cv__nome { font-family: var(--f-libro); letter-spacing: .04em; font-weight: 400; }
@@ -393,6 +402,9 @@ dialog > * + * { margin-top: 14px; }
   .cv__parte { break-inside: avoid; padding-top: 12px; }
   .cv__riga { grid-template-columns: 30mm 1fr; gap: 10px; break-inside: avoid; }
   .cv__periodo, .cv__sotto, .cv__consenso { color: #444; }
+  .cv--impag-europass .cv__periodo, .cv--impag-europass .cv__sotto { color: #000; }
+  .eu-lingue-scroll { overflow: visible; }
+  .eu-lingue, .cv__riga { break-inside: avoid; }
 }
 .anni .campo textarea { min-height: 96px; }
 .coppia { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; }

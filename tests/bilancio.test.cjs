@@ -332,3 +332,30 @@ test('i modelli del curriculum: Contemporaneo, Classico ed Europass', () => {
   assert.equal(L.normalizza({ cv: { formato: { impaginazione: 'europass' } } }).cv.formato.impaginazione, 'europass');
   assert.ok(!D.CV_CARATTERI.some((x) => /classico/i.test(x.nome)), 'nessun carattere chiamato come un modello');
 });
+
+test('Europass: lingue madri, livelli europei e testo libero senza traduzioni inventate', () => {
+  const r = L.lingueEuropass(['Italiano: madrelingua', 'Inglese: b1', 'Francese: B1 B1 A2 A2 A2', 'Spagnolo: base', 'Tedesco']);
+  assert.deepEqual(r.madre, ['Italiano']);
+  assert.deepEqual(r.altre[0], { lingua: 'Inglese', livelli: ['B1', 'B1', 'B1', 'B1', 'B1'], testo: '' });
+  assert.deepEqual(r.altre[1].livelli, ['B1', 'B1', 'A2', 'A2', 'A2']);
+  assert.deepEqual(r.altre[2], { lingua: 'Spagnolo', livelli: null, testo: 'base' }, '«base» non diventa un livello');
+  assert.equal(r.altre[3].livelli, null);
+  assert.deepEqual(L.lingueEuropass([]), { madre: [], altre: [] });
+  assert.equal(L.lingueEuropass(['Inglese: B7']).altre[0].livelli, null);
+});
+
+test('Europass: blu ufficiale tra i colori e dati anagrafici nel curriculum composto', () => {
+  assert.ok(D.CV_COLORI.some((c) => c.id === 'europass' && c.hex.toLowerCase() === '#0e4194'));
+  const s = L.statoVuoto();
+  s.cv.nascita = '14/03/2009'; s.cv.nazionalita = 'Italiana'; s.cv.patente = 'AM'; s.cv.lingue = 'Italiano: madrelingua\nInglese: B1';
+  const d = L.componiCV(s);
+  assert.deepEqual([d.nascita, d.nazionalita, d.patente], ['14/03/2009', 'Italiana', 'AM']);
+  assert.equal(d.lingueEu.altre[0].lingua, 'Inglese');
+  assert.equal(L.normalizza({ cv: { formato: { colore: 'europass' } } }).cv.formato.colore, 'europass');
+});
+
+test('nessun campo è obbligatorio per andare avanti e non restano scritte «facoltativo» nelle etichette', () => {
+  const app = fs.readFileSync(path.join(__dirname, '../js/app.js'), 'utf8');
+  assert.ok(!/\(facoltativ[oa]\)/.test(app));
+  assert.ok(!/class: 'pulsante navigazione__avanti'[^)]*disabled/.test(app), 'il pulsante Avanti non si disabilita mai');
+});

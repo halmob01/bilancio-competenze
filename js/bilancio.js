@@ -364,6 +364,31 @@
   }
 
   // Curriculum: solo le parole dello studente, ordinate. Nessuna riscrittura.
+  // Lingue nel formato Europass. Ogni riga è «Lingua: livello»:
+  // - «madrelingua» o «lingua madre» la mette tra le lingue madri;
+  // - un livello europeo (A1-C2) vale per tutte e cinque le abilità;
+  // - cinque livelli di seguito («B1 B1 A2 A2 A2») sono, nell'ordine: ascolto, lettura,
+  //   interazione orale, produzione orale, produzione scritta;
+  // - qualsiasi altro testo resta com'è, senza essere tradotto in un livello.
+  function lingueEuropass(righeLingue) {
+    const madre = [];
+    const altre = [];
+    righeLingue.forEach(function (r) {
+      const i = r.indexOf(':');
+      const nome = (i === -1 ? r : r.slice(0, i)).trim();
+      const resto = i === -1 ? '' : r.slice(i + 1).trim();
+      if (!nome) return;
+      if (/madre|madrelingua/i.test(resto)) { madre.push(nome); return; }
+      const liv = resto.toUpperCase().split(/[\s,;\/]+/).filter(Boolean);
+      const valido = function (x) { return /^[ABC][12]$/.test(x); };
+      let livelli = null;
+      if (liv.length === 1 && valido(liv[0])) livelli = [liv[0], liv[0], liv[0], liv[0], liv[0]];
+      else if (liv.length === 5 && liv.every(valido)) livelli = liv;
+      altre.push({ lingua: nome, livelli: livelli, testo: livelli ? '' : resto });
+    });
+    return { madre: madre, altre: altre };
+  }
+
   function componiCV(stato) {
     const c = stato.cv;
     const contatti = [];
@@ -408,6 +433,10 @@
       foto: c.foto,
       formato: c.formato,
       contatti: contatti,
+      nascita: c.nascita.trim(),
+      nazionalita: c.nazionalita.trim(),
+      patente: c.patente.trim(),
+      lingueEu: lingueEuropass(righe(c.lingue)),
       profilo: c.profilo.trim(),
       formazione: formazione,
       esperienze: esperienze,
@@ -448,6 +477,7 @@
     formatoMese: formatoMese,
     periodoLavoro: periodoLavoro,
     suggerisciCompetenze: suggerisciCompetenze,
+    lingueEuropass: lingueEuropass,
     componiCV: componiCV,
     avanzamento: avanzamento,
     nomeQuando: nomeQuando

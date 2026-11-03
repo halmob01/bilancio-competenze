@@ -238,7 +238,8 @@
     { id: 'blu', nome: 'Blu', hex: '#1f4e8c' },
     { id: 'verde', nome: 'Verde', hex: '#1e6b4a' },
     { id: 'rosso', nome: 'Rosso', hex: '#b3261e' },
-    { id: 'viola', nome: 'Viola', hex: '#6b2d7b' }
+    { id: 'viola', nome: 'Viola', hex: '#6b2d7b' },
+    { id: 'europass', nome: 'Blu Europass', hex: '#0e4194' }
   ];
   // Tipi di esperienza di lavoro per il curriculum.
   const CV_TIPI_LAVORO = [

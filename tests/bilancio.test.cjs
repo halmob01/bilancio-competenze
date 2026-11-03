@@ -323,10 +323,12 @@ test('le schermate del curriculum e il documento nel modello della scuola', () =
   assert.ok(app.includes("'Esperienze professionali'") && app.includes("'Istruzione e formazione'") && app.includes("'Interessi'"));
 });
 
-test('i modelli del curriculum: prima Contemporaneo, poi Classico', () => {
+test('i modelli del curriculum: Contemporaneo, Classico ed Europass', () => {
   assert.deepEqual(D.CV_IMPAGINAZIONI.map((x) => [x.id, x.nome]), [
     ['originale', 'Contemporaneo'],
-    ['modello', 'Classico']
+    ['modello', 'Classico'],
+    ['europass', 'Europass']
   ]);
+  assert.equal(L.normalizza({ cv: { formato: { impaginazione: 'europass' } } }).cv.formato.impaginazione, 'europass');
   assert.ok(!D.CV_CARATTERI.some((x) => /classico/i.test(x.nome)), 'nessun carattere chiamato come un modello');
 });

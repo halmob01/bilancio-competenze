@@ -321,12 +321,14 @@ dialog > * + * { margin-top: 14px; }
 .cv__parte { padding: 18px 0 4px; }
 .cv__parte h3 { font-weight: 600; font-size: .85em; letter-spacing: .08em; text-transform: uppercase; color: var(--cv-titoli); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--bc-ink-10); }
 .cv--impag-modello .cv__parte h3 { border-bottom-color: var(--cv-colore); }
-.cv--impag-originale .t-mod, .cv--impag-modello .t-orig { display: none; }
+.cv--impag-originale .t-mod, .cv--impag-originale .t-eu, .cv--impag-modello .t-orig, .cv--impag-modello .t-eu,
+.cv--impag-europass .t-orig, .cv--impag-europass .t-mod { display: none; }
 /* Ordine delle sezioni, deciso dall'impaginazione */
 .cv__parte--profilo { order: 1; }
 .cv__parte--competenze { order: 4; } .cv__parte--lingue { order: 5; } .cv__parte--digitali { order: 6; } .cv__parte--altro { order: 7; }
 .cv--impag-originale .cv__parte--formazione { order: 2; } .cv--impag-originale .cv__parte--esperienze { order: 3; }
-.cv--impag-modello .cv__parte--esperienze { order: 2; } .cv--impag-modello .cv__parte--formazione { order: 3; }
+.cv--impag-modello .cv__parte--esperienze, .cv--impag-europass .cv__parte--esperienze { order: 2; }
+.cv--impag-modello .cv__parte--formazione, .cv--impag-europass .cv__parte--formazione { order: 3; }
 .cv__consenso { order: 8; } .cv__firma { order: 9; }
 .cv__riga { display: grid; grid-template-columns: 1fr; gap: 2px; padding: 8px 0; }
 @media (min-width: 640px) { .cv__riga { grid-template-columns: 9.5em 1fr; gap: 16px; } }
@@ -340,6 +342,17 @@ dialog > * + * { margin-top: 14px; }
 .cv__firma { margin-top: 20px; font-size: .94em; }
 .cv__firma-riga { display: inline-block; width: 12em; border-bottom: 1px solid var(--bc-ink); vertical-align: bottom; }
 .cv--senza-firma .cv__firma { display: none; }
+/* Europass: titolo di sezione a sinistra con filetto, date nella colonna sinistra, contatti in elenco */
+.cv--impag-europass .cv__testa { border-bottom: 0; padding-bottom: 8px; }
+.cv--impag-europass .cv__nome { font-family: var(--f-sans); font-weight: 600; text-transform: none; letter-spacing: 0; font-size: calc(clamp(26px, 4.4vw, 38px) * var(--cv-s)); line-height: 1.1; }
+.cv--impag-europass .cv__occupazione { font-weight: 600; }
+.cv--impag-europass .cv__contatti { flex-direction: column; gap: 2px; }
+.cv--impag-europass .cv__contatti .meta { font-weight: 600; color: var(--cv-colore); font-size: .9em; }
+.cv--impag-europass .cv__parte { padding-top: 22px; }
+.cv--impag-europass .cv__parte h3 { font-size: .95em; letter-spacing: .04em; color: var(--cv-colore); border-bottom: 2px solid var(--cv-colore); }
+.cv--impag-europass .cv__periodo { font-weight: 600; color: var(--bc-ink); }
+.cv--impag-europass .cv__sotto { color: var(--bc-ink); }
+@media (min-width: 640px) { .cv--impag-europass .cv__riga { grid-template-columns: 11em 1fr; } }
 /* Caratteri */
 .cv--classico { font-family: var(--f-libro); }
 .cv--classico .cv__nome { font-family: var(--f-libro); letter-spacing: .04em; font-weight: 400; }

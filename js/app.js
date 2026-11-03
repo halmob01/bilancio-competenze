@@ -170,7 +170,7 @@
       },
         h('span', { class: 'meta rail__num', text: String(i + 1).padStart(2, '0') }),
         h('span', { class: 'rail__nome', text: s.titolo }),
-        h('span', { class: 'meta rail__stato', text: (s.facoltativa ? 'Facoltativo · ' : '') + STATO_TESTO[av.stati[i]] })
+        h('span', { class: 'meta rail__stato', text: STATO_TESTO[av.stati[i]] })
       ));
     });
   }
@@ -181,7 +181,7 @@
     const el = $('indice-elenco');
     el.textContent = '';
     aggiungi(el, vociIndice('indice-dialogo__voce'));
-    if (vista) $('tappa-stato').textContent = (D.SEZIONI[vista.s].facoltativa ? 'Facoltativo · ' : '') + STATO_TESTO[L.statoSezione(stato, D.SEZIONI[vista.s].id)];
+    if (vista) $('tappa-stato').textContent = STATO_TESTO[L.statoSezione(stato, D.SEZIONI[vista.s].id)];
   }
 
   function aggiornaTestata() {
@@ -320,8 +320,7 @@
         h('ol', null, D.SEZIONI.map(function (s, i) {
           return h('li', null,
             h('span', { class: 'meta', text: String(i + 1).padStart(2, '0') }),
-            h('span', { text: s.titolo }),
-            s.facoltativa ? h('span', { class: 'meta', text: 'Facoltativo' }) : null);
+            h('span', { text: s.titolo }));
         }))));
   }
 
@@ -845,9 +844,14 @@
   const FRASE_CONSENSO = 'Autorizzo il trattamento dei dati personali contenuti nel mio curriculum vitae in base all\'art. 13 del D. Lgs. 196/2003 e all\'art. 13 del Regolamento UE 2016/679 relativo alla protezione delle persone fisiche con riguardo al trattamento dei dati personali.';
 
   // Ogni sezione ha un titolo per ciascuna impaginazione; l'ordine delle sezioni lo decide il CSS.
+  const TITOLI_EUROPASS = {
+    profilo: 'Profilo', esperienze: 'Esperienza professionale', formazione: 'Istruzione e formazione',
+    competenze: 'Competenze professionali', lingue: 'Competenze linguistiche', digitali: 'Competenze digitali', altro: 'Informazioni aggiuntive'
+  };
   function cvSezione(chiave, titoloOriginale, titoloModello, contenuto) {
     return h('section', { class: 'cv__parte cv__parte--' + chiave },
-      h('h3', null, h('span', { class: 't-orig', text: titoloOriginale }), h('span', { class: 't-mod', text: titoloModello })),
+      h('h3', null, h('span', { class: 't-orig', text: titoloOriginale }), h('span', { class: 't-mod', text: titoloModello }),
+        h('span', { class: 't-eu', text: TITOLI_EUROPASS[chiave] })),
       contenuto);
   }
 
@@ -926,6 +930,12 @@
     const f = stato.cv.formato;
     const cambia = function (chiave, valore) {
       f[chiave] = valore;
+      // Europass nasce blu: se il colore era ancora il nero predefinito lo si porta al blu (resta modificabile).
+      if (chiave === 'impaginazione' && valore === 'europass' && f.colore === 'nero') {
+        f.colore = 'blu';
+        const blu = $('cv-colore-blu');
+        if (blu) blu.checked = true;
+      }
       modificato({ aspetto: true });
       applicaAspetto(doc);
       if (cvManuale) applicaAspetto(cvManuale);

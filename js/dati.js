@@ -164,7 +164,6 @@
     {
       id: 'cv',
       titolo: 'Curriculum vitae',
-      facoltativa: true,
       schermate: [
         { id: 'contatti', titolo: 'I tuoi dati' },
         { id: 'profilo', titolo: 'Che lavoro cerchi' },
@@ -251,7 +250,8 @@
   ];
   const CV_IMPAGINAZIONI = [
     { id: 'originale', nome: 'Contemporaneo' },
-    { id: 'modello', nome: 'Classico' }
+    { id: 'modello', nome: 'Classico' },
+    { id: 'europass', nome: 'Europass' }
   ];
   const CV_CARATTERI = [
     { id: 'moderno', nome: 'Moderno' },

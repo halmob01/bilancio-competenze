@@ -323,10 +323,75 @@ test('le schermate del curriculum e il documento nel modello della scuola', () =
   assert.ok(app.includes("'Esperienze professionali'") && app.includes("'Istruzione e formazione'") && app.includes("'Interessi'"));
 });
 
-test('i modelli del curriculum: prima Contemporaneo, poi Classico', () => {
+test('i modelli del curriculum: Contemporaneo, Classico ed Europass', () => {
   assert.deepEqual(D.CV_IMPAGINAZIONI.map((x) => [x.id, x.nome]), [
     ['originale', 'Contemporaneo'],
-    ['modello', 'Classico']
+    ['modello', 'Classico'],
+    ['europass', 'Europass']
   ]);
+  assert.equal(L.normalizza({ cv: { formato: { impaginazione: 'europass' } } }).cv.formato.impaginazione, 'europass');
   assert.ok(!D.CV_CARATTERI.some((x) => /classico/i.test(x.nome)), 'nessun carattere chiamato come un modello');
+});
+
+test('Europass: lingue madri, livelli europei e testo libero senza traduzioni inventate', () => {
+  const r = L.lingueEuropass(['Italiano: madrelingua', 'Inglese: b1', 'Francese: B1 B1 A2 A2 A2', 'Spagnolo: base', 'Tedesco']);
+  assert.deepEqual(r.madre, ['Italiano']);
+  assert.deepEqual(r.altre[0], { lingua: 'Inglese', livelli: ['B1', 'B1', 'B1', 'B1', 'B1'], testo: '' });
+  assert.deepEqual(r.altre[1].livelli, ['B1', 'B1', 'A2', 'A2', 'A2']);
+  assert.deepEqual(r.altre[2], { lingua: 'Spagnolo', livelli: null, testo: 'base' }, '«base» non diventa un livello');
+  assert.equal(r.altre[3].livelli, null);
+  assert.deepEqual(L.lingueEuropass([]), { madre: [], altre: [] });
+  assert.equal(L.lingueEuropass(['Inglese: B7']).altre[0].livelli, null);
+});
+
+test('Europass: blu ufficiale tra i colori e dati anagrafici nel curriculum composto', () => {
+  assert.ok(D.CV_COLORI.some((c) => c.id === 'europass' && c.hex.toLowerCase() === '#0e4194'));
+  const s = L.statoVuoto();
+  s.cv.nascita = '14/03/2009'; s.cv.nazionalita = 'Italiana'; s.cv.patente = 'AM'; s.cv.lingue = 'Italiano: madrelingua\nInglese: B1';
+  const d = L.componiCV(s);
+  assert.deepEqual([d.nascita, d.nazionalita, d.patente], ['14/03/2009', 'Italiana', 'AM']);
+  assert.equal(d.lingueEu.altre[0].lingua, 'Inglese');
+  assert.equal(L.normalizza({ cv: { formato: { colore: 'europass' } } }).cv.formato.colore, 'europass');
+});
+
+test('nessun campo è obbligatorio per andare avanti e non restano scritte «facoltativo» nelle etichette', () => {
+  const app = fs.readFileSync(path.join(__dirname, '../js/app.js'), 'utf8');
+  assert.ok(!/\(facoltativ[oa]\)/.test(app));
+  assert.ok(!/class: 'pulsante navigazione__avanti'[^)]*disabled/.test(app), 'il pulsante Avanti non si disabilita mai');
+});
+
+test('lingue scelte con frasi semplici: il livello europeo resta dietro le quinte', () => {
+  const s = L.statoVuoto();
+  const it = Object.assign(L.linguaVuota(), { nome: 'Italiano', madre: true });
+  const en = Object.assign(L.linguaVuota(), { nome: 'Inglese' });
+  Object.keys(en.livelli).forEach((k) => { en.livelli[k] = 'B1'; });
+  const fr = Object.assign(L.linguaVuota(), { nome: 'Francese' });
+  Object.assign(fr.livelli, { ascolto: 'A2', lettura: 'B1', interazione: 'A1' });
+  s.cv.lingueElenco = [it, en, fr, Object.assign(L.linguaVuota(), { nome: '   ' })];
+  const d = L.componiCV(s);
+  assert.deepEqual(d.lingue, ['Italiano: madrelingua', 'Inglese: intermedio', 'Francese: ascolto elementare, lettura intermedio, conversazione base']);
+  assert.deepEqual(d.lingueEu.madre, ['Italiano']);
+  assert.deepEqual(d.lingueEu.altre[0].livelli, ['B1', 'B1', 'B1', 'B1', 'B1']);
+  assert.deepEqual(d.lingueEu.altre[1].livelli, ['A2', 'B1', 'A1', '', '']);
+  D.LINGUA_LIVELLI.forEach((x) => assert.ok(!/^[ABC][12]$/.test(x.scelta) && x.scelta.length > 10, 'frasi, non codici'));
+  assert.equal(L.statoSezione(s, 'cv'), 'in_corso');
+  const n = L.normalizza(JSON.parse(JSON.stringify(s)));
+  assert.equal(n.cv.lingueElenco.length, 4);
+  assert.equal(L.normalizza({ cv: { lingueElenco: [{ nome: 'X', livelli: { ascolto: 'C9', lettura: 'C2' } }] } }).cv.lingueElenco[0].livelli.ascolto, '');
+  assert.deepEqual(D.LINGUA_LIVELLI.map((x) => x.id), ['A1', 'A2', 'B1', 'B2', 'C1', 'C2']);
+  assert.equal(D.LINGUA_LIVELLI[5].scelta, 'Come un madrelingua');
+  assert.equal(L.normalizza({ cv: { lingueElenco: new Array(30).fill({ nome: 'Y' }) } }).cv.lingueElenco.length, L.MAX_LINGUE);
+});
+
+test('senza elenco di lingue valgono ancora le righe di testo delle versioni precedenti', () => {
+  const s = L.statoVuoto();
+  s.cv.lingue = 'Italiano: madrelingua';
+  assert.deepEqual(L.componiCV(s).lingue, ['Italiano: madrelingua']);
+});
+
+test('il logo Europass è nel repository ed è usato solo dal modello Europass', () => {
+  const app = fs.readFileSync(path.join(__dirname, '../js/app.js'), 'utf8');
+  assert.ok(fs.existsSync(path.join(__dirname, '../img/europass-logo.png')));
+  assert.equal(app.split('img/europass-logo.png').length - 1, 1);
+  assert.ok(app.indexOf('img/europass-logo.png') > app.indexOf('function cvEuropass'));
 });

@@ -14,6 +14,7 @@
   const MAX_FORMAZIONE = 6;
   const MAX_LAVORO = 10;
   const MAX_PROFILO = 600;
+  const MAX_LINGUE = 8;
   const MAX_FOTO = 150000;
 
   const CAMPI_ESPERIENZA = ['titolo', 'quando', 'contesto', 'azione', 'prova', 'difficolta', 'aiuto', 'autonomia'];
@@ -53,8 +54,15 @@
       formazione: [],
       lavoro: [],
       competenze: '', lingue: '', digitali: '', altro: '',
+      lingueElenco: [],
       consenso: false
     };
+  }
+
+  function linguaVuota() {
+    const livelli = {};
+    DATI.LINGUA_ABILITA.forEach(function (a) { livelli[a.id] = ''; });
+    return { id: 'g' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), nome: '', madre: false, livelli: livelli };
   }
 
   function lavoroVuoto(tipo) {
@@ -165,6 +173,17 @@
     s.cv.profilo = testo(c.profilo, MAX_PROFILO);
     ['competenze', 'lingue', 'digitali', 'altro'].forEach(function (k) { s.cv[k] = testo(c[k], MAX_LUNGO); });
     s.cv.consenso = c.consenso === true;
+    const idG = {};
+    (Array.isArray(c.lingueElenco) ? c.lingueElenco : []).slice(0, MAX_LINGUE).forEach(function (g) {
+      if (!g || typeof g !== 'object') return;
+      let id = testo(g.id, 40);
+      if (!id || idG[id]) id = linguaVuota().id;
+      idG[id] = true;
+      const n = { id: id, nome: testo(g.nome, 60), madre: g.madre === true, livelli: {} };
+      const l0 = g.livelli && typeof g.livelli === 'object' ? g.livelli : {};
+      DATI.LINGUA_ABILITA.forEach(function (a) { n.livelli[a.id] = inElenco(l0[a.id], DATI.LINGUA_LIVELLI); });
+      s.cv.lingueElenco.push(n);
+    });
     const idF = {};
     (Array.isArray(c.formazione) ? c.formazione : []).slice(0, MAX_FORMAZIONE).forEach(function (f) {
       if (!f || typeof f !== 'object') return;
@@ -252,8 +271,8 @@
       const c2 = componiCV(stato);
       const toccato = pieno(c.telefono) || pieno(c.email) || pieno(c.citta) || pieno(c.profilo) ||
         c.formazione.some(function (f) { return pieno(f.titolo); }) || c.lavoro.some(function (l) { return pieno(l.azienda) || pieno(l.mansione); }) ||
-        pieno(c.competenze) || pieno(c.lingue) || pieno(c.digitali) || pieno(c.altro);
-      if (c2.mancanti.length === 0 && (pieno(c.competenze) || pieno(c.lingue))) return 'completa';
+        pieno(c.competenze) || c2.lingue.length > 0 || pieno(c.digitali) || pieno(c.altro);
+      if (c2.mancanti.length === 0 && (pieno(c.competenze) || c2.lingue.length > 0)) return 'completa';
       return toccato ? 'in_corso' : 'vuota';
     } else if (sezId === 'orientamento') {
       if (pieno(stato.orientamento.testo)) return 'completa';
@@ -364,6 +383,58 @@
   }
 
   // Curriculum: solo le parole dello studente, ordinate. Nessuna riscrittura.
+  // Lingue nel formato Europass. Ogni riga è «Lingua: livello»:
+  // - «madrelingua» o «lingua madre» la mette tra le lingue madri;
+  // - un livello europeo (A1-C2) vale per tutte e cinque le abilità;
+  // - cinque livelli di seguito («B1 B1 A2 A2 A2») sono, nell'ordine: ascolto, lettura,
+  //   interazione orale, produzione orale, produzione scritta;
+  // - qualsiasi altro testo resta com'è, senza essere tradotto in un livello.
+  function lingueEuropass(righeLingue) {
+    const madre = [];
+    const altre = [];
+    righeLingue.forEach(function (r) {
+      const i = r.indexOf(':');
+      const nome = (i === -1 ? r : r.slice(0, i)).trim();
+      const resto = i === -1 ? '' : r.slice(i + 1).trim();
+      if (!nome) return;
+      if (/madre|madrelingua/i.test(resto)) { madre.push(nome); return; }
+      const liv = resto.toUpperCase().split(/[\s,;\/]+/).filter(Boolean);
+      const valido = function (x) { return /^[ABC][12]$/.test(x); };
+      let livelli = null;
+      if (liv.length === 1 && valido(liv[0])) livelli = [liv[0], liv[0], liv[0], liv[0], liv[0]];
+      else if (liv.length === 5 && liv.every(valido)) livelli = liv;
+      altre.push({ lingua: nome, livelli: livelli, testo: livelli ? '' : resto });
+    });
+    return { madre: madre, altre: altre };
+  }
+
+  // Lingue dell'elenco strutturato: una riga di testo per gli altri modelli e i dati per la tabella Europass.
+  // Se l'elenco è vuoto valgono le righe di testo libero salvate da versioni precedenti.
+  function lingueDelCV(c) {
+    const elenco = (c.lingueElenco || []).filter(function (g) { return pieno(g.nome); });
+    if (!elenco.length) return { righe: righe(c.lingue), eu: lingueEuropass(righe(c.lingue)) };
+    const parola = function (id) { return (DATI.LINGUA_LIVELLI.find(function (x) { return x.id === id; }) || {}).breve || ''; };
+    const righeTesto = elenco.map(function (g) {
+      const nome = g.nome.trim();
+      if (g.madre) return nome + ': madrelingua';
+      const parti = DATI.LINGUA_ABILITA.filter(function (a) { return g.livelli[a.id]; });
+      if (!parti.length) return nome;
+      const uguali = parti.length === DATI.LINGUA_ABILITA.length && parti.every(function (a) { return g.livelli[a.id] === g.livelli[parti[0].id]; });
+      return nome + ': ' + (uguali ? parola(g.livelli[parti[0].id])
+        : parti.map(function (a) { return a.breve + ' ' + parola(g.livelli[a.id]); }).join(', '));
+    });
+    return {
+      righe: righeTesto,
+      eu: {
+        madre: elenco.filter(function (g) { return g.madre; }).map(function (g) { return g.nome.trim(); }),
+        altre: elenco.filter(function (g) { return !g.madre; }).map(function (g) {
+          const liv = DATI.LINGUA_ABILITA.map(function (a) { return g.livelli[a.id] || ''; });
+          return { lingua: g.nome.trim(), livelli: liv.some(Boolean) ? liv : null, testo: '' };
+        })
+      }
+    };
+  }
+
   function componiCV(stato) {
     const c = stato.cv;
     const contatti = [];
@@ -377,6 +448,8 @@
     const formazione = c.formazione.filter(function (f) { return pieno(f.titolo); }).map(function (f) {
       return { periodo: f.periodo.trim(), titolo: f.titolo.trim(), ente: f.ente.trim() };
     });
+
+    const lingue = lingueDelCV(c);
 
     const lavori = c.lavoro.filter(function (l) { return pieno(l.azienda) || pieno(l.mansione); });
     // Dalla più recente alla più vecchia, ma solo se tutte le date si possono confrontare.
@@ -408,11 +481,15 @@
       foto: c.foto,
       formato: c.formato,
       contatti: contatti,
+      nascita: c.nascita.trim(),
+      nazionalita: c.nazionalita.trim(),
+      patente: c.patente.trim(),
+      lingueEu: lingue.eu,
       profilo: c.profilo.trim(),
       formazione: formazione,
       esperienze: esperienze,
       competenze: righe(c.competenze),
-      lingue: righe(c.lingue),
+      lingue: lingue.righe,
       digitali: righe(c.digitali),
       altro: righe(c.altro),
       consenso: c.consenso === true,
@@ -435,6 +512,8 @@
     MAX_FORMAZIONE: MAX_FORMAZIONE,
     MAX_LAVORO: MAX_LAVORO,
     MAX_PROFILO: MAX_PROFILO,
+    MAX_LINGUE: MAX_LINGUE,
+    linguaVuota: linguaVuota,
     statoVuoto: statoVuoto,
     esperienzaVuota: esperienzaVuota,
     normalizza: normalizza,
@@ -448,6 +527,7 @@
     formatoMese: formatoMese,
     periodoLavoro: periodoLavoro,
     suggerisciCompetenze: suggerisciCompetenze,
+    lingueEuropass: lingueEuropass,
     componiCV: componiCV,
     avanzamento: avanzamento,
     nomeQuando: nomeQuando

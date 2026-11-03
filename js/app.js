@@ -170,7 +170,7 @@
       },
         h('span', { class: 'meta rail__num', text: String(i + 1).padStart(2, '0') }),
         h('span', { class: 'rail__nome', text: s.titolo }),
-        h('span', { class: 'meta rail__stato', text: (s.facoltativa ? 'Facoltativo · ' : '') + STATO_TESTO[av.stati[i]] })
+        h('span', { class: 'meta rail__stato', text: STATO_TESTO[av.stati[i]] })
       ));
     });
   }
@@ -181,7 +181,7 @@
     const el = $('indice-elenco');
     el.textContent = '';
     aggiungi(el, vociIndice('indice-dialogo__voce'));
-    if (vista) $('tappa-stato').textContent = (D.SEZIONI[vista.s].facoltativa ? 'Facoltativo · ' : '') + STATO_TESTO[L.statoSezione(stato, D.SEZIONI[vista.s].id)];
+    if (vista) $('tappa-stato').textContent = STATO_TESTO[L.statoSezione(stato, D.SEZIONI[vista.s].id)];
   }
 
   function aggiornaTestata() {
@@ -320,8 +320,7 @@
         h('ol', null, D.SEZIONI.map(function (s, i) {
           return h('li', null,
             h('span', { class: 'meta', text: String(i + 1).padStart(2, '0') }),
-            h('span', { text: s.titolo }),
-            s.facoltativa ? h('span', { class: 'meta', text: 'Facoltativo' }) : null);
+            h('span', { text: s.titolo }));
         }))));
   }
 
@@ -339,8 +338,8 @@
         valore: stato.profilo.indirizzo,
         aggiorna: function (id) { stato.profilo.indirizzo = id; modificato(); }
       }),
-      campo({ id: 'f-nome', etichetta: URL_INVIO ? 'Nome e cognome' : 'Nome e cognome (facoltativo)', suggerimento: URL_INVIO ? 'Serve per inviare il bilancio al docente.' : null, max: 80, autocomplete: 'name', valore: stato.profilo.nome, aggiorna: function (v) { stato.profilo.nome = v; } }),
-      campo({ id: 'f-classe', etichetta: 'Classe (facoltativo)', max: 40, valore: stato.profilo.classe, aggiorna: function (v) { stato.profilo.classe = v; } })
+      campo({ id: 'f-nome', etichetta: URL_INVIO ? 'Nome e cognome' : 'Nome e cognome', suggerimento: URL_INVIO ? 'Serve per inviare il bilancio al docente.' : null, max: 80, autocomplete: 'name', valore: stato.profilo.nome, aggiorna: function (v) { stato.profilo.nome = v; } }),
+      campo({ id: 'f-classe', etichetta: 'Classe', max: 40, valore: stato.profilo.classe, aggiorna: function (v) { stato.profilo.classe = v; } })
     ];
     return [testa(metaSchermata(), 'Da dove parti'), corpo(intro, risposta)];
   }
@@ -383,7 +382,7 @@
       testoCampo('difficolta', 'Che cosa non sapevi fare prima? Che cosa è stato difficile?', null, true),
       testoCampo('aiuto', 'Quale aiuto ti è servito?', 'Da chi o da che cosa: un compagno, il tutor, un manuale, un video, un errore.', true),
       h('details', { class: 'dettagli', open: pieno(e.contesto) || !!e.autonomia || e.situazioni.length > 0 },
-        h('summary', { text: 'Aggiungi dettagli (facoltativo)' }),
+        h('summary', { text: 'Aggiungi dettagli' }),
         h('div', { class: 'dettagli__corpo' },
           testoCampo('contesto', 'Dove eri e con chi?', null, true),
           gruppoScelte({
@@ -496,7 +495,7 @@
         campo({ id: p + 'esempio', etichetta: 'Un esempio concreto: quando l\'hai fatto e che cosa hai fatto?', area: true, valore: r.esempio,
           aggiorna: function (v) { r.esempio = v; aggiornaAvviso(); } }),
         conAzione.length ? h('div', { class: 'campo' },
-          h('label', { for: p + 'riprendi', text: 'Riprendi il testo da una tua esperienza (facoltativo)' }),
+          h('label', { for: p + 'riprendi', text: 'Riprendi il testo da una tua esperienza' }),
           h('select', { id: p + 'riprendi', onchange: function (ev) {
             const sc = conAzione.find(function (x) { return x.id === ev.target.value; });
             ev.target.value = '';
@@ -513,7 +512,7 @@
             conAzione.map(function (x) { return h('option', { value: x.id, text: pieno(x.titolo) ? x.titolo : 'Esperienza senza titolo' }); }))) : null,
         stato.esperienze.length
           ? gruppoScelte({
-            legenda: 'Collega una o più delle tue esperienze (facoltativo)', nome: p + 'esperienze', multipla: true,
+            legenda: 'Collega una o più delle tue esperienze', nome: p + 'esperienze', multipla: true,
             opzioni: stato.esperienze.map(function (e, i) { return { id: e.id, testo: e.titolo || 'Esperienza ' + (i + 1) }; }),
             valore: r.esperienze,
             aggiorna: function (id, attiva) {
@@ -526,9 +525,9 @@
             h('button', { type: 'button', class: 'pulsante pulsante--testo', onclick: function () { vaiA('esperienze', 'elenco'); } }, 'Vai alle esperienze')),
         campo({ id: p + 'come', etichetta: 'Come l\'hai imparato? Chi o che cosa ti ha aiutato?', area: true, valore: r.come, aggiorna: function (v) { r.come = v; } }));
     } else if (l && l.id === 'non_ancora') {
-      parti.push(campo({ id: p + 'come', etichetta: 'Che cosa ti servirebbe per impararlo? (facoltativo)', area: true, valore: r.come, aggiorna: function (v) { r.come = v; } }));
+      parti.push(campo({ id: p + 'come', etichetta: 'Che cosa ti servirebbe per impararlo?', area: true, valore: r.come, aggiorna: function (v) { r.come = v; } }));
     } else if (l && l.id === 'mai') {
-      parti.push(campo({ id: p + 'come', etichetta: 'Ti piacerebbe affrontarlo? In quale occasione? (facoltativo)', area: true, valore: r.come, aggiorna: function (v) { r.come = v; } }));
+      parti.push(campo({ id: p + 'come', etichetta: 'Ti piacerebbe affrontarlo? In quale occasione?', area: true, valore: r.come, aggiorna: function (v) { r.come = v; } }));
     }
     return h('section', { class: 'blocco', 'aria-labelledby': 'blocco-' + sit.id }, parti);
   }
@@ -674,11 +673,11 @@
       campo({ id: 'f-cv-citta', etichetta: 'Indirizzo e città', max: 80, autocomplete: 'street-address', suggerimento: 'Per esempio: via Roma 1, Rozzano (MI).', valore: c.citta, aggiorna: function (v) { c.citta = v; } }),
       campo({ id: 'f-cv-telefono', etichetta: 'Telefono', tipo: 'tel', max: 40, autocomplete: 'tel', valore: c.telefono, aggiorna: function (v) { c.telefono = v; } }),
       campo({ id: 'f-cv-email', etichetta: 'Email', tipo: 'email', max: 120, autocomplete: 'email', suggerimento: 'Un indirizzo semplice, per esempio nome.cognome@…', valore: c.email, aggiorna: function (v) { c.email = v; } }),
-      campo({ id: 'f-cv-nascita', etichetta: 'Data di nascita (facoltativa)', max: 40, suggerimento: 'Come vuoi che compaia, per esempio 14/03/2009.', valore: c.nascita, aggiorna: function (v) { c.nascita = v; } }),
-      campo({ id: 'f-cv-nazionalita', etichetta: 'Nazionalità (facoltativa)', max: 60, valore: c.nazionalita, aggiorna: function (v) { c.nazionalita = v; } }),
-      campo({ id: 'f-cv-patente', etichetta: 'Patente (facoltativa)', max: 40, suggerimento: 'Per esempio AM, oppure «in corso».', valore: c.patente, aggiorna: function (v) { c.patente = v; } }),
+      campo({ id: 'f-cv-nascita', etichetta: 'Data di nascita', max: 40, suggerimento: 'Come vuoi che compaia, per esempio 14/03/2009.', valore: c.nascita, aggiorna: function (v) { c.nascita = v; } }),
+      campo({ id: 'f-cv-nazionalita', etichetta: 'Nazionalità', max: 60, valore: c.nazionalita, aggiorna: function (v) { c.nazionalita = v; } }),
+      campo({ id: 'f-cv-patente', etichetta: 'Patente', max: 40, suggerimento: 'Per esempio AM, oppure «in corso».', valore: c.patente, aggiorna: function (v) { c.patente = v; } }),
       h('div', { class: 'campo' },
-        h('label', { for: 'f-cv-foto', text: 'Foto (facoltativa)' }),
+        h('label', { for: 'f-cv-foto', text: 'Foto' }),
         h('p', { class: 'campo__suggerimento', text: 'Una foto nitida, con sfondo semplice e un abbigliamento da colloquio. Resta su questo dispositivo.' }),
         c.foto ? h('img', { class: 'cv__anteprima-foto', src: c.foto, alt: 'La tua foto' }) : null,
         h('input', { type: 'file', id: 'f-cv-foto', accept: 'image/*', onchange: function (e) { caricaFoto(e.target.files[0]); e.target.value = ''; } }),
@@ -777,7 +776,7 @@
             campo({ id: p + 'mansione', etichetta: 'Mansione', max: 200, suggerimento: 'Il tuo ruolo, per esempio Aiuto elettricista.', valore: l.mansione, aggiorna: function (v) { l.mansione = v; } }),
             campo({ id: p + 'compiti', etichetta: 'Compiti svolti', area: true, righe: 4, suggerimento: 'Verbi all\'infinito o al passato. Competenze in grassetto: **così**.', valore: l.compiti, aggiorna: function (v) { l.compiti = v; } }),
             conAzione.length ? h('div', { class: 'campo' },
-              h('label', { for: p + 'riprendi', text: 'Riprendi il testo da una tua esperienza (facoltativo)' }),
+              h('label', { for: p + 'riprendi', text: 'Riprendi il testo da una tua esperienza' }),
               h('select', { id: p + 'riprendi', onchange: function (e) {
                 const sc = conAzione.find(function (x) { return x.id === e.target.value; });
                 e.target.value = '';
@@ -812,6 +811,60 @@
     return [testa(metaSchermata(), 'Le esperienze di lavoro'), corpo(intro, risposta)];
   }
 
+  // ----- Lingue: si sceglie tra frasi in italiano semplice, mai tra i codici europei -----
+  function selezioneLivello(o) {
+    return h('div', { class: 'campo' },
+      h('label', { for: o.id, text: o.etichetta }),
+      h('select', { id: o.id, onchange: function (e) { o.aggiorna(e.target.value); } },
+        h('option', { value: '', text: 'Scegli…' }),
+        D.LINGUA_LIVELLI.map(function (x) { return h('option', { value: x.id, text: x.scelta, selected: o.valore === x.id }); })));
+  }
+
+  function sezioneLingue() {
+    const c = stato.cv;
+    if (!c.lingueElenco.length) c.lingueElenco.push(L.linguaVuota());
+    return h('div', { class: 'lingue' },
+      h('h3', { class: 'lingue__titolo', text: 'Lingue' }),
+      h('ul', { class: 'schede', 'aria-label': 'Le tue lingue' }, c.lingueElenco.map(function (g, i) {
+        const p = 'f-cv-lg-' + g.id + '-';
+        const valori = D.LINGUA_ABILITA.map(function (a) { return g.livelli[a.id]; });
+        const tuttiUguali = valori[0] && valori.every(function (v) { return v === valori[0]; });
+        const diversi = valori.filter(Boolean).length > 0 && !tuttiUguali;
+        return h('li', { class: 'scheda scheda--aperta' },
+          h('div', { class: 'scheda__testa' },
+            h('span', { class: 'meta', text: String(i + 1).padStart(2, '0') }),
+            h('h4', { class: 'scheda__titolo', text: pieno(g.nome) ? g.nome : 'Nuova lingua' })),
+          h('div', { class: 'scheda__modulo' },
+            campo({ id: p + 'nome', etichetta: 'Lingua', max: 60, suggerimento: i === 0 ? 'Per esempio Italiano, Inglese, Spagnolo, Arabo.' : null, valore: g.nome, aggiorna: function (v) { g.nome = v; } }),
+            casella({ id: p + 'madre', testo: 'È la mia lingua madre', valore: g.madre,
+              aggiorna: function (v) { g.madre = v; modificato(); ridisegna(p + 'madre'); } }),
+            g.madre ? null : [
+              selezioneLivello({ id: p + 'generale', etichetta: 'Come te la cavi con questa lingua?', valore: tuttiUguali ? valori[0] : '',
+                aggiorna: function (v) {
+                  D.LINGUA_ABILITA.forEach(function (a) { g.livelli[a.id] = v; });
+                  modificato(); ridisegna(p + 'generale');
+                } }),
+              h('details', { class: 'dettagli', open: diversi },
+                h('summary', { text: 'Scegli abilità per abilità' }),
+                h('div', { class: 'dettagli__corpo' }, D.LINGUA_ABILITA.map(function (a) {
+                  return selezioneLivello({ id: p + a.id, etichetta: a.domanda, valore: g.livelli[a.id],
+                    aggiorna: function (v) { g.livelli[a.id] = v; modificato(); } });
+                })))]),
+          h('div', { class: 'scheda__azioni' },
+            c.lingueElenco.length > 1 ? h('button', { type: 'button', class: 'pulsante pulsante--testo', 'aria-label': 'Elimina la lingua ' + (pieno(g.nome) ? g.nome : i + 1),
+              onclick: function () {
+                c.lingueElenco = c.lingueElenco.filter(function (x) { return x.id !== g.id; });
+                modificato(); ridisegna('aggiungi-lingua');
+              } }, 'Elimina') : null));
+      })),
+      h('div', null, h('button', { type: 'button', class: 'pulsante pulsante--secondario', id: 'aggiungi-lingua', disabled: c.lingueElenco.length >= L.MAX_LINGUE,
+        onclick: function () {
+          const g = L.linguaVuota();
+          c.lingueElenco.push(g);
+          modificato(); ridisegna('f-cv-lg-' + g.id + '-nome');
+        } }, 'Aggiungi un\'altra lingua')));
+  }
+
   function schermataCVCompetenze() {
     const c = stato.cv;
     const intro = [
@@ -832,9 +885,9 @@
         if (nuove.length) c.competenze = (pieno(c.competenze) ? c.competenze.replace(/\s+$/, '') + '\n' : '') + nuove.join('\n');
         modificato(); ridisegna('f-cv-competenze');
       } }, 'Proponi dalle mie risposte')),
-      campo({ id: 'f-cv-lingue', etichetta: 'Lingue', area: true, righe: 3, suggerimento: 'Una per riga, con il livello. Per esempio: Italiano: madrelingua.', valore: c.lingue, aggiorna: function (v) { c.lingue = v; } }),
+      sezioneLingue(),
       campo({ id: 'f-cv-digitali', etichetta: 'Software e capacità digitali', area: true, righe: 3, suggerimento: 'Per esempio: Word buono, Excel base, programmi usati in azienda.', valore: c.digitali, aggiorna: function (v) { c.digitali = v; } }),
-      campo({ id: 'f-cv-altro', etichetta: 'Interessi (facoltativo)', area: true, righe: 3, suggerimento: 'Interessi e competenze maturate fuori da scuola: passioni, progetti, associazioni, volontariato.', valore: c.altro, aggiorna: function (v) { c.altro = v; } }),
+      campo({ id: 'f-cv-altro', etichetta: 'Interessi', area: true, righe: 3, suggerimento: 'Interessi e competenze maturate fuori da scuola: passioni, progetti, associazioni, volontariato.', valore: c.altro, aggiorna: function (v) { c.altro = v; } }),
       casella({ id: 'f-cv-consenso', testo: 'Aggiungi in fondo la frase sul trattamento dei dati personali', valore: c.consenso,
         aggiorna: function (v) { c.consenso = v; modificato(); } })
     ];
@@ -874,8 +927,73 @@
     if (luogo) luogo.textContent = luogoFirma(f.luogo);
   }
 
+  // Formato Europass: struttura propria (intestazione anagrafica, date a sinistra, tabella delle lingue).
+  function euSezione(titolo, contenuto) {
+    return h('section', { class: 'cv__parte' }, h('h3', { text: titolo }), contenuto);
+  }
+
+  function cvEuropass(d) {
+    const elenco = function (righe) { return h('ul', { class: 'cv__elenco' }, righe.map(function (r) { return h('li', null, conGrassetto(r)); })); };
+    const recapiti = d.contatti.filter(function (x) { return ['Indirizzo', 'Telefono', 'Email'].indexOf(x.etichetta) !== -1; });
+    const anagrafica = [d.nascita ? 'Data di nascita: ' + d.nascita : '', d.nazionalita ? 'Nazionalità: ' + d.nazionalita : ''].filter(Boolean);
+    const ABILITA = ['Ascolto', 'Lettura', 'Interazione', 'Produzione orale', 'Produzione scritta'];
+    const lin = d.lingueEu;
+    let lingue = null;
+    if (lin.madre.length || lin.altre.length) {
+      lingue = h('div', null,
+        lin.madre.length ? h('p', { class: 'eu-madre' }, h('strong', { text: 'Lingua madre: ' }), lin.madre.join(', ')) : null,
+        lin.altre.length ? h('div', { class: 'eu-lingue-scroll' }, h('table', { class: 'eu-lingue' },
+          h('thead', null,
+            h('tr', null, h('th', { rowspan: '2', text: 'Altre lingue' }), h('th', { colspan: '2', text: 'Comprensione' }), h('th', { colspan: '2', text: 'Parlato' }), h('th', { text: 'Scritto' })),
+            h('tr', null, ABILITA.map(function (a) { return h('th', { class: 'eu-abilita', text: a }); }))),
+          h('tbody', null, lin.altre.map(function (l) {
+            return h('tr', null, h('th', { scope: 'row', text: l.lingua }),
+              l.livelli
+                ? l.livelli.map(function (x) { return h('td', { text: x || '–' }); })
+                : h('td', { colspan: '5', class: 'eu-testo', text: l.testo || '' }));
+          })))) : null,
+        lin.altre.some(function (l) { return l.livelli; })
+          ? h('p', { class: 'eu-nota', text: 'Livelli: A1 e A2: utente base · B1 e B2: utente autonomo · C1 e C2: utente avanzato. Quadro comune europeo di riferimento per la conoscenza delle lingue.' }) : null);
+    }
+    const art = h('article', { class: 'cv', 'aria-label': 'Il tuo curriculum' },
+      h('img', { class: 'eu-logo', src: 'img/europass-logo.png', alt: 'Europass', contenteditable: 'false' }),
+      h('header', { class: 'cv__testa' },
+        d.foto ? h('img', { class: 'cv__foto', src: d.foto, alt: '', contenteditable: 'false' }) : null,
+        h('div', { class: 'cv__intestazione' },
+          h('p', { class: 'cv__nome', text: d.nome || 'Il tuo nome' }),
+          recapiti.length ? h('ul', { class: 'cv__contatti' }, recapiti.map(function (x) {
+            return h('li', null, h('span', { class: 'meta', text: x.etichetta + ':' }), ' ' + x.valore);
+          })) : null,
+          anagrafica.length ? h('p', { class: 'eu-anagrafica', text: anagrafica.join('  |  ') }) : null)),
+      d.occupazione ? euSezione('Occupazione desiderata', h('p', { class: 'cv__titolo', text: d.occupazione })) : null,
+      d.profilo ? euSezione('Profilo', h('p', { class: 'cv__profilo' }, conGrassetto(d.profilo))) : null,
+      d.esperienze.length ? euSezione('Esperienza lavorativa', h('div', null, d.esperienze.map(function (e) {
+        return h('div', { class: 'cv__riga' },
+          h('span', { class: 'cv__periodo', text: e.periodo }),
+          h('div', null,
+            h('p', { class: 'cv__titolo', text: e.titolo }),
+            [e.dove, e.tipo].filter(Boolean).length ? h('p', { class: 'cv__sotto', text: [e.dove, e.tipo].filter(Boolean).join(' · ') }) : null,
+            e.descrizione ? h('p', { class: 'cv__testo' }, conGrassetto(e.descrizione)) : null));
+      }))) : null,
+      d.formazione.length ? euSezione('Istruzione e formazione', h('div', null, d.formazione.map(function (f) {
+        return h('div', { class: 'cv__riga' },
+          h('span', { class: 'cv__periodo', text: f.periodo }),
+          h('div', null, h('p', { class: 'cv__titolo', text: f.titolo }), f.ente ? h('p', { class: 'cv__sotto', text: f.ente }) : null));
+      }))) : null,
+      lingue ? euSezione('Competenze linguistiche', lingue) : null,
+      d.competenze.length ? euSezione('Competenze professionali', elenco(d.competenze)) : null,
+      d.digitali.length ? euSezione('Competenze digitali', elenco(d.digitali)) : null,
+      d.patente ? euSezione('Patente di guida', h('p', { text: d.patente })) : null,
+      d.altro.length ? euSezione('Informazioni aggiuntive', elenco(d.altro)) : null,
+      d.consenso ? h('p', { class: 'cv__consenso', text: FRASE_CONSENSO }) : null,
+      h('p', { class: 'cv__firma' }, h('span', { class: 'cv__firma-luogo' }), dataOggi() + '   Firma ', h('span', { class: 'cv__firma-riga' })));
+    applicaAspetto(art);
+    return art;
+  }
+
   function cvDocumento() {
     const d = L.componiCV(stato);
+    if (stato.cv.formato.impaginazione === 'europass') return cvEuropass(d);
     const elenco = function (righe) { return h('ul', { class: 'cv__elenco' }, righe.map(function (r) { return h('li', null, conGrassetto(r)); })); };
     const art = h('article', { class: 'cv', 'aria-label': 'Il tuo curriculum' },
       h('header', { class: 'cv__testa' },
@@ -926,7 +1044,15 @@
     const f = stato.cv.formato;
     const cambia = function (chiave, valore) {
       f[chiave] = valore;
+      // Europass nasce nel suo blu: se il colore era ancora il nero predefinito lo si cambia (resta modificabile).
+      if (chiave === 'impaginazione' && valore === 'europass' && f.colore === 'nero') f.colore = 'europass';
       modificato({ aspetto: true });
+      // Europass ha una struttura diversa dagli altri modelli: il foglio si ricostruisce e le correzioni a mano decadono.
+      if (chiave === 'impaginazione' && (valore === 'europass') !== (doc.classList.contains('cv--impag-europass'))) {
+        cvManuale = null;
+        ridisegna('cv-impaginazione-' + valore);
+        return;
+      }
       applicaAspetto(doc);
       if (cvManuale) applicaAspetto(cvManuale);
     };

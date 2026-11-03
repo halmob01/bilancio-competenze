@@ -76,7 +76,10 @@
     }
   }
 
-  function modificato() {
+  let cvVersione = 0; // cambia a ogni modifica dei dati: invalida le correzioni scritte sul foglio
+
+  function modificato(opzioni) {
+    if (!opzioni || !opzioni.aspetto) cvVersione++;
     $('salvato').textContent = 'Modifiche in corso';
     clearTimeout(timerSalva);
     timerSalva = setTimeout(scriviArchivio, 500);
@@ -569,29 +572,82 @@
 
   // ---------- 06 Curriculum vitae ----------
   const PROFILO_ESEMPI = {
-    elettrico: '«Studente del quarto anno di Elettrico. Ho realizzato impianti civili in laboratorio e in tirocinio, con attenzione alla sicurezza. Cerco un\'azienda dove continuare a imparare.»',
-    informatica: '«Studente del quarto anno di Informatica. In tirocinio ho configurato computer e stampanti di rete e scritto una procedura per gli utenti. Mi piace capire perché un sistema non funziona.»',
-    estetica: '«Studentessa del quarto anno di Estetica. So accogliere la cliente e seguire un trattamento dalla preparazione della cabina al congedo, con cura dell\'igiene e puntualità.»'
+    elettrico: '«Studente del quarto anno di Elettrico. Ho realizzato impianti civili in laboratorio e in tirocinio, con attenzione alla sicurezza. Cerco un\'azienda dove continuare a imparare. Preciso, affidabile, curioso.»',
+    informatica: '«Studente del quarto anno di Informatica. In tirocinio ho configurato computer e stampanti di rete e scritto una procedura per gli utenti. Mi piace capire perché un sistema non funziona. Paziente, ordinato, curioso.»',
+    estetica: '«Studentessa del quarto anno di Estetica. So accogliere la cliente e seguire un trattamento dalla preparazione della cabina al congedo, con cura dell\'igiene. Puntuale, empatica, precisa.»'
   };
+
+  // Il testo del curriculum può avere parole in grassetto scritte tra due asterischi: **così**.
+  function conGrassetto(testo) {
+    return String(testo || '').split(/\*\*(.+?)\*\*/g).map(function (parte, i) {
+      return i % 2 ? h('strong', { text: parte }) : parte;
+    });
+  }
+
+  // Ridimensiona la foto nel browser (JPEG piccolo): non viene mai inviata altrove.
+  function caricaFoto(file) {
+    if (!file) return;
+    if (file.size > 15 * 1024 * 1024) { window.alert('La foto è troppo grande: scegline una più piccola.'); return; }
+    const fine = function (img) {
+      const lato = 480;
+      const k = Math.min(1, lato / Math.max(img.width, img.height));
+      const c = document.createElement('canvas');
+      c.width = Math.round(img.width * k);
+      c.height = Math.round(img.height * k);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      stato.cv.foto = c.toDataURL('image/jpeg', 0.85);
+      modificato();
+      ridisegna('f-cv-foto');
+    };
+    const errore = function () { window.alert('Non riesco a leggere questa foto: prova con un\'altra.'); };
+    if (window.createImageBitmap) {
+      window.createImageBitmap(file, { imageOrientation: 'from-image' }).then(fine, errore);
+    } else {
+      const url = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = function () { URL.revokeObjectURL(url); fine(img); };
+      img.onerror = errore;
+      img.src = url;
+    }
+  }
 
   function schermataCVContatti() {
     const c = stato.cv;
     const intro = [
       h('p', { text: 'Il curriculum è il foglio che consegni a un\'azienda o a un tutor. Qui scrivi i tuoi dati: servono solo per stamparlo.' }),
-      aiuto('I dati del curriculum restano su questo dispositivo: l\'app non li invia al docente. Scrivi solo ciò che vuoi far comparire sul foglio.',
-        'Il nome lo prendi dalla prima sezione' + (pieno(stato.profilo.nome) ? ': «' + stato.profilo.nome.trim() + '».' : ', dove non l\'hai ancora scritto.')),
-      esempio('Vedi un esempio di profilo', esempiPerIndirizzo(PROFILO_ESEMPI))
+      aiuto('I dati del curriculum, foto compresa, restano su questo dispositivo: l\'app non li invia al docente. Compila solo ciò che vuoi far comparire sul foglio.',
+        'Il nome lo prendi dalla prima sezione' + (pieno(stato.profilo.nome) ? ': «' + stato.profilo.nome.trim() + '».' : ', dove non l\'hai ancora scritto.'))
     ];
     const risposta = [
-      campo({ id: 'f-cv-citta', etichetta: 'Città di residenza', max: 80, autocomplete: 'address-level2', valore: c.citta, aggiorna: function (v) { c.citta = v; } }),
+      campo({ id: 'f-cv-citta', etichetta: 'Indirizzo e città', max: 80, autocomplete: 'street-address', suggerimento: 'Per esempio: via Roma 1, Rozzano (MI).', valore: c.citta, aggiorna: function (v) { c.citta = v; } }),
       campo({ id: 'f-cv-telefono', etichetta: 'Telefono', tipo: 'tel', max: 40, autocomplete: 'tel', valore: c.telefono, aggiorna: function (v) { c.telefono = v; } }),
       campo({ id: 'f-cv-email', etichetta: 'Email', tipo: 'email', max: 120, autocomplete: 'email', suggerimento: 'Un indirizzo semplice, per esempio nome.cognome@…', valore: c.email, aggiorna: function (v) { c.email = v; } }),
       campo({ id: 'f-cv-nascita', etichetta: 'Data di nascita (facoltativa)', max: 40, suggerimento: 'Come vuoi che compaia, per esempio 14/03/2009.', valore: c.nascita, aggiorna: function (v) { c.nascita = v; } }),
+      campo({ id: 'f-cv-nazionalita', etichetta: 'Nazionalità (facoltativa)', max: 60, valore: c.nazionalita, aggiorna: function (v) { c.nazionalita = v; } }),
       campo({ id: 'f-cv-patente', etichetta: 'Patente (facoltativa)', max: 40, suggerimento: 'Per esempio AM, oppure «in corso».', valore: c.patente, aggiorna: function (v) { c.patente = v; } }),
-      campo({ id: 'f-cv-profilo', etichetta: 'Profilo: chi sei in due o tre frasi', area: true, righe: 4, max: L.MAX_PROFILO,
-        suggerimento: 'Che cosa sai fare e che cosa cerchi. Massimo ' + L.MAX_PROFILO + ' caratteri.', valore: c.profilo, aggiorna: function (v) { c.profilo = v; } })
+      h('div', { class: 'campo' },
+        h('label', { for: 'f-cv-foto', text: 'Foto (facoltativa)' }),
+        h('p', { class: 'campo__suggerimento', text: 'Una foto nitida, con sfondo semplice e un abbigliamento da colloquio. Resta su questo dispositivo.' }),
+        c.foto ? h('img', { class: 'cv__anteprima-foto', src: c.foto, alt: 'La tua foto' }) : null,
+        h('input', { type: 'file', id: 'f-cv-foto', accept: 'image/*', onchange: function (e) { caricaFoto(e.target.files[0]); e.target.value = ''; } }),
+        c.foto ? h('div', null, h('button', { type: 'button', class: 'pulsante pulsante--testo', onclick: function () { c.foto = ''; modificato(); ridisegna('f-cv-foto'); } }, 'Togli la foto')) : null)
     ];
     return [testa(metaSchermata(), 'I tuoi dati'), corpo(intro, risposta)];
+  }
+
+  function schermataCVProfilo() {
+    const c = stato.cv;
+    const intro = [
+      h('p', { text: 'Chi legge il curriculum guarda prima di tutto qui: che lavoro cerchi e che persona sei.' }),
+      aiuto('Nel profilo scrivi i tuoi obiettivi e al massimo tre qualità, con parole tue e senza aggettivi generici.'),
+      esempio('Vedi un esempio di profilo', esempiPerIndirizzo(PROFILO_ESEMPI))
+    ];
+    const risposta = [
+      campo({ id: 'f-cv-occupazione', etichetta: 'Occupazione desiderata', max: 120, suggerimento: 'Il lavoro che cerchi, in poche parole. Per esempio: Tecnico elettricista, Addetta ai trattamenti estetici.', valore: c.occupazione, aggiorna: function (v) { c.occupazione = v; } }),
+      campo({ id: 'f-cv-profilo', etichetta: 'Profilo: obiettivi e qualità', area: true, righe: 5, max: L.MAX_PROFILO,
+        suggerimento: 'Massimo ' + L.MAX_PROFILO + ' caratteri. Per mettere una parola in grassetto scrivila tra due asterischi: **così**.', valore: c.profilo, aggiorna: function (v) { c.profilo = v; } })
+    ];
+    return [testa(metaSchermata(), 'Che lavoro cerchi'), corpo(intro, risposta)];
   }
 
   function schermataCVFormazione() {
@@ -638,7 +694,7 @@
     const c = stato.cv;
     const intro = [
       h('p', { text: 'Scegli quali delle esperienze che hai raccontato nella sezione 02 vuoi far comparire nel curriculum.' }),
-      aiuto('Nel curriculum compare il titolo e quello che hai fatto tu, con le parole che hai scritto nella scheda. Se il testo è troppo lungo, accorcialo nella scheda.',
+      aiuto('Per ognuna puoi cambiare la mansione e i compiti: così il curriculum può avere un testo più breve della scheda, senza modificare la scheda. Se lasci vuoto, usa quello che hai già scritto.',
         'Il tirocinio è già selezionato: puoi toglierlo.')
     ];
     const risposta = stato.esperienze.length ? [h('ul', { class: 'schede', 'aria-label': 'Le tue esperienze' }, stato.esperienze.map(function (e, i) {
@@ -654,12 +710,12 @@
           casella({ id: p + 'incluso', testo: 'Metti questa esperienza nel curriculum', valore: incluso,
             aggiorna: function (v) { x.incluso = v; modificato(); ridisegna(p + 'incluso'); } }),
           incluso ? [
-            campo({ id: p + 'dove', etichetta: 'Dove (azienda e città)', max: 200, valore: x.dove || '', aggiorna: function (v) { x.dove = v; } }),
-            campo({ id: p + 'periodo', etichetta: 'Periodo', max: 60, suggerimento: 'Per esempio marzo – maggio 2025.', valore: x.periodo || '', aggiorna: function (v) { x.periodo = v; } }),
-            pieno(e.azione)
-              ? h('p', { class: 'nota' }, 'Comparirà: «' + e.azione.trim().slice(0, 160) + (e.azione.trim().length > 160 ? '…' : '') + '» ',
-                h('button', { type: 'button', class: 'pulsante pulsante--testo', onclick: function () { vaiA('esperienze', 'elenco', e.id); } }, 'Modifica la scheda'))
-              : h('p', { class: 'avviso', text: 'In questa scheda manca che cosa hai fatto: nel curriculum comparirà solo il titolo.' })
+            campo({ id: p + 'dove', etichetta: 'Azienda e città', max: 200, valore: x.dove || '', aggiorna: function (v) { x.dove = v; } }),
+            campo({ id: p + 'periodo', etichetta: 'Periodo', max: 60, suggerimento: 'Da mese e anno a mese e anno, per esempio marzo 2025 – maggio 2025.', valore: x.periodo || '', aggiorna: function (v) { x.periodo = v; } }),
+            campo({ id: p + 'mansione', etichetta: 'Mansione', max: 200, suggerimento: 'Se vuoto: «' + (e.titolo || 'titolo della scheda') + '».', valore: x.mansione || '', aggiorna: function (v) { x.mansione = v; } }),
+            campo({ id: p + 'compiti', etichetta: 'Compiti svolti', area: true, righe: 3, suggerimento: 'Con verbi all\'infinito o al passato. Parole in grassetto: **così**. Se vuoto usa «che cosa hai fatto» della scheda.', valore: x.compiti || '', aggiorna: function (v) { x.compiti = v; } }),
+            pieno(e.azione) ? h('p', { class: 'nota' }, 'Nella scheda hai scritto: «' + e.azione.trim().slice(0, 160) + (e.azione.trim().length > 160 ? '…' : '') + '» ',
+              h('button', { type: 'button', class: 'pulsante pulsante--testo', onclick: function () { vaiA('esperienze', 'elenco', e.id); } }, 'Modifica la scheda')) : null
           ] : null));
     }))] : [
       h('p', { class: 'vuoto', text: 'Non hai ancora raccontato esperienze.' }),
@@ -674,9 +730,9 @@
       h('p', { text: 'Una riga per ogni voce. Evita gli aggettivi generici: meglio quello che sai fare davvero.' }),
       aiuto('«Proponi dalle mie risposte» aggiunge una frase per ogni situazione che hai dichiarato di saper fare e documentato con un esempio nella sezione 03. Poi correggi come vuoi.'),
       esempio('Vedi un esempio', h('dl', null,
-        h('dt', { text: 'Lingue' }), h('dd', { text: 'Italiano – madrelingua · Inglese – A2' }),
-        h('dt', { text: 'Digitali' }), h('dd', { text: 'Pacchetto Office, posta elettronica, programmi del mio settore' }),
-        h('dt', { text: 'Altro' }), h('dd', { text: 'Disponibile a lavorare su turni · Squadra di calcio dal 2019' })))
+        h('dt', { text: 'Lingue' }), h('dd', { text: 'Italiano: madrelingua · Inglese: intermedio' }),
+        h('dt', { text: 'Digitali' }), h('dd', { text: 'Word buono, Excel base, programmi del mio settore' }),
+        h('dt', { text: 'Interessi' }), h('dd', { text: 'Squadra di calcio dal 2019 · Volontariato in oratorio' })))
     ];
     const risposta = [
       campo({ id: 'f-cv-competenze', etichetta: 'Competenze professionali', area: true, righe: 5, suggerimento: 'Una per riga.', valore: c.competenze, aggiorna: function (v) { c.competenze = v; } }),
@@ -688,60 +744,151 @@
         if (nuove.length) c.competenze = (pieno(c.competenze) ? c.competenze.replace(/\s+$/, '') + '\n' : '') + nuove.join('\n');
         modificato(); ridisegna('f-cv-competenze');
       } }, 'Proponi dalle mie risposte')),
-      campo({ id: 'f-cv-lingue', etichetta: 'Lingue', area: true, righe: 3, suggerimento: 'Una per riga, con il livello. Per esempio: Italiano – madrelingua.', valore: c.lingue, aggiorna: function (v) { c.lingue = v; } }),
-      campo({ id: 'f-cv-digitali', etichetta: 'Competenze digitali', area: true, righe: 3, suggerimento: 'Programmi e strumenti che sai usare.', valore: c.digitali, aggiorna: function (v) { c.digitali = v; } }),
-      campo({ id: 'f-cv-altro', etichetta: 'Altro (facoltativo)', area: true, righe: 3, suggerimento: 'Disponibilità, interessi, volontariato, sport.', valore: c.altro, aggiorna: function (v) { c.altro = v; } }),
-      casella({ id: 'f-cv-consenso', testo: 'Aggiungi in fondo la frase sul trattamento dei dati personali (GDPR)', valore: c.consenso,
+      campo({ id: 'f-cv-lingue', etichetta: 'Lingue', area: true, righe: 3, suggerimento: 'Una per riga, con il livello. Per esempio: Italiano: madrelingua.', valore: c.lingue, aggiorna: function (v) { c.lingue = v; } }),
+      campo({ id: 'f-cv-digitali', etichetta: 'Software e capacità digitali', area: true, righe: 3, suggerimento: 'Per esempio: Word buono, Excel base, programmi usati in azienda.', valore: c.digitali, aggiorna: function (v) { c.digitali = v; } }),
+      campo({ id: 'f-cv-altro', etichetta: 'Interessi (facoltativo)', area: true, righe: 3, suggerimento: 'Interessi e competenze maturate fuori da scuola: passioni, progetti, associazioni, volontariato.', valore: c.altro, aggiorna: function (v) { c.altro = v; } }),
+      casella({ id: 'f-cv-consenso', testo: 'Aggiungi in fondo la frase sul trattamento dei dati personali', valore: c.consenso,
         aggiorna: function (v) { c.consenso = v; modificato(); } })
     ];
     return [testa(metaSchermata(), 'Competenze, lingue e altro'), corpo(intro, risposta)];
   }
 
+  // ----- Documento e aspetto -----
+  const FRASE_CONSENSO = 'Autorizzo il trattamento dei dati personali contenuti nel mio curriculum vitae in base all\'art. 13 del D. Lgs. 196/2003 e all\'art. 13 del Regolamento UE 2016/679 relativo alla protezione delle persone fisiche con riguardo al trattamento dei dati personali.';
+
   function cvSezione(titolo, contenuto) {
     return h('section', { class: 'cv__parte' }, h('h3', { text: titolo }), contenuto);
   }
 
+  function luogoFirma(v) { return pieno(v) ? v.trim() + ', ' : ''; }
+
+  function dataOggi() {
+    return new Date().toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  }
+
+  // Applica colore, carattere, dimensione e firma a un documento già costruito:
+  // non lo ricostruisce, così le correzioni scritte a mano nell'anteprima restano.
+  function applicaAspetto(el) {
+    const f = stato.cv.formato;
+    const col = D.CV_COLORI.find(function (x) { return x.id === f.colore; }) || D.CV_COLORI[0];
+    const dim = D.CV_DIMENSIONI.find(function (x) { return x.id === f.dimensione; }) || D.CV_DIMENSIONI[1];
+    el.style.setProperty('--cv-colore', col.hex);
+    el.style.setProperty('--cv-s', String(dim.scala));
+    D.CV_CARATTERI.forEach(function (x) { el.classList.toggle('cv--' + x.id, x.id === f.carattere); });
+    el.classList.toggle('cv--senza-firma', !f.firma);
+    const luogo = el.querySelector('.cv__firma-luogo');
+    if (luogo) luogo.textContent = luogoFirma(f.luogo);
+  }
+
   function cvDocumento() {
     const d = L.componiCV(stato);
-    const elenco = function (righe) { return h('ul', { class: 'cv__elenco' }, righe.map(function (r) { return h('li', { text: r }); })); };
-    return h('article', { class: 'cv', 'aria-label': 'Il tuo curriculum' },
+    const elenco = function (righe) { return h('ul', { class: 'cv__elenco' }, righe.map(function (r) { return h('li', null, conGrassetto(r)); })); };
+    const art = h('article', { class: 'cv', 'aria-label': 'Il tuo curriculum' },
       h('header', { class: 'cv__testa' },
-        h('p', { class: 'cv__nome', text: d.nome || 'Il tuo nome' }),
-        d.contatti.length ? h('ul', { class: 'cv__contatti' }, d.contatti.map(function (x) {
-          return h('li', null, h('span', { class: 'meta', text: x.etichetta }), ' ' + x.valore);
-        })) : null),
-      d.profilo ? cvSezione('Profilo', h('p', { class: 'cv__profilo', text: d.profilo })) : null,
-      d.formazione.length ? cvSezione('Istruzione e formazione', h('div', null, d.formazione.map(function (f) {
-        return h('div', { class: 'cv__riga' },
-          h('span', { class: 'cv__periodo', text: f.periodo }),
-          h('div', null, h('p', { class: 'cv__titolo', text: f.titolo }), f.ente ? h('p', { class: 'cv__sotto', text: f.ente }) : null));
-      }))) : null,
-      d.esperienze.length ? cvSezione('Esperienze', h('div', null, d.esperienze.map(function (e) {
+        d.foto ? h('img', { class: 'cv__foto', src: d.foto, alt: '', contenteditable: 'false' }) : null,
+        h('div', { class: 'cv__intestazione' },
+          h('p', { class: 'cv__nome', text: d.nome || 'Il tuo nome' }),
+          d.occupazione ? h('p', { class: 'cv__occupazione', text: d.occupazione }) : null,
+          d.contatti.length ? h('ul', { class: 'cv__contatti' }, d.contatti.map(function (x) {
+            return h('li', null, h('span', { class: 'meta', text: x.etichetta }), ' ' + x.valore);
+          })) : null)),
+      d.profilo ? cvSezione('Profilo', h('p', { class: 'cv__profilo' }, conGrassetto(d.profilo))) : null,
+      d.esperienze.length ? cvSezione('Esperienze professionali', h('div', null, d.esperienze.map(function (e) {
         return h('div', { class: 'cv__riga' },
           h('span', { class: 'cv__periodo', text: e.periodo }),
           h('div', null,
             h('p', { class: 'cv__titolo', text: e.titolo }),
             (e.dove || e.tipo) ? h('p', { class: 'cv__sotto', text: e.dove || e.tipo }) : null,
-            e.descrizione ? h('p', { class: 'cv__testo', text: e.descrizione }) : null));
+            e.descrizione ? h('p', { class: 'cv__testo' }, conGrassetto(e.descrizione)) : null));
+      }))) : null,
+      d.formazione.length ? cvSezione('Istruzione e formazione', h('div', null, d.formazione.map(function (f) {
+        return h('div', { class: 'cv__riga' },
+          h('span', { class: 'cv__periodo', text: f.periodo }),
+          h('div', null, h('p', { class: 'cv__titolo', text: f.titolo }), f.ente ? h('p', { class: 'cv__sotto', text: f.ente }) : null));
       }))) : null,
       d.competenze.length ? cvSezione('Competenze professionali', elenco(d.competenze)) : null,
       d.lingue.length ? cvSezione('Lingue', elenco(d.lingue)) : null,
-      d.digitali.length ? cvSezione('Competenze digitali', elenco(d.digitali)) : null,
-      d.altro.length ? cvSezione('Altre informazioni', elenco(d.altro)) : null,
-      d.consenso ? h('p', { class: 'cv__consenso', text: 'Autorizzo il trattamento dei dati personali contenuti nel presente curriculum ai sensi del Regolamento UE 2016/679 (GDPR).' }) : null);
+      d.digitali.length ? cvSezione('Software e capacità digitali', elenco(d.digitali)) : null,
+      d.altro.length ? cvSezione('Interessi', elenco(d.altro)) : null,
+      d.consenso ? h('p', { class: 'cv__consenso', text: FRASE_CONSENSO }) : null,
+      h('p', { class: 'cv__firma' }, h('span', { class: 'cv__firma-luogo' }), dataOggi() + '   Firma ', h('span', { class: 'cv__firma-riga' })));
+    applicaAspetto(art);
+    return art;
+  }
+
+  // Le correzioni scritte a mano nell'anteprima valgono finché i dati non cambiano.
+  let cvManuale = null;
+  let cvManualeVersione = -1;
+
+  function cvPerLaStampa() {
+    const base = (cvManuale && cvManualeVersione === cvVersione) ? cvManuale.cloneNode(true) : cvDocumento();
+    base.removeAttribute('contenteditable');
+    base.classList.remove('cv--modificabile');
+    applicaAspetto(base);
+    return base;
+  }
+
+  function pannelloAspetto(doc) {
+    const f = stato.cv.formato;
+    const cambia = function (chiave, valore) {
+      f[chiave] = valore;
+      modificato({ aspetto: true });
+      applicaAspetto(doc);
+      if (cvManuale) applicaAspetto(cvManuale);
+    };
+    return h('section', { class: 'aspetto', 'aria-labelledby': 'aspetto-titolo' },
+      h('h3', { id: 'aspetto-titolo', class: 'meta', text: 'Aspetto del curriculum' }),
+      h('fieldset', { class: 'campo' },
+        h('legend', { text: 'Colore dei titoli' }),
+        h('div', { class: 'colori' }, D.CV_COLORI.map(function (c) {
+          return h('label', { class: 'colore', for: 'cv-colore-' + c.id },
+            h('input', { type: 'radio', name: 'cv-colore', id: 'cv-colore-' + c.id, value: c.id, checked: f.colore === c.id,
+              onchange: function () { cambia('colore', c.id); } }),
+            h('span', { style: 'background:' + c.hex, 'aria-hidden': 'true' }),
+            h('span', { class: 'visivamente-nascosto', text: c.nome }));
+        }))),
+      gruppoScelte({ legenda: 'Carattere', nome: 'cv-carattere', riga: true, opzioni: D.CV_CARATTERI.map(function (x) { return { id: x.id, testo: x.nome }; }),
+        valore: f.carattere, aggiorna: function (id) { cambia('carattere', id); } }),
+      gruppoScelte({ legenda: 'Dimensione del testo', nome: 'cv-dimensione', riga: true, opzioni: D.CV_DIMENSIONI.map(function (x) { return { id: x.id, testo: x.nome }; }),
+        valore: f.dimensione, aggiorna: function (id) { cambia('dimensione', id); } }),
+      casella({ id: 'cv-firma', testo: 'Aggiungi data e riga per la firma', valore: f.firma, aggiorna: function (v) { cambia('firma', v); } }),
+      campo({ id: 'cv-luogo', etichetta: 'Luogo (per la firma)', max: 80, suggerimento: 'Per esempio Milano. Appare prima della data di oggi.', valore: f.luogo, aggiorna: function (v) { f.luogo = v; modificato({ aspetto: true }); applicaAspetto(doc); if (cvManuale) applicaAspetto(cvManuale); } }));
   }
 
   function schermataCVAnteprima() {
     const d = L.componiCV(stato);
+    const riuso = cvManuale && cvManualeVersione === cvVersione;
+    const doc = riuso ? cvManuale.cloneNode(true) : cvDocumento();
+    doc.setAttribute('contenteditable', 'true');
+    doc.setAttribute('spellcheck', 'true');
+    doc.setAttribute('role', 'textbox');
+    doc.setAttribute('aria-multiline', 'true');
+    doc.setAttribute('aria-label', 'Il tuo curriculum: puoi correggere il testo');
+    doc.classList.add('cv--modificabile');
+    applicaAspetto(doc);
+    const salva = function () { cvManuale = doc.cloneNode(true); cvManualeVersione = cvVersione; };
+    doc.addEventListener('input', salva);
+    // Incolla solo testo semplice: niente formattazioni che rovinano la pagina.
+    doc.addEventListener('paste', function (e) {
+      e.preventDefault();
+      const t = (e.clipboardData || window.clipboardData).getData('text');
+      document.execCommand('insertText', false, t);
+    });
     const risposta = [
       d.mancanti.length
         ? h('p', { class: 'avviso' }, 'Per un curriculum completo manca ancora: ' + d.mancanti.join(', ') + '.')
         : h('p', { class: 'nota', text: 'Il curriculum ha le informazioni essenziali. Rileggilo prima di stamparlo.' }),
+      aiuto('Clicca sul foglio per correggere una parola o una riga direttamente nel curriculum. Queste correzioni valgono solo per la stampa e restano finché non cambi i dati: per modifiche definitive usa «Modifica i dati».'),
+      pannelloAspetto(doc),
       h('div', { class: 'home__azioni' },
         h('button', { type: 'button', class: 'pulsante', onclick: function () { stampa('cv'); } }, 'Stampa il curriculum'),
-        h('button', { type: 'button', class: 'pulsante pulsante--testo', onclick: function () { vaiA('cv', 'contatti'); } }, 'Modifica i dati')),
+        h('button', { type: 'button', class: 'pulsante pulsante--testo', onclick: function () { vaiA('cv', 'contatti'); } }, 'Modifica i dati'),
+        riuso ? h('button', { type: 'button', class: 'pulsante pulsante--testo', onclick: function () {
+          if (!window.confirm('Annullare le correzioni scritte a mano sul foglio?')) return;
+          cvManuale = null; ridisegna();
+        } }, 'Annulla le correzioni sul foglio') : null),
       h('p', { class: 'nota', text: 'Dalla finestra di stampa puoi anche scegliere «Salva come PDF». Il curriculum resta su questo dispositivo e non viene inviato al docente.' }),
-      cvDocumento()
+      doc
     ];
     return [testa(metaSchermata(), 'Il tuo curriculum'), corpo(null, risposta, true)];
   }
@@ -795,13 +942,15 @@
       case 'sofare': return schermataSituazione(D.SITUAZIONI.find(function (s) { return s.id === sch.id; }));
       case 'sguardo': return schermataSguardo(D.SGUARDO.find(function (g) { return g.id === sch.id; }));
       case 'bilancio': return schermataBilancio();
-      case 'cv': return { contatti: schermataCVContatti, formazione: schermataCVFormazione, esperienze: schermataCVEsperienze, competenze: schermataCVCompetenze, anteprima: schermataCVAnteprima }[sch.id]();
+      case 'cv': return { contatti: schermataCVContatti, profilo: schermataCVProfilo, formazione: schermataCVFormazione, esperienze: schermataCVEsperienze, competenze: schermataCVCompetenze, anteprima: schermataCVAnteprima }[sch.id]();
       case 'orientamento': return sch.id === 'domande' ? schermataOrientamentoDomande() : schermataOrientamentoTesto();
     }
     return [];
   }
 
   function disegna() {
+    // Ctrl+P sulla pagina del curriculum stampa il curriculum, altrove il bilancio.
+    daStampare = (vista && D.SEZIONI[vista.s].id === 'cv' && D.SEZIONI[vista.s].schermate[vista.k].id === 'anteprima') ? 'cv' : 'dossier';
     principale.textContent = '';
     if (!vista) {
       aggiungi(principale, disegnaHome());
@@ -933,7 +1082,7 @@
   function preparaStampa() {
     const s = $('stampa');
     s.textContent = '';
-    s.appendChild(daStampare === 'cv' ? cvDocumento() : dossier(false));
+    s.appendChild(daStampare === 'cv' ? cvPerLaStampa() : dossier(false));
   }
 
   // «cosa» è 'dossier' o 'cv'; qualsiasi altro valore (per esempio l'evento di un clic) stampa il bilancio.

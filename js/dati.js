@@ -165,6 +165,7 @@
       titolo: 'Curriculum vitae',
       schermate: [
         { id: 'contatti', titolo: 'I tuoi dati' },
+        { id: 'profilo', titolo: 'Che lavoro cerchi' },
         { id: 'formazione', titolo: 'La tua formazione' },
         { id: 'esperienze', titolo: 'Le esperienze di lavoro' },
         { id: 'competenze', titolo: 'Competenze, lingue e altro' },
@@ -229,7 +230,30 @@
     }
   };
 
+  // Aspetto del curriculum: scelte limitate, tutte leggibili in stampa.
+  const CV_COLORI = [
+    { id: 'nero', nome: 'Nero', hex: '#000000' },
+    { id: 'grigio', nome: 'Grigio', hex: '#4a4a4a' },
+    { id: 'blu', nome: 'Blu', hex: '#1f4e8c' },
+    { id: 'verde', nome: 'Verde', hex: '#1e6b4a' },
+    { id: 'rosso', nome: 'Rosso', hex: '#b3261e' },
+    { id: 'viola', nome: 'Viola', hex: '#6b2d7b' }
+  ];
+  const CV_CARATTERI = [
+    { id: 'moderno', nome: 'Moderno' },
+    { id: 'classico', nome: 'Classico' },
+    { id: 'semplice', nome: 'Semplice' }
+  ];
+  const CV_DIMENSIONI = [
+    { id: 'piccolo', nome: 'Piccolo', scala: 0.92 },
+    { id: 'normale', nome: 'Normale', scala: 1 },
+    { id: 'grande', nome: 'Grande', scala: 1.08 }
+  ];
+
   const DATI = {
+    CV_COLORI: CV_COLORI,
+    CV_CARATTERI: CV_CARATTERI,
+    CV_DIMENSIONI: CV_DIMENSIONI,
     ESEMPI_ESPERIENZA: ESEMPI_ESPERIENZA,
     INDIRIZZI: INDIRIZZI,
     AUTONOMIA: AUTONOMIA,

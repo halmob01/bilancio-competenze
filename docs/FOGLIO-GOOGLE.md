@@ -70,7 +70,7 @@ Dopo una modifica a `Codice.gs` (anche per passare a una versione nuova di quest
 ## Privacy e limiti
 
 - I dati vanno solo nel foglio del docente: nessun altro servizio, nessuna telemetria. Prima dell'invio, le risposte restano nel browser dello studente.
-- Il curriculum (telefono, email, città, formazione) **non viene inviato**: l'app lo toglie dai dati spediti e non compare né nelle colonne né nel JSON del foglio. Lo studente lo stampa dal suo dispositivo.
+- Il curriculum (indirizzo, telefono, email, foto, formazione) **non viene inviato**: l'app lo toglie dai dati spediti e non compare né nelle colonne né nel JSON del foglio. Lo studente lo stampa dal suo dispositivo.
 - Per l'invio servono nome e indirizzo, altrimenti il docente non saprebbe di chi è la riga. La classe è facoltativa ma consigliata.
 - L'URL `/exec` è pubblico: chi lo conosce potrebbe inviare righe false. Lo script accetta solo dati nel formato dell'app, ne limita la dimensione e rifiuta gli invii senza nome. Se serve di più, si può aggiungere un codice di classe da dettare in aula.
 - Uno studente che cambia dispositivo senza caricare la propria copia genera un nuovo codice, quindi una seconda riga: in quel caso basta cancellare la riga più vecchia.

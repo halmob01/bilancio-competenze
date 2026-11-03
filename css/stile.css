@@ -271,22 +271,53 @@ dialog > * + * { margin-top: 14px; }
 .dialogo__azioni { display: flex; flex-wrap: wrap; gap: 10px; }
 
 /* ---------- Curriculum ---------- */
-.cv { background: var(--bc-white); border: 1px solid var(--bc-ink-10); border-radius: var(--radius-card); padding: clamp(20px, 4vw, 56px); max-width: 860px; }
-.cv__testa { border-bottom: 1px solid var(--bc-ink); padding-bottom: 16px; }
-.cv__nome { font-family: var(--f-display); text-transform: uppercase; font-size: clamp(36px, 6vw, 60px); line-height: .95; margin-bottom: 12px; }
-.cv__contatti { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 4px 22px; font-size: 15px; }
-.cv__contatti .meta { margin-right: 4px; }
+.cv {
+  --cv-colore: #000; --cv-s: 1;
+  background: var(--bc-white); border: 1px solid var(--bc-ink-10); border-radius: var(--radius-card);
+  padding: clamp(20px, 4vw, 56px); max-width: 860px;
+  font-size: calc(16px * var(--cv-s)); line-height: 1.5; font-family: var(--f-sans);
+}
+.cv--modificabile { cursor: text; }
+.cv--modificabile:focus-within { outline: 2px solid var(--bc-ink-30); outline-offset: 4px; }
+.cv__testa { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 16px 24px; border-bottom: 2px solid var(--cv-colore); padding-bottom: 16px; }
+.cv__foto { width: 30mm; height: 38mm; min-width: 96px; min-height: 120px; object-fit: cover; border-radius: 2px; flex: none; }
+.cv__intestazione { flex: 1 1 260px; min-width: 0; }
+.cv__nome { font-family: var(--f-display); text-transform: uppercase; color: var(--cv-colore); font-size: calc(clamp(34px, 6vw, 56px) * var(--cv-s)); line-height: .95; margin-bottom: 6px; overflow-wrap: anywhere; }
+.cv__occupazione { font-size: 1.15em; margin-bottom: 10px; }
+.cv__contatti { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 4px 20px; font-size: .94em; }
+.cv__contatti .meta { margin-right: 4px; font-size: .8em; }
 .cv__parte { padding: 18px 0 4px; }
-.cv__parte h3 { font-family: var(--f-mono); font-weight: 400; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--bc-ink-60); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--bc-ink-10); }
+.cv__parte h3 { font-family: var(--f-mono); font-weight: 400; font-size: .8em; letter-spacing: .08em; text-transform: uppercase; color: var(--cv-colore); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--cv-colore); }
 .cv__riga { display: grid; grid-template-columns: 1fr; gap: 2px; padding: 8px 0; }
 @media (min-width: 640px) { .cv__riga { grid-template-columns: 9.5em 1fr; gap: 16px; } }
-.cv__periodo { font-family: var(--f-mono); font-size: 13px; color: var(--bc-ink-60); padding-top: 3px; }
+.cv__periodo { font-family: var(--f-mono); font-size: .8em; color: var(--bc-ink-60); padding-top: .2em; }
 .cv__titolo { font-weight: 600; }
-.cv__sotto { color: var(--bc-ink-60); font-size: 15px; }
-.cv__testo { margin-top: 4px; font-size: 16px; white-space: pre-line; }
+.cv__sotto { color: var(--bc-ink-60); font-size: .94em; }
+.cv__testo { margin-top: 4px; white-space: pre-line; }
 .cv__profilo { max-width: 68ch; white-space: pre-line; }
 .cv__elenco { padding-left: 1.2em; display: grid; gap: 4px; }
-.cv__consenso { margin-top: 24px; font-size: 13px; color: var(--bc-ink-60); }
+.cv__consenso { margin-top: 24px; font-size: .8em; color: var(--bc-ink-60); }
+.cv__firma { margin-top: 20px; font-size: .94em; }
+.cv__firma-riga { display: inline-block; width: 12em; border-bottom: 1px solid var(--bc-ink); vertical-align: bottom; }
+.cv--senza-firma .cv__firma { display: none; }
+/* Caratteri */
+.cv--classico { font-family: var(--f-libro); }
+.cv--classico .cv__nome { font-family: var(--f-libro); letter-spacing: .04em; font-weight: 400; }
+.cv--classico .cv__parte h3, .cv--classico .cv__periodo { font-family: var(--f-libro); letter-spacing: .06em; font-size: .9em; }
+.cv--classico .cv__titolo { font-weight: 400; font-style: italic; }
+.cv--semplice { font-family: Arial, Helvetica, sans-serif; }
+.cv--semplice .cv__nome { font-family: Arial, Helvetica, sans-serif; font-weight: 700; letter-spacing: 0; font-size: calc(clamp(28px, 5vw, 44px) * var(--cv-s)); }
+.cv--semplice .cv__parte h3, .cv--semplice .cv__periodo { font-family: Arial, Helvetica, sans-serif; letter-spacing: .02em; }
+.cv__anteprima-foto { width: 96px; height: 120px; object-fit: cover; border-radius: 2px; }
+
+/* Aspetto (solo schermo) */
+.aspetto { border: 1px solid var(--bc-ink-10); border-radius: var(--radius-card); background: var(--bc-white); padding: 16px 18px; max-width: 860px; display: grid; gap: 18px; }
+.colori { display: flex; flex-wrap: wrap; gap: 10px; }
+.colore { position: relative; display: block; }
+.colore input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.colore span:first-of-type { display: block; width: 44px; height: 44px; border-radius: 50%; border: 2px solid var(--bc-white); box-shadow: 0 0 0 1px var(--bc-ink-30); cursor: pointer; }
+.colore input:checked + span { box-shadow: 0 0 0 3px var(--bc-ink); }
+.colore input:focus-visible + span { outline: 3px solid var(--bc-ink); outline-offset: 4px; }
 
 /* ---------- Stampa: solo il dossier o il curriculum ---------- */
 #stampa { display: none; }
@@ -302,20 +333,20 @@ dialog > * + * { margin-top: 14px; }
   .dossier__titolo { font-size: 40pt; }
   .dossier__parte h3 { font-size: 18pt; }
   .voce blockquote { font-size: 13pt; }
-  .cv { border: 0; padding: 0; max-width: none; font-size: 10.5pt; line-height: 1.45; }
-  .cv__nome { font-size: 34pt; }
+  .cv { border: 0; padding: 0; max-width: none; font-size: calc(10.5pt * var(--cv-s)); line-height: 1.45; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .cv__nome { font-size: calc(32pt * var(--cv-s)); }
+  .cv--semplice .cv__nome { font-size: calc(26pt * var(--cv-s)); }
+  .cv__foto { width: 30mm; height: 38mm; }
   .cv__parte { break-inside: avoid; padding-top: 12px; }
   .cv__riga { grid-template-columns: 30mm 1fr; gap: 10px; break-inside: avoid; }
-  .cv__periodo { font-size: 9pt; color: #444; }
-  .cv__parte h3 { font-size: 9pt; color: #444; }
-  .cv__sotto, .cv__consenso { color: #444; }
-  .cv__testo, .cv__sotto { font-size: inherit; }
+  .cv__periodo, .cv__sotto, .cv__consenso { color: #444; }
 }
 .anni .campo textarea { min-height: 96px; }
 
 @media (max-width: 479px) {
   .testata__riga { gap: 8px; }
-  .testata__nome, .testata__riga .pulsante { white-space: nowrap; }
+  .testata__riga .pulsante { white-space: nowrap; }
+  .testata__nome { font-size: 11px; letter-spacing: .02em; text-align: left; min-width: 0; }
   .testata__salvato { font-size: 11px; letter-spacing: .03em; }
   #tappa-stato { display: none; }
 }

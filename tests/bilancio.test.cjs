@@ -191,7 +191,7 @@ test('il curriculum riporta solo le parole dello studente, in ordine', () => {
   s.cv.consenso = true;
   const c = L.componiCV(s);
   assert.equal(c.nome, 'Luca Rossi');
-  assert.deepEqual(c.contatti.map((x) => x.etichetta), ['Città', 'Telefono', 'Email']);
+  assert.deepEqual(c.contatti.map((x) => x.etichetta), ['Indirizzo', 'Telefono', 'Email']);
   assert.equal(c.formazione.length, 1, 'le voci senza titolo non compaiono');
   assert.deepEqual(c.esperienze.map((e) => [e.titolo, e.dove, e.periodo, e.descrizione]),
     [['Quadro in azienda', 'Impianti Verdi, Milano', 'marzo – maggio 2025', 'Ho cablato il quadro.']]);
@@ -231,7 +231,9 @@ test('le competenze proposte vengono solo dalle situazioni dichiarate e document
 
 test('il curriculum sopravvive alla copia e i dati non validi vengono scartati', () => {
   const { s, tir } = cvCompilato();
-  s.cv.esperienze[tir.id] = { dove: 'Azienda', periodo: '2025', incluso: true };
+  s.cv.esperienze[tir.id] = { dove: 'Azienda', periodo: '2025', mansione: 'Aiuto', compiti: 'Cablaggio', incluso: true };
+  s.cv.foto = 'data:image/jpeg;base64,/9j/4AAQSkZJRg==';
+  s.cv.formato = { colore: 'blu', carattere: 'classico', dimensione: 'piccolo', firma: true, luogo: 'Milano' };
   assert.deepEqual(L.normalizza(JSON.parse(JSON.stringify(s))), s);
   const n = L.normalizza({
     esperienze: [{ id: 'a', titolo: 'T' }],
@@ -242,7 +244,7 @@ test('il curriculum sopravvive alla copia e i dati non validi vengono scartati',
   assert.equal(n.cv.consenso, false, 'solo true vale come consenso');
   assert.equal(n.cv.formazione.length, 2);
   assert.notEqual(n.cv.formazione[0].id, n.cv.formazione[1].id);
-  assert.deepEqual(n.cv.esperienze, { a: { dove: 'D', periodo: '' } });
+  assert.deepEqual(n.cv.esperienze, { a: { dove: 'D', periodo: '', mansione: '', compiti: '' } });
   assert.deepEqual(L.normalizza({}).cv, L.statoVuoto().cv);
 });
 
@@ -252,4 +254,58 @@ test('l\'invio al docente non include il curriculum', () => {
   assert.ok(/delete copia\.cv/.test(app));
   const script = fs.readFileSync(path.join(__dirname, '../apps-script/Codice.gs'), 'utf8');
   assert.ok(!/\.cv\b|telefono|email/i.test(script.replace(/Dati completi|^\s*\/\/.*$/gm, '')), 'lo script del foglio non legge dati del curriculum');
+});
+
+test('il curriculum può avere mansione e compiti diversi dalla scheda, senza cambiarla', () => {
+  const { s, tir } = cvCompilato();
+  s.cv.esperienze[tir.id] = { mansione: 'Aiuto elettricista', compiti: 'Cablaggio di **quadri** elettrici', dove: 'Azienda', periodo: '2025' };
+  const e = L.componiCV(s).esperienze[0];
+  assert.equal(e.titolo, 'Aiuto elettricista');
+  assert.equal(e.descrizione, 'Cablaggio di **quadri** elettrici');
+  assert.equal(tir.titolo, 'Quadro in azienda');
+  assert.equal(tir.azione, 'Ho cablato il quadro.');
+});
+
+test('il curriculum riporta nazionalità, occupazione desiderata e foto', () => {
+  const { s } = cvCompilato();
+  s.cv.nazionalita = 'Italiana';
+  s.cv.occupazione = 'Tecnico elettricista';
+  s.cv.foto = 'data:image/jpeg;base64,/9j/4AAQSkZJRg==';
+  const c = L.componiCV(s);
+  assert.ok(c.contatti.some((x) => x.etichetta === 'Nazionalità' && x.valore === 'Italiana'));
+  assert.equal(c.occupazione, 'Tecnico elettricista');
+  assert.equal(c.foto, s.cv.foto);
+});
+
+test('la foto accetta solo un piccolo JPEG e l\'aspetto solo valori previsti', () => {
+  const ok = 'data:image/jpeg;base64,/9j/4AAQSkZJRg==';
+  assert.equal(L.normalizza({ cv: { foto: ok } }).cv.foto, ok);
+  ['data:image/svg+xml;base64,PHN2Zz4=', 'data:text/html;base64,PGI+', 'https://example.org/f.jpg', 'javascript:alert(1)', ok + '"onerror="x', 42]
+    .forEach((f) => assert.equal(L.normalizza({ cv: { foto: f } }).cv.foto, '', String(f)));
+  assert.equal(L.normalizza({ cv: { foto: 'data:image/jpeg;base64,' + 'A'.repeat(200000) } }).cv.foto, '', 'troppo grande');
+
+  const n = L.normalizza({ cv: { formato: { colore: 'fucsia', carattere: 'comic', dimensione: 'enorme', firma: 'sì', luogo: 'Milano' } } });
+  assert.deepEqual(n.cv.formato, { colore: 'nero', carattere: 'moderno', dimensione: 'normale', firma: false, luogo: 'Milano' });
+  const v = L.normalizza({ cv: { formato: { colore: 'blu', carattere: 'classico', dimensione: 'grande', firma: true } } });
+  assert.deepEqual([v.cv.formato.colore, v.cv.formato.carattere, v.cv.formato.dimensione, v.cv.formato.firma], ['blu', 'classico', 'grande', true]);
+});
+
+test('i colori del curriculum sono leggibili sul foglio bianco', () => {
+  function luminanza(hex) {
+    const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255)
+      .map((c) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4));
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  }
+  D.CV_COLORI.forEach((c) => {
+    const contrasto = 1.05 / (luminanza(c.hex) + 0.05);
+    assert.ok(contrasto >= 4.5, c.id + ' ' + contrasto.toFixed(2));
+  });
+});
+
+test('le schermate del curriculum e il documento nel modello della scuola', () => {
+  const cv = D.SEZIONI.find((x) => x.id === 'cv');
+  assert.deepEqual(cv.schermate.map((x) => x.id), ['contatti', 'profilo', 'formazione', 'esperienze', 'competenze', 'anteprima']);
+  const app = fs.readFileSync(path.join(__dirname, '../js/app.js'), 'utf8');
+  assert.ok(app.includes("art. 13 del D. Lgs. 196/2003"), 'frase di consenso del modello della scuola');
+  assert.ok(app.includes("'Esperienze professionali'") && app.includes("'Istruzione e formazione'") && app.includes("'Interessi'"));
 });

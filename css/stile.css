@@ -176,7 +176,7 @@ a { color: inherit; }
 .campo { display: grid; gap: 8px; }
 .campo > label, .campo__etichetta { font-weight: 600; font-size: 17px; line-height: 1.35; }
 .campo__suggerimento { font-size: 15px; color: var(--bc-ink-60); margin-top: -4px; }
-.campo input:not([type="checkbox"]):not([type="radio"]), .campo textarea, .campo select {
+.campo input:not([type="checkbox"]):not([type="radio"]):not([type="file"]), .campo textarea, .campo select {
   width: 100%;
   background: var(--bc-white);
   border: 1px solid var(--bc-ink-30);
@@ -199,6 +199,7 @@ legend { padding: 0; font-weight: 600; font-size: 17px; margin-bottom: 10px; }
 .scelta { position: relative; display: block; }
 .scelta input { position: absolute; opacity: 0; width: 1px; height: 1px; }
 .scelta span {
+  overflow-wrap: anywhere;
   display: flex; align-items: center; gap: 12px;
   min-height: 48px; padding: 10px 14px;
   background: var(--bc-white);
@@ -352,6 +353,8 @@ dialog > * + * { margin-top: 14px; }
   .cv__periodo, .cv__sotto, .cv__consenso { color: #444; }
 }
 .anni .campo textarea { min-height: 96px; }
+.coppia { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; }
+.coppia:has(> .campo:only-child) { grid-template-columns: 1fr; }
 
 @media (max-width: 479px) {
   .testata__riga { gap: 8px; }

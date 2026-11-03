@@ -12,6 +12,7 @@
   const MAX_LUNGO = 4000;
   const MAX_ESPERIENZE = 30;
   const MAX_FORMAZIONE = 6;
+  const MAX_LAVORO = 10;
   const MAX_PROFILO = 600;
   const MAX_FOTO = 150000;
 
@@ -50,10 +51,14 @@
       profilo: '',
       formato: { impaginazione: 'originale', colore: 'nero', carattere: 'moderno', dimensione: 'normale', firma: false, luogo: '' },
       formazione: [],
-      esperienze: {},
+      lavoro: [],
       competenze: '', lingue: '', digitali: '', altro: '',
       consenso: false
     };
+  }
+
+  function lavoroVuoto(tipo) {
+    return { id: 'l' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), tipo: tipo || '', azienda: '', citta: '', mansione: '', dal: '', al: '', inCorso: false, compiti: '' };
   }
 
   function formazioneVuota() {
@@ -168,13 +173,17 @@
       idF[id] = true;
       s.cv.formazione.push({ id: id, periodo: testo(f.periodo, 60), titolo: testo(f.titolo, MAX_BREVE), ente: testo(f.ente, MAX_BREVE) });
     });
-    const ce = c.esperienze && typeof c.esperienze === 'object' ? c.esperienze : {};
-    Object.keys(visti).forEach(function (id) {
-      const x = ce[id];
-      if (!x || typeof x !== 'object') return;
-      const n = { dove: testo(x.dove, MAX_BREVE), periodo: testo(x.periodo, 60), mansione: testo(x.mansione, MAX_BREVE), compiti: testo(x.compiti, MAX_LUNGO) };
-      if (typeof x.incluso === 'boolean') n.incluso = x.incluso;
-      s.cv.esperienze[id] = n;
+    const idL = {};
+    (Array.isArray(c.lavoro) ? c.lavoro : []).slice(0, MAX_LAVORO).forEach(function (l) {
+      if (!l || typeof l !== 'object') return;
+      let id = testo(l.id, 40);
+      if (!id || idL[id]) id = lavoroVuoto().id;
+      idL[id] = true;
+      s.cv.lavoro.push({
+        id: id, tipo: inElenco(l.tipo, DATI.CV_TIPI_LAVORO),
+        azienda: testo(l.azienda, MAX_BREVE), citta: testo(l.citta, 80), mansione: testo(l.mansione, MAX_BREVE),
+        dal: testo(l.dal, 40), al: testo(l.al, 40), inCorso: l.inCorso === true, compiti: testo(l.compiti, MAX_LUNGO)
+      });
     });
 
     return s;
@@ -242,7 +251,7 @@
       const c = stato.cv;
       const c2 = componiCV(stato);
       const toccato = pieno(c.telefono) || pieno(c.email) || pieno(c.citta) || pieno(c.profilo) ||
-        c.formazione.some(function (f) { return pieno(f.titolo); }) ||
+        c.formazione.some(function (f) { return pieno(f.titolo); }) || c.lavoro.some(function (l) { return pieno(l.azienda) || pieno(l.mansione); }) ||
         pieno(c.competenze) || pieno(c.lingue) || pieno(c.digitali) || pieno(c.altro);
       if (c2.mancanti.length === 0 && (pieno(c.competenze) || pieno(c.lingue))) return 'completa';
       return toccato ? 'in_corso' : 'vuota';
@@ -320,11 +329,25 @@
       .join('\n\n');
   }
 
-  // Un'esperienza compare nel curriculum se lo studente l'ha scelta; in
-  // mancanza di una scelta, solo il tirocinio è incluso.
-  function cvInclusa(stato, e) {
-    const c = stato.cv.esperienze[e.id];
-    return c && typeof c.incluso === 'boolean' ? c.incluso : e.quando === 'tirocinio';
+  const MESI = ['gennaio', 'febbraio', 'marzo', 'aprile', 'maggio', 'giugno', 'luglio', 'agosto', 'settembre', 'ottobre', 'novembre', 'dicembre'];
+
+  // «2025-03» (dal selettore del mese) diventa «marzo 2025»; il testo libero resta com'è.
+  function formatoMese(v) {
+    const m = /^(\d{4})-(\d{2})$/.exec(String(v || '').trim());
+    return m && +m[2] >= 1 && +m[2] <= 12 ? MESI[+m[2] - 1] + ' ' + m[1] : String(v || '').trim();
+  }
+
+  function periodoLavoro(l) {
+    const dal = formatoMese(l.dal);
+    const al = l.inCorso ? 'oggi' : formatoMese(l.al);
+    return [dal, al].filter(Boolean).join(' – ');
+  }
+
+  // Chiave per ordinare dalla più recente: serve che le date siano nel formato del selettore.
+  function chiaveLavoro(l) {
+    if (l.inCorso) return /^\d{4}-\d{2}$/.test(l.dal) ? '9999-99-' + l.dal : null;
+    const k = /^\d{4}-\d{2}$/.test(l.al) ? l.al : (/^\d{4}-\d{2}$/.test(l.dal) ? l.dal : null);
+    return k && k + '-' + (/^\d{4}-\d{2}$/.test(l.dal) ? l.dal : '');
   }
 
   function righe(v) {
@@ -355,17 +378,22 @@
       return { periodo: f.periodo.trim(), titolo: f.titolo.trim(), ente: f.ente.trim() };
     });
 
-    const esperienze = stato.esperienze.filter(function (e) {
-      return cvInclusa(stato, e) && (pieno(e.titolo) || pieno(e.azione));
-    }).map(function (e) {
-      const x = stato.cv.esperienze[e.id] || {};
+    const lavori = c.lavoro.filter(function (l) { return pieno(l.azienda) || pieno(l.mansione); });
+    // Dalla più recente alla più vecchia, ma solo se tutte le date si possono confrontare.
+    const chiavi = lavori.map(chiaveLavoro);
+    if (lavori.length > 1 && chiavi.every(function (k) { return k !== null; })) {
+      lavori.sort(function (a, b) { const ka = chiaveLavoro(a), kb = chiaveLavoro(b); return ka < kb ? 1 : ka > kb ? -1 : 0; });
+    }
+    const esperienze = lavori.map(function (l) {
+      const tipo = (DATI.CV_TIPI_LAVORO.find(function (x) { return x.id === l.tipo; }) || {}).testo || '';
+      const conMansione = pieno(l.mansione);
       return {
-        id: e.id,
-        titolo: pieno(x.mansione) ? x.mansione.trim() : (pieno(e.titolo) ? e.titolo.trim() : 'Esperienza'),
-        dove: (x.dove || '').trim(),
-        periodo: (x.periodo || '').trim(),
-        tipo: nomeQuando(e.quando),
-        descrizione: (pieno(x.compiti) ? x.compiti : (e.azione || '')).trim()
+        id: l.id,
+        titolo: conMansione ? l.mansione.trim() : l.azienda.trim(),
+        dove: (conMansione ? [l.azienda.trim(), l.citta.trim()] : [l.citta.trim()]).filter(Boolean).join(', '),
+        periodo: periodoLavoro(l),
+        tipo: tipo,
+        descrizione: (l.compiti || '').trim()
       };
     });
 
@@ -405,6 +433,7 @@
     VERSIONE: VERSIONE,
     MAX_ESPERIENZE: MAX_ESPERIENZE,
     MAX_FORMAZIONE: MAX_FORMAZIONE,
+    MAX_LAVORO: MAX_LAVORO,
     MAX_PROFILO: MAX_PROFILO,
     statoVuoto: statoVuoto,
     esperienzaVuota: esperienzaVuota,
@@ -415,7 +444,9 @@
     componiBilancio: componiBilancio,
     componiOrientamento: componiOrientamento,
     formazioneVuota: formazioneVuota,
-    cvInclusa: cvInclusa,
+    lavoroVuoto: lavoroVuoto,
+    formatoMese: formatoMese,
+    periodoLavoro: periodoLavoro,
     suggerisciCompetenze: suggerisciCompetenze,
     componiCV: componiCV,
     avanzamento: avanzamento,

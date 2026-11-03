@@ -692,34 +692,66 @@
 
   function schermataCVEsperienze() {
     const c = stato.cv;
+    if (!c.lavoro.length) c.lavoro.push(L.lavoroVuoto('tirocinio'));
     const intro = [
-      h('p', { text: 'Scegli quali delle esperienze che hai raccontato nella sezione 02 vuoi far comparire nel curriculum.' }),
-      aiuto('Per ognuna puoi cambiare la mansione e i compiti: così il curriculum può avere un testo più breve della scheda, senza modificare la scheda. Se lasci vuoto, usa quello che hai già scritto.',
-        'Il tirocinio è già selezionato: puoi toglierlo.')
+      h('p', { text: 'Scrivi i tirocini, gli apprendistati e i lavori che hai fatto, dal più recente. Se ne hai fatti più di uno, aggiungili uno alla volta.' }),
+      aiuto('Per ogni esperienza servono l\'azienda, il periodo, la tua mansione e i compiti che svolgevi. Per i compiti usa dei verbi («Cablare…», «Configurare…», «Accogliere…») e metti in grassetto le competenze scrivendole tra due asterischi: **così**.',
+        'Se hai già raccontato l\'esperienza nella sezione 02, puoi riprendere il testo da lì e poi accorciarlo.'),
+      esempio('Vedi un esempio', h('dl', null,
+        h('dt', { text: 'Tipo' }), h('dd', { text: 'Tirocinio' }),
+        h('dt', { text: 'Azienda' }), h('dd', { text: 'Impianti Verdi, Milano' }),
+        h('dt', { text: 'Periodo' }), h('dd', { text: 'marzo 2025 – maggio 2025' }),
+        h('dt', { text: 'Mansione' }), h('dd', { text: 'Aiuto elettricista' }),
+        h('dt', { text: 'Compiti' }), h('dd', { text: 'Cablare il quadro elettrico di una palazzina, collaudare i circuiti, tenere in ordine il posto di lavoro.' })))
     ];
-    const risposta = stato.esperienze.length ? [h('ul', { class: 'schede', 'aria-label': 'Le tue esperienze' }, stato.esperienze.map(function (e, i) {
-      const incluso = L.cvInclusa(stato, e);
-      const x = c.esperienze[e.id] || (c.esperienze[e.id] = {});
-      const p = 'f-cv-es-' + e.id + '-';
-      return h('li', { class: 'scheda' + (incluso ? ' scheda--aperta' : '') },
-        h('div', { class: 'scheda__testa' },
-          h('span', { class: 'meta', text: String(i + 1).padStart(2, '0') }),
-          h('h3', { class: 'scheda__titolo', text: pieno(e.titolo) ? e.titolo : 'Esperienza senza titolo' }),
-          h('span', { class: 'meta', text: L.nomeQuando(e.quando) })),
-        h('div', { class: 'scheda__modulo' },
-          casella({ id: p + 'incluso', testo: 'Metti questa esperienza nel curriculum', valore: incluso,
-            aggiorna: function (v) { x.incluso = v; modificato(); ridisegna(p + 'incluso'); } }),
-          incluso ? [
-            campo({ id: p + 'dove', etichetta: 'Azienda e città', max: 200, valore: x.dove || '', aggiorna: function (v) { x.dove = v; } }),
-            campo({ id: p + 'periodo', etichetta: 'Periodo', max: 60, suggerimento: 'Da mese e anno a mese e anno, per esempio marzo 2025 – maggio 2025.', valore: x.periodo || '', aggiorna: function (v) { x.periodo = v; } }),
-            campo({ id: p + 'mansione', etichetta: 'Mansione', max: 200, suggerimento: 'Se vuoto: «' + (e.titolo || 'titolo della scheda') + '».', valore: x.mansione || '', aggiorna: function (v) { x.mansione = v; } }),
-            campo({ id: p + 'compiti', etichetta: 'Compiti svolti', area: true, righe: 3, suggerimento: 'Con verbi all\'infinito o al passato. Parole in grassetto: **così**. Se vuoto usa «che cosa hai fatto» della scheda.', valore: x.compiti || '', aggiorna: function (v) { x.compiti = v; } }),
-            pieno(e.azione) ? h('p', { class: 'nota' }, 'Nella scheda hai scritto: «' + e.azione.trim().slice(0, 160) + (e.azione.trim().length > 160 ? '…' : '') + '» ',
-              h('button', { type: 'button', class: 'pulsante pulsante--testo', onclick: function () { vaiA('esperienze', 'elenco', e.id); } }, 'Modifica la scheda')) : null
-          ] : null));
-    }))] : [
-      h('p', { class: 'vuoto', text: 'Non hai ancora raccontato esperienze.' }),
-      h('div', null, h('button', { type: 'button', class: 'pulsante', onclick: function () { vaiA('esperienze', 'elenco'); } }, 'Vai alle esperienze'))
+    const conAzione = stato.esperienze.filter(function (e) { return pieno(e.azione); });
+    const risposta = [
+      h('ul', { class: 'schede', 'aria-label': 'Le tue esperienze di lavoro' }, c.lavoro.map(function (l, i) {
+        const p = 'f-cv-la-' + l.id + '-';
+        return h('li', { class: 'scheda scheda--aperta' },
+          h('div', { class: 'scheda__testa' },
+            h('span', { class: 'meta', text: String(i + 1).padStart(2, '0') }),
+            h('h3', { class: 'scheda__titolo', text: pieno(l.azienda) ? l.azienda : 'Nuova esperienza' })),
+          h('div', { class: 'scheda__modulo' },
+            gruppoScelte({ legenda: 'Che tipo di esperienza è?', nome: p + 'tipo', riga: true, opzioni: D.CV_TIPI_LAVORO, valore: l.tipo,
+              aggiorna: function (id) { l.tipo = id; modificato(); } }),
+            campo({ id: p + 'azienda', etichetta: 'Nome dell\'azienda', max: 200, valore: l.azienda, aggiorna: function (v) { l.azienda = v; } }),
+            campo({ id: p + 'citta', etichetta: 'Città e Paese', max: 80, suggerimento: 'Per esempio Milano, Italia.', valore: l.citta, aggiorna: function (v) { l.citta = v; } }),
+            h('div', { class: 'coppia' },
+              campo({ id: p + 'dal', etichetta: 'Dal', tipo: 'month', max: 40, valore: l.dal, aggiorna: function (v) { l.dal = v; } }),
+              l.inCorso ? null : campo({ id: p + 'al', etichetta: 'Al', tipo: 'month', max: 40, valore: l.al, aggiorna: function (v) { l.al = v; } })),
+            casella({ id: p + 'incorso', testo: 'È ancora in corso', valore: l.inCorso,
+              aggiorna: function (v) { l.inCorso = v; modificato(); ridisegna(p + 'incorso'); } }),
+            campo({ id: p + 'mansione', etichetta: 'Mansione', max: 200, suggerimento: 'Il tuo ruolo, per esempio Aiuto elettricista.', valore: l.mansione, aggiorna: function (v) { l.mansione = v; } }),
+            campo({ id: p + 'compiti', etichetta: 'Compiti svolti', area: true, righe: 4, suggerimento: 'Verbi all\'infinito o al passato. Competenze in grassetto: **così**.', valore: l.compiti, aggiorna: function (v) { l.compiti = v; } }),
+            conAzione.length ? h('div', { class: 'campo' },
+              h('label', { for: p + 'riprendi', text: 'Riprendi il testo da una tua esperienza (facoltativo)' }),
+              h('select', { id: p + 'riprendi', onchange: function (e) {
+                const sc = conAzione.find(function (x) { return x.id === e.target.value; });
+                e.target.value = '';
+                if (!sc) return;
+                if (pieno(l.compiti) && !window.confirm('Sostituire i compiti già scritti con il testo della scheda?')) return;
+                l.compiti = sc.azione.trim();
+                if (!pieno(l.mansione) && pieno(sc.titolo)) l.mansione = sc.titolo.trim();
+                modificato(); ridisegna(p + 'compiti');
+              } },
+                h('option', { value: '', text: 'Scegli una scheda…' }),
+                conAzione.map(function (x) { return h('option', { value: x.id, text: pieno(x.titolo) ? x.titolo : 'Esperienza senza titolo' }); }))) : null),
+          h('div', { class: 'scheda__azioni' },
+            c.lavoro.length > 1 ? h('button', { type: 'button', class: 'pulsante pulsante--testo', 'aria-label': 'Elimina l\'esperienza ' + (i + 1),
+              onclick: function () {
+                if (!window.confirm('Eliminare questa esperienza dal curriculum?')) return;
+                c.lavoro = c.lavoro.filter(function (x) { return x.id !== l.id; });
+                modificato(); ridisegna('aggiungi-lavoro');
+              } }, 'Elimina') : null));
+      })),
+      h('div', null, h('button', { type: 'button', class: 'pulsante pulsante--secondario', id: 'aggiungi-lavoro', disabled: c.lavoro.length >= L.MAX_LAVORO,
+        onclick: function () {
+          const l = L.lavoroVuoto('tirocinio');
+          c.lavoro.push(l);
+          modificato(); ridisegna('f-cv-la-' + l.id + '-azienda');
+        } }, 'Aggiungi un\'altra esperienza')),
+      h('p', { class: 'nota', text: 'Nel curriculum compaiono dalla più recente alla più vecchia, se per ogni esperienza hai scelto le date dal calendario. Una voce senza azienda né mansione viene ignorata.' })
     ];
     return [testa(metaSchermata(), 'Le esperienze di lavoro'), corpo(intro, risposta)];
   }
@@ -804,7 +836,7 @@
           h('span', { class: 'cv__periodo', text: e.periodo }),
           h('div', null,
             h('p', { class: 'cv__titolo', text: e.titolo }),
-            (e.dove || e.tipo) ? h('p', { class: 'cv__sotto', text: e.dove || e.tipo }) : null,
+            [e.dove, e.tipo].filter(Boolean).length ? h('p', { class: 'cv__sotto', text: [e.dove, e.tipo].filter(Boolean).join(' · ') }) : null,
             e.descrizione ? h('p', { class: 'cv__testo' }, conGrassetto(e.descrizione)) : null));
       }))) : null,
       d.formazione.length ? cvSezione('formazione', 'Istruzione e formazione', 'Istruzione e formazione', h('div', null, d.formazione.map(function (f) {
@@ -844,7 +876,7 @@
     };
     return h('section', { class: 'aspetto', 'aria-labelledby': 'aspetto-titolo' },
       h('h3', { id: 'aspetto-titolo', class: 'meta', text: 'Aspetto del curriculum' }),
-      gruppoScelte({ legenda: 'Impaginazione', nome: 'cv-impaginazione', riga: true, opzioni: D.CV_IMPAGINAZIONI.map(function (x) { return { id: x.id, testo: x.nome }; }),
+      gruppoScelte({ legenda: 'Modello', nome: 'cv-impaginazione', riga: false, opzioni: D.CV_IMPAGINAZIONI.map(function (x) { return { id: x.id, testo: x.nome }; }),
         valore: f.impaginazione, aggiorna: function (id) { cambia('impaginazione', id); } }),
       h('fieldset', { class: 'campo' },
         h('legend', { text: 'Colore dei titoli' }),

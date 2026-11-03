@@ -248,8 +248,8 @@
     { id: 'altro', testo: 'Altro' }
   ];
   const CV_IMPAGINAZIONI = [
-    { id: 'originale', nome: 'Contemporaneo (Originale)' },
-    { id: 'modello', nome: 'Classico (come quello della scuola)' }
+    { id: 'originale', nome: 'Contemporaneo' },
+    { id: 'modello', nome: 'Classico' }
   ];
   const CV_CARATTERI = [
     { id: 'moderno', nome: 'Moderno' },

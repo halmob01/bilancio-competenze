@@ -239,13 +239,21 @@
     { id: 'rosso', nome: 'Rosso', hex: '#b3261e' },
     { id: 'viola', nome: 'Viola', hex: '#6b2d7b' }
   ];
+  // Tipi di esperienza di lavoro per il curriculum.
+  const CV_TIPI_LAVORO = [
+    { id: 'tirocinio', testo: 'Tirocinio' },
+    { id: 'apprendistato', testo: 'Apprendistato' },
+    { id: 'alternanza', testo: 'Alternanza scuola-lavoro' },
+    { id: 'lavoro', testo: 'Lavoro' },
+    { id: 'altro', testo: 'Altro' }
+  ];
   const CV_IMPAGINAZIONI = [
-    { id: 'originale', nome: 'Originale' },
-    { id: 'modello', nome: 'Come il modello della scuola' }
+    { id: 'originale', nome: 'Contemporaneo (Originale)' },
+    { id: 'modello', nome: 'Classico (come quello della scuola)' }
   ];
   const CV_CARATTERI = [
     { id: 'moderno', nome: 'Moderno' },
-    { id: 'classico', nome: 'Classico' },
+    { id: 'classico', nome: 'Elegante' },
     { id: 'semplice', nome: 'Semplice' }
   ];
   const CV_DIMENSIONI = [
@@ -256,6 +264,7 @@
 
   const DATI = {
     CV_COLORI: CV_COLORI,
+    CV_TIPI_LAVORO: CV_TIPI_LAVORO,
     CV_IMPAGINAZIONI: CV_IMPAGINAZIONI,
     CV_CARATTERI: CV_CARATTERI,
     CV_DIMENSIONI: CV_DIMENSIONI,

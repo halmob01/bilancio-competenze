@@ -173,7 +173,7 @@
     if (o.area) {
       controllo = h('textarea', {
         id: id, class: [o.lungo ? 'lungo' : '', o.libro ? 'libro' : ''].join(' ').trim() || null,
-        rows: o.righe || null, maxlength: 4000,
+        rows: o.righe || null, maxlength: o.max || 4000,
         'aria-describedby': sugg ? id + '-sugg' : null,
         'aria-labelledby': o.etichettaDa || null,
         value: o.valore || '',
@@ -181,7 +181,7 @@
       });
     } else {
       controllo = h('input', {
-        type: 'text', id: id, maxlength: o.max || 200, autocomplete: o.autocomplete || 'off',
+        type: o.tipo || 'text', id: id, maxlength: o.max || 200, autocomplete: o.autocomplete || 'off',
         'aria-describedby': sugg ? id + '-sugg' : null,
         value: o.valore || '',
         oninput: function (e) { o.aggiorna(e.target.value); modificato(); }
@@ -206,6 +206,12 @@
             }),
             h('span', { text: op.testo }));
         })));
+  }
+
+  function casella(o) {
+    return h('label', { class: 'scelta', for: o.id },
+      h('input', { type: 'checkbox', id: o.id, checked: o.valore, onchange: function (e) { o.aggiorna(e.target.checked); } }),
+      h('span', { text: o.testo }));
   }
 
   function aiuto() {
@@ -273,7 +279,7 @@
     return h('div', { class: 'home' },
       h('h1', { text: 'Bilancio di competenze' }),
       h('p', { class: 'home__sottotitolo', text: 'Quattro anni. Che cosa hai imparato?' }),
-      h('p', { class: 'home__testo misura', text: 'Ricostruisci le esperienze del tuo percorso, riconosci ciò che sai fare e individua quello che devi ancora imparare. Alla fine avrai un bilancio scritto con le tue parole e un breve testo per presentarti agli open day.' }),
+      h('p', { class: 'home__testo misura', text: 'Ricostruisci le esperienze del tuo percorso, riconosci ciò che sai fare e individua quello che devi ancora imparare. Alla fine avrai un bilancio scritto con le tue parole, un breve testo per presentarti agli open day e un curriculum vitae da stampare.' }),
       h('div', { class: 'home__azioni' },
         h('button', { type: 'button', class: 'pulsante', onclick: function () {
           vai(ripresa ? ripresa.s : 0, ripresa ? ripresa.k : 0);
@@ -283,7 +289,7 @@
         ? 'Puoi tornare sulle risposte per correggerle, anche dopo averle inviate al docente: un nuovo invio sostituisce il precedente.'
         : 'Puoi tornare sulle risposte per correggerle. Le risposte restano su questo dispositivo finché non scarichi una copia.' }),
       h('section', { class: 'home__indice', 'aria-labelledby': 'home-indice' },
-        h('h2', { id: 'home-indice', class: 'meta', text: 'Sei sezioni · circa tre ore' }),
+        h('h2', { id: 'home-indice', class: 'meta', text: 'Sette sezioni · circa tre ore' }),
         h('ol', null, D.SEZIONI.map(function (s, i) {
           return h('li', null,
             h('span', { class: 'meta', text: String(i + 1).padStart(2, '0') }),
@@ -561,7 +567,186 @@
     return [testa(metaSchermata(), 'Il tuo bilancio'), corpo(intro, risposta, true)];
   }
 
-  // ---------- 06 Orientamento ----------
+  // ---------- 06 Curriculum vitae ----------
+  const PROFILO_ESEMPI = {
+    elettrico: '«Studente del quarto anno di Elettrico. Ho realizzato impianti civili in laboratorio e in tirocinio, con attenzione alla sicurezza. Cerco un\'azienda dove continuare a imparare.»',
+    informatica: '«Studente del quarto anno di Informatica. In tirocinio ho configurato computer e stampanti di rete e scritto una procedura per gli utenti. Mi piace capire perché un sistema non funziona.»',
+    estetica: '«Studentessa del quarto anno di Estetica. So accogliere la cliente e seguire un trattamento dalla preparazione della cabina al congedo, con cura dell\'igiene e puntualità.»'
+  };
+
+  function schermataCVContatti() {
+    const c = stato.cv;
+    const intro = [
+      h('p', { text: 'Il curriculum è il foglio che consegni a un\'azienda o a un tutor. Qui scrivi i tuoi dati: servono solo per stamparlo.' }),
+      aiuto('I dati del curriculum restano su questo dispositivo: l\'app non li invia al docente. Scrivi solo ciò che vuoi far comparire sul foglio.',
+        'Il nome lo prendi dalla prima sezione' + (pieno(stato.profilo.nome) ? ': «' + stato.profilo.nome.trim() + '».' : ', dove non l\'hai ancora scritto.')),
+      esempio('Vedi un esempio di profilo', esempiPerIndirizzo(PROFILO_ESEMPI))
+    ];
+    const risposta = [
+      campo({ id: 'f-cv-citta', etichetta: 'Città di residenza', max: 80, autocomplete: 'address-level2', valore: c.citta, aggiorna: function (v) { c.citta = v; } }),
+      campo({ id: 'f-cv-telefono', etichetta: 'Telefono', tipo: 'tel', max: 40, autocomplete: 'tel', valore: c.telefono, aggiorna: function (v) { c.telefono = v; } }),
+      campo({ id: 'f-cv-email', etichetta: 'Email', tipo: 'email', max: 120, autocomplete: 'email', suggerimento: 'Un indirizzo semplice, per esempio nome.cognome@…', valore: c.email, aggiorna: function (v) { c.email = v; } }),
+      campo({ id: 'f-cv-nascita', etichetta: 'Data di nascita (facoltativa)', max: 40, suggerimento: 'Come vuoi che compaia, per esempio 14/03/2009.', valore: c.nascita, aggiorna: function (v) { c.nascita = v; } }),
+      campo({ id: 'f-cv-patente', etichetta: 'Patente (facoltativa)', max: 40, suggerimento: 'Per esempio AM, oppure «in corso».', valore: c.patente, aggiorna: function (v) { c.patente = v; } }),
+      campo({ id: 'f-cv-profilo', etichetta: 'Profilo: chi sei in due o tre frasi', area: true, righe: 4, max: L.MAX_PROFILO,
+        suggerimento: 'Che cosa sai fare e che cosa cerchi. Massimo ' + L.MAX_PROFILO + ' caratteri.', valore: c.profilo, aggiorna: function (v) { c.profilo = v; } })
+    ];
+    return [testa(metaSchermata(), 'I tuoi dati'), corpo(intro, risposta)];
+  }
+
+  function schermataCVFormazione() {
+    const c = stato.cv;
+    if (!c.formazione.length) c.formazione.push(L.formazioneVuota());
+    const intro = [
+      h('p', { text: 'Elenca i percorsi di studio e i corsi che hai fatto, dal più recente.' }),
+      aiuto('Scrivi il nome del corso come lo conosci e dove lo stai frequentando. Se hai fatto corsi di sicurezza o altri attestati, aggiungili come voci separate.'),
+      esempio('Vedi un esempio', h('dl', null,
+        h('dt', { text: 'Periodo' }), h('dd', { text: '2023 – oggi' }),
+        h('dt', { text: 'Titolo' }), h('dd', { text: 'Percorso di formazione professionale, indirizzo Elettrico' }),
+        h('dt', { text: 'Dove' }), h('dd', { text: 'Il nome del tuo ente di formazione, con la città' }),
+        h('dt', { text: 'Altro' }), h('dd', { text: '2024 · Corso sulla sicurezza nei luoghi di lavoro' })))
+    ];
+    const risposta = [
+      h('ul', { class: 'schede', 'aria-label': 'La tua formazione' }, c.formazione.map(function (f, i) {
+        const p = 'f-cv-fo-' + f.id + '-';
+        return h('li', { class: 'scheda scheda--aperta' },
+          h('div', { class: 'scheda__testa' },
+            h('span', { class: 'meta', text: String(i + 1).padStart(2, '0') }),
+            h('h3', { class: 'scheda__titolo', text: pieno(f.titolo) ? f.titolo : 'Nuova voce' })),
+          h('div', { class: 'scheda__modulo' },
+            campo({ id: p + 'titolo', etichetta: 'Titolo o corso', max: 200, valore: f.titolo, aggiorna: function (v) { f.titolo = v; } }),
+            campo({ id: p + 'ente', etichetta: 'Dove (ente e città)', max: 200, valore: f.ente, aggiorna: function (v) { f.ente = v; } }),
+            campo({ id: p + 'periodo', etichetta: 'Periodo', max: 60, suggerimento: 'Per esempio 2023 – oggi.', valore: f.periodo, aggiorna: function (v) { f.periodo = v; } })),
+          h('div', { class: 'scheda__azioni' },
+            c.formazione.length > 1 ? h('button', { type: 'button', class: 'pulsante pulsante--testo', 'aria-label': 'Elimina la voce ' + (i + 1),
+              onclick: function () {
+                c.formazione = c.formazione.filter(function (x) { return x.id !== f.id; });
+                modificato(); ridisegna('aggiungi-formazione');
+              } }, 'Elimina') : null));
+      })),
+      h('div', null, h('button', { type: 'button', class: 'pulsante pulsante--secondario', id: 'aggiungi-formazione', disabled: c.formazione.length >= L.MAX_FORMAZIONE,
+        onclick: function () {
+          const f = L.formazioneVuota();
+          c.formazione.push(f);
+          modificato(); ridisegna('f-cv-fo-' + f.id + '-titolo');
+        } }, 'Aggiungi un\'altra voce'))
+    ];
+    return [testa(metaSchermata(), 'La tua formazione'), corpo(intro, risposta)];
+  }
+
+  function schermataCVEsperienze() {
+    const c = stato.cv;
+    const intro = [
+      h('p', { text: 'Scegli quali delle esperienze che hai raccontato nella sezione 02 vuoi far comparire nel curriculum.' }),
+      aiuto('Nel curriculum compare il titolo e quello che hai fatto tu, con le parole che hai scritto nella scheda. Se il testo è troppo lungo, accorcialo nella scheda.',
+        'Il tirocinio è già selezionato: puoi toglierlo.')
+    ];
+    const risposta = stato.esperienze.length ? [h('ul', { class: 'schede', 'aria-label': 'Le tue esperienze' }, stato.esperienze.map(function (e, i) {
+      const incluso = L.cvInclusa(stato, e);
+      const x = c.esperienze[e.id] || (c.esperienze[e.id] = {});
+      const p = 'f-cv-es-' + e.id + '-';
+      return h('li', { class: 'scheda' + (incluso ? ' scheda--aperta' : '') },
+        h('div', { class: 'scheda__testa' },
+          h('span', { class: 'meta', text: String(i + 1).padStart(2, '0') }),
+          h('h3', { class: 'scheda__titolo', text: pieno(e.titolo) ? e.titolo : 'Esperienza senza titolo' }),
+          h('span', { class: 'meta', text: L.nomeQuando(e.quando) })),
+        h('div', { class: 'scheda__modulo' },
+          casella({ id: p + 'incluso', testo: 'Metti questa esperienza nel curriculum', valore: incluso,
+            aggiorna: function (v) { x.incluso = v; modificato(); ridisegna(p + 'incluso'); } }),
+          incluso ? [
+            campo({ id: p + 'dove', etichetta: 'Dove (azienda e città)', max: 200, valore: x.dove || '', aggiorna: function (v) { x.dove = v; } }),
+            campo({ id: p + 'periodo', etichetta: 'Periodo', max: 60, suggerimento: 'Per esempio marzo – maggio 2025.', valore: x.periodo || '', aggiorna: function (v) { x.periodo = v; } }),
+            pieno(e.azione)
+              ? h('p', { class: 'nota' }, 'Comparirà: «' + e.azione.trim().slice(0, 160) + (e.azione.trim().length > 160 ? '…' : '') + '» ',
+                h('button', { type: 'button', class: 'pulsante pulsante--testo', onclick: function () { vaiA('esperienze', 'elenco', e.id); } }, 'Modifica la scheda'))
+              : h('p', { class: 'avviso', text: 'In questa scheda manca che cosa hai fatto: nel curriculum comparirà solo il titolo.' })
+          ] : null));
+    }))] : [
+      h('p', { class: 'vuoto', text: 'Non hai ancora raccontato esperienze.' }),
+      h('div', null, h('button', { type: 'button', class: 'pulsante', onclick: function () { vaiA('esperienze', 'elenco'); } }, 'Vai alle esperienze'))
+    ];
+    return [testa(metaSchermata(), 'Le esperienze di lavoro'), corpo(intro, risposta)];
+  }
+
+  function schermataCVCompetenze() {
+    const c = stato.cv;
+    const intro = [
+      h('p', { text: 'Una riga per ogni voce. Evita gli aggettivi generici: meglio quello che sai fare davvero.' }),
+      aiuto('«Proponi dalle mie risposte» aggiunge una frase per ogni situazione che hai dichiarato di saper fare e documentato con un esempio nella sezione 03. Poi correggi come vuoi.'),
+      esempio('Vedi un esempio', h('dl', null,
+        h('dt', { text: 'Lingue' }), h('dd', { text: 'Italiano – madrelingua · Inglese – A2' }),
+        h('dt', { text: 'Digitali' }), h('dd', { text: 'Pacchetto Office, posta elettronica, programmi del mio settore' }),
+        h('dt', { text: 'Altro' }), h('dd', { text: 'Disponibile a lavorare su turni · Squadra di calcio dal 2019' })))
+    ];
+    const risposta = [
+      campo({ id: 'f-cv-competenze', etichetta: 'Competenze professionali', area: true, righe: 5, suggerimento: 'Una per riga.', valore: c.competenze, aggiorna: function (v) { c.competenze = v; } }),
+      h('div', null, h('button', { type: 'button', class: 'pulsante pulsante--secondario pulsante--piccolo', onclick: function () {
+        const sug = L.suggerisciCompetenze(stato);
+        if (!sug.length) { window.alert('Non hai ancora competenze dichiarate e documentate nella sezione 03. Scrivile tu qui sotto.'); return; }
+        const gia = c.competenze.split('\n').map(function (x) { return x.trim(); });
+        const nuove = sug.filter(function (x) { return gia.indexOf(x) === -1; });
+        if (nuove.length) c.competenze = (pieno(c.competenze) ? c.competenze.replace(/\s+$/, '') + '\n' : '') + nuove.join('\n');
+        modificato(); ridisegna('f-cv-competenze');
+      } }, 'Proponi dalle mie risposte')),
+      campo({ id: 'f-cv-lingue', etichetta: 'Lingue', area: true, righe: 3, suggerimento: 'Una per riga, con il livello. Per esempio: Italiano – madrelingua.', valore: c.lingue, aggiorna: function (v) { c.lingue = v; } }),
+      campo({ id: 'f-cv-digitali', etichetta: 'Competenze digitali', area: true, righe: 3, suggerimento: 'Programmi e strumenti che sai usare.', valore: c.digitali, aggiorna: function (v) { c.digitali = v; } }),
+      campo({ id: 'f-cv-altro', etichetta: 'Altro (facoltativo)', area: true, righe: 3, suggerimento: 'Disponibilità, interessi, volontariato, sport.', valore: c.altro, aggiorna: function (v) { c.altro = v; } }),
+      casella({ id: 'f-cv-consenso', testo: 'Aggiungi in fondo la frase sul trattamento dei dati personali (GDPR)', valore: c.consenso,
+        aggiorna: function (v) { c.consenso = v; modificato(); } })
+    ];
+    return [testa(metaSchermata(), 'Competenze, lingue e altro'), corpo(intro, risposta)];
+  }
+
+  function cvSezione(titolo, contenuto) {
+    return h('section', { class: 'cv__parte' }, h('h3', { text: titolo }), contenuto);
+  }
+
+  function cvDocumento() {
+    const d = L.componiCV(stato);
+    const elenco = function (righe) { return h('ul', { class: 'cv__elenco' }, righe.map(function (r) { return h('li', { text: r }); })); };
+    return h('article', { class: 'cv', 'aria-label': 'Il tuo curriculum' },
+      h('header', { class: 'cv__testa' },
+        h('p', { class: 'cv__nome', text: d.nome || 'Il tuo nome' }),
+        d.contatti.length ? h('ul', { class: 'cv__contatti' }, d.contatti.map(function (x) {
+          return h('li', null, h('span', { class: 'meta', text: x.etichetta }), ' ' + x.valore);
+        })) : null),
+      d.profilo ? cvSezione('Profilo', h('p', { class: 'cv__profilo', text: d.profilo })) : null,
+      d.formazione.length ? cvSezione('Istruzione e formazione', h('div', null, d.formazione.map(function (f) {
+        return h('div', { class: 'cv__riga' },
+          h('span', { class: 'cv__periodo', text: f.periodo }),
+          h('div', null, h('p', { class: 'cv__titolo', text: f.titolo }), f.ente ? h('p', { class: 'cv__sotto', text: f.ente }) : null));
+      }))) : null,
+      d.esperienze.length ? cvSezione('Esperienze', h('div', null, d.esperienze.map(function (e) {
+        return h('div', { class: 'cv__riga' },
+          h('span', { class: 'cv__periodo', text: e.periodo }),
+          h('div', null,
+            h('p', { class: 'cv__titolo', text: e.titolo }),
+            (e.dove || e.tipo) ? h('p', { class: 'cv__sotto', text: e.dove || e.tipo }) : null,
+            e.descrizione ? h('p', { class: 'cv__testo', text: e.descrizione }) : null));
+      }))) : null,
+      d.competenze.length ? cvSezione('Competenze professionali', elenco(d.competenze)) : null,
+      d.lingue.length ? cvSezione('Lingue', elenco(d.lingue)) : null,
+      d.digitali.length ? cvSezione('Competenze digitali', elenco(d.digitali)) : null,
+      d.altro.length ? cvSezione('Altre informazioni', elenco(d.altro)) : null,
+      d.consenso ? h('p', { class: 'cv__consenso', text: 'Autorizzo il trattamento dei dati personali contenuti nel presente curriculum ai sensi del Regolamento UE 2016/679 (GDPR).' }) : null);
+  }
+
+  function schermataCVAnteprima() {
+    const d = L.componiCV(stato);
+    const risposta = [
+      d.mancanti.length
+        ? h('p', { class: 'avviso' }, 'Per un curriculum completo manca ancora: ' + d.mancanti.join(', ') + '.')
+        : h('p', { class: 'nota', text: 'Il curriculum ha le informazioni essenziali. Rileggilo prima di stamparlo.' }),
+      h('div', { class: 'home__azioni' },
+        h('button', { type: 'button', class: 'pulsante', onclick: function () { stampa('cv'); } }, 'Stampa il curriculum'),
+        h('button', { type: 'button', class: 'pulsante pulsante--testo', onclick: function () { vaiA('cv', 'contatti'); } }, 'Modifica i dati')),
+      h('p', { class: 'nota', text: 'Dalla finestra di stampa puoi anche scegliere «Salva come PDF». Il curriculum resta su questo dispositivo e non viene inviato al docente.' }),
+      cvDocumento()
+    ];
+    return [testa(metaSchermata(), 'Il tuo curriculum'), corpo(null, risposta, true)];
+  }
+
+  // ---------- 07 Orientamento ----------
   function schermataOrientamentoDomande() {
     const intro = [
       h('p', { text: 'Agli open day ti ascolteranno ragazzi e ragazze di terza media e le loro famiglie. Rispondi con parole tue: anche le difficoltà fanno parte del racconto.' }),
@@ -610,6 +795,7 @@
       case 'sofare': return schermataSituazione(D.SITUAZIONI.find(function (s) { return s.id === sch.id; }));
       case 'sguardo': return schermataSguardo(D.SGUARDO.find(function (g) { return g.id === sch.id; }));
       case 'bilancio': return schermataBilancio();
+      case 'cv': return { contatti: schermataCVContatti, formazione: schermataCVFormazione, esperienze: schermataCVEsperienze, competenze: schermataCVCompetenze, anteprima: schermataCVAnteprima }[sch.id]();
       case 'orientamento': return sch.id === 'domande' ? schermataOrientamentoDomande() : schermataOrientamentoTesto();
     }
     return [];
@@ -653,6 +839,13 @@
       (modificato ? ' Hai modificato qualcosa dopo: invia di nuovo per aggiornare.' : '') });
   }
 
+  // Il curriculum contiene recapiti personali e resta sul dispositivo.
+  function senzaCV(st) {
+    const copia = Object.assign({}, st);
+    delete copia.cv;
+    return copia;
+  }
+
   let invioInCorso = false;
 
   function inviaAlDocente() {
@@ -673,7 +866,7 @@
     fetch(URL_INVIO, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify(stato),
+      body: JSON.stringify(senzaCV(stato)),
       redirect: 'follow'
     })
       .then(function (r) { return r.json(); })
@@ -735,13 +928,17 @@
     lettore.readAsText(file);
   }
 
+  let daStampare = 'dossier';
+
   function preparaStampa() {
     const s = $('stampa');
     s.textContent = '';
-    s.appendChild(dossier(false));
+    s.appendChild(daStampare === 'cv' ? cvDocumento() : dossier(false));
   }
 
-  function stampa() {
+  // «cosa» è 'dossier' o 'cv'; qualsiasi altro valore (per esempio l'evento di un clic) stampa il bilancio.
+  function stampa(cosa) {
+    daStampare = cosa === 'cv' ? 'cv' : 'dossier';
     preparaStampa();
     window.print();
   }
@@ -770,7 +967,7 @@
     $('invia').hidden = false;
     $('invia').addEventListener('click', inviaAlDocente);
     $('scarica').className = 'pulsante pulsante--secondario';
-    $('testo-dialogo').textContent = 'Sono salvate su questo dispositivo, in questo browser, e arrivano al docente solo quando premi «Invia al docente». Puoi inviarle più volte: conta l\'ultimo invio.';
+    $('testo-dialogo').textContent = 'Sono salvate su questo dispositivo, in questo browser, e arrivano al docente solo quando premi «Invia al docente». Puoi inviarle più volte: conta l\'ultimo invio. Il curriculum non viene mai inviato: lo stampi tu.';
   }
   $('chiudi-risposte').addEventListener('click', function () { $('dialogo-risposte').close(); });
   $('apri-indice').addEventListener('click', function () { $('dialogo-indice').showModal(); });
@@ -781,7 +978,8 @@
     if (e.target.files[0]) caricaCopia(e.target.files[0]);
     e.target.value = '';
   });
-  $('stampa-dialogo').addEventListener('click', function () { $('dialogo-risposte').close(); stampa(); });
+  $('stampa-dialogo').addEventListener('click', function () { $('dialogo-risposte').close(); stampa('dossier'); });
+  $('stampa-cv-dialogo').addEventListener('click', function () { $('dialogo-risposte').close(); stampa('cv'); });
   $('cancella').addEventListener('click', cancellaTutto);
   window.addEventListener('beforeprint', preparaStampa);
 })();

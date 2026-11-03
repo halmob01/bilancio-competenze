@@ -11,6 +11,8 @@
   const MAX_BREVE = 200;
   const MAX_LUNGO = 4000;
   const MAX_ESPERIENZE = 30;
+  const MAX_FORMAZIONE = 6;
+  const MAX_PROFILO = 600;
 
   const CAMPI_ESPERIENZA = ['titolo', 'quando', 'contesto', 'azione', 'prova', 'difficolta', 'aiuto', 'autonomia'];
 
@@ -33,8 +35,26 @@
       esperienze: [],
       sofare: sofare,
       sguardo: sguardo,
-      orientamento: orientamento
+      orientamento: orientamento,
+      cv: cvVuoto()
     };
+  }
+
+  // Dati del curriculum. Restano sul dispositivo dello studente: l'app non li
+  // include nell'invio al docente.
+  function cvVuoto() {
+    return {
+      telefono: '', email: '', citta: '', nascita: '', patente: '',
+      profilo: '',
+      formazione: [],
+      esperienze: {},
+      competenze: '', lingue: '', digitali: '', altro: '',
+      consenso: false
+    };
+  }
+
+  function formazioneVuota() {
+    return { id: 'f' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), periodo: '', titolo: '', ente: '' };
   }
 
   function testo(v, max) {
@@ -119,6 +139,30 @@
     const o = grezzo.orientamento || {};
     Object.keys(s.orientamento).forEach(function (k) { s.orientamento[k] = testo(o[k], MAX_LUNGO); });
 
+    const c = grezzo.cv || {};
+    ['telefono', 'nascita', 'patente'].forEach(function (k) { s.cv[k] = testo(c[k], 60); });
+    s.cv.email = testo(c.email, 120);
+    s.cv.citta = testo(c.citta, 80);
+    s.cv.profilo = testo(c.profilo, MAX_PROFILO);
+    ['competenze', 'lingue', 'digitali', 'altro'].forEach(function (k) { s.cv[k] = testo(c[k], MAX_LUNGO); });
+    s.cv.consenso = c.consenso === true;
+    const idF = {};
+    (Array.isArray(c.formazione) ? c.formazione : []).slice(0, MAX_FORMAZIONE).forEach(function (f) {
+      if (!f || typeof f !== 'object') return;
+      let id = testo(f.id, 40);
+      if (!id || idF[id]) id = formazioneVuota().id;
+      idF[id] = true;
+      s.cv.formazione.push({ id: id, periodo: testo(f.periodo, 60), titolo: testo(f.titolo, MAX_BREVE), ente: testo(f.ente, MAX_BREVE) });
+    });
+    const ce = c.esperienze && typeof c.esperienze === 'object' ? c.esperienze : {};
+    Object.keys(visti).forEach(function (id) {
+      const x = ce[id];
+      if (!x || typeof x !== 'object') return;
+      const n = { dove: testo(x.dove, MAX_BREVE), periodo: testo(x.periodo, 60) };
+      if (typeof x.incluso === 'boolean') n.incluso = x.incluso;
+      s.cv.esperienze[id] = n;
+    });
+
     return s;
   }
 
@@ -180,6 +224,14 @@
       const parti = ['esperienze', 'sofare', 'sguardo'].map(function (id) { return statoSezione(stato, id); });
       if (parti.every(function (x) { return x === 'completa'; })) return 'completa';
       return parti.some(function (x) { return x !== 'vuota'; }) ? 'in_corso' : 'vuota';
+    } else if (sezId === 'cv') {
+      const c = stato.cv;
+      const c2 = componiCV(stato);
+      const toccato = pieno(c.telefono) || pieno(c.email) || pieno(c.citta) || pieno(c.profilo) ||
+        c.formazione.some(function (f) { return pieno(f.titolo); }) ||
+        pieno(c.competenze) || pieno(c.lingue) || pieno(c.digitali) || pieno(c.altro);
+      if (c2.mancanti.length === 0 && (pieno(c.competenze) || pieno(c.lingue))) return 'completa';
+      return toccato ? 'in_corso' : 'vuota';
     } else if (sezId === 'orientamento') {
       if (pieno(stato.orientamento.testo)) return 'completa';
       DATI.ORIENTAMENTO.forEach(function (o) { conta(pieno(stato.orientamento[o.id])); });
@@ -254,6 +306,74 @@
       .join('\n\n');
   }
 
+  // Un'esperienza compare nel curriculum se lo studente l'ha scelta; in
+  // mancanza di una scelta, solo il tirocinio è incluso.
+  function cvInclusa(stato, e) {
+    const c = stato.cv.esperienze[e.id];
+    return c && typeof c.incluso === 'boolean' ? c.incluso : e.quando === 'tirocinio';
+  }
+
+  function righe(v) {
+    return String(v || '').split('\n').map(function (x) { return x.trim(); }).filter(Boolean);
+  }
+
+  // Frasi per il campo «competenze»: solo per le situazioni che lo studente dice
+  // di saper fare E ha documentato con un esempio, come nel bilancio.
+  function suggerisciCompetenze(stato) {
+    return DATI.SITUAZIONI.filter(function (sit) {
+      const l = livello(stato.sofare[sit.id].livello);
+      return l && l.dichiara && haProva(stato, sit.id);
+    }).map(function (sit) { return sit.cv; });
+  }
+
+  // Curriculum: solo le parole dello studente, ordinate. Nessuna riscrittura.
+  function componiCV(stato) {
+    const c = stato.cv;
+    const contatti = [];
+    if (pieno(c.citta)) contatti.push({ etichetta: 'Città', valore: c.citta.trim() });
+    if (pieno(c.telefono)) contatti.push({ etichetta: 'Telefono', valore: c.telefono.trim() });
+    if (pieno(c.email)) contatti.push({ etichetta: 'Email', valore: c.email.trim() });
+    if (pieno(c.nascita)) contatti.push({ etichetta: 'Nato/a il', valore: c.nascita.trim() });
+    if (pieno(c.patente)) contatti.push({ etichetta: 'Patente', valore: c.patente.trim() });
+
+    const formazione = c.formazione.filter(function (f) { return pieno(f.titolo); }).map(function (f) {
+      return { periodo: f.periodo.trim(), titolo: f.titolo.trim(), ente: f.ente.trim() };
+    });
+
+    const esperienze = stato.esperienze.filter(function (e) {
+      return cvInclusa(stato, e) && (pieno(e.titolo) || pieno(e.azione));
+    }).map(function (e) {
+      const x = stato.cv.esperienze[e.id] || {};
+      return {
+        id: e.id,
+        titolo: pieno(e.titolo) ? e.titolo.trim() : 'Esperienza',
+        dove: (x.dove || '').trim(),
+        periodo: (x.periodo || '').trim(),
+        tipo: nomeQuando(e.quando),
+        descrizione: (e.azione || '').trim()
+      };
+    });
+
+    const mancanti = [];
+    if (!pieno(stato.profilo.nome)) mancanti.push('il tuo nome (sezione 01)');
+    if (!pieno(c.telefono) && !pieno(c.email)) mancanti.push('un telefono o un indirizzo email');
+    if (!formazione.length) mancanti.push('almeno un titolo di studio o corso');
+
+    return {
+      nome: (stato.profilo.nome || '').trim(),
+      contatti: contatti,
+      profilo: c.profilo.trim(),
+      formazione: formazione,
+      esperienze: esperienze,
+      competenze: righe(c.competenze),
+      lingue: righe(c.lingue),
+      digitali: righe(c.digitali),
+      altro: righe(c.altro),
+      consenso: c.consenso === true,
+      mancanti: mancanti
+    };
+  }
+
   function avanzamento(stato) {
     const stati = DATI.SEZIONI.map(function (s) { return statoSezione(stato, s.id); });
     return {
@@ -266,6 +386,8 @@
   const LOGICA = {
     VERSIONE: VERSIONE,
     MAX_ESPERIENZE: MAX_ESPERIENZE,
+    MAX_FORMAZIONE: MAX_FORMAZIONE,
+    MAX_PROFILO: MAX_PROFILO,
     statoVuoto: statoVuoto,
     esperienzaVuota: esperienzaVuota,
     normalizza: normalizza,
@@ -274,6 +396,10 @@
     statoSezione: statoSezione,
     componiBilancio: componiBilancio,
     componiOrientamento: componiOrientamento,
+    formazioneVuota: formazioneVuota,
+    cvInclusa: cvInclusa,
+    suggerisciCompetenze: suggerisciCompetenze,
+    componiCV: componiCV,
     avanzamento: avanzamento,
     nomeQuando: nomeQuando
   };

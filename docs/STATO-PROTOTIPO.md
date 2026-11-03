@@ -19,12 +19,15 @@ Il percorso completo in sei sezioni, utilizzabile da smartphone e da computer, c
 4. **Un campo per tre significati.** Nella sezione 03 il secondo campo cambia domanda con la risposta: «Come l'hai imparato?» se lo sai fare, «Che cosa ti servirebbe?» se non ancora, «Ti piacerebbe affrontarlo?» se mai. Se lo studente cambia risposta, il testo già scritto resta.
 5. **Raccolta in un Foglio Google** tramite Apps Script del docente, una riga per studente aggiornata a ogni invio (vedi `docs/FOGLIO-GOOGLE.md`).
 6. **I ricordi dei quattro anni non entrano nel dossier**: servono solo come promemoria nella sezione 02.
+7. **Curriculum vitae** (sezione 06, prima dell'orientamento): non comprende foto né indirizzo di casa; la data di nascita e la patente sono facoltative. Le esperienze si scelgono fra le schede già scritte (il tirocinio è già selezionato) e compare il testo di «che cosa hai fatto». Non viene inviato al docente, per non raccogliere recapiti personali nel foglio: se serve, è una scelta da prendere con le famiglie e la scuola.
+8. **Formula GDPR** in fondo al curriculum, solo se lo studente la attiva. Il testo è quello usuale per i curricula in Italia; da far verificare alla scuola.
 
 ## Decisioni aperte
 
 - **Codice di classe.** L'URL dello script è pubblico; un codice dettato in aula ridurrebbe il rischio di righe false.
 - **Vista docente.** Per ora è il foglio stesso; il JSON dell'ultima colonna permette di ricaricare nell'app il lavoro di uno studente.
 - **Dettatura.** Non implementata (design.md §9).
+- **Curriculum.** Il formato è una pagina A4 semplice. Da verificare con i docenti: quali voci chiedere (per esempio la data di nascita), se aggiungere il formato europeo e se raccogliere il curriculum nel foglio.
 - **Contenuti.** Le domande e gli esempi per indirizzo sono una prima stesura da rivedere con i docenti di Elettrico, Informatica ed Estetica, anche rispetto alle competenze del repertorio regionale.
 
 ## Verifiche da fare in classe

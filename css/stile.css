@@ -176,7 +176,7 @@ a { color: inherit; }
 .campo { display: grid; gap: 8px; }
 .campo > label, .campo__etichetta { font-weight: 600; font-size: 17px; line-height: 1.35; }
 .campo__suggerimento { font-size: 15px; color: var(--bc-ink-60); margin-top: -4px; }
-.campo input[type="text"], .campo textarea, .campo select {
+.campo input:not([type="checkbox"]):not([type="radio"]), .campo textarea, .campo select {
   width: 100%;
   background: var(--bc-white);
   border: 1px solid var(--bc-ink-30);
@@ -184,7 +184,7 @@ a { color: inherit; }
   padding: 12px 14px;
   font-size: 17px; line-height: 1.5;
 }
-.campo input[type="text"], .campo select { min-height: 48px; }
+.campo input:not([type="checkbox"]):not([type="radio"]), .campo select { min-height: 48px; }
 .campo textarea { min-height: 140px; resize: vertical; }
 .campo textarea.lungo { min-height: 220px; }
 .campo input:focus-visible, .campo textarea:focus-visible, .campo select:focus-visible { outline: 3px solid var(--bc-ink); outline-offset: 1px; border-color: var(--bc-ink); }
@@ -270,7 +270,25 @@ dialog h2 { font-size: 24px; font-weight: 600; line-height: 1.2; margin-bottom: 
 dialog > * + * { margin-top: 14px; }
 .dialogo__azioni { display: flex; flex-wrap: wrap; gap: 10px; }
 
-/* ---------- Stampa: solo il dossier ---------- */
+/* ---------- Curriculum ---------- */
+.cv { background: var(--bc-white); border: 1px solid var(--bc-ink-10); border-radius: var(--radius-card); padding: clamp(20px, 4vw, 56px); max-width: 860px; }
+.cv__testa { border-bottom: 1px solid var(--bc-ink); padding-bottom: 16px; }
+.cv__nome { font-family: var(--f-display); text-transform: uppercase; font-size: clamp(36px, 6vw, 60px); line-height: .95; margin-bottom: 12px; }
+.cv__contatti { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 4px 22px; font-size: 15px; }
+.cv__contatti .meta { margin-right: 4px; }
+.cv__parte { padding: 18px 0 4px; }
+.cv__parte h3 { font-family: var(--f-mono); font-weight: 400; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--bc-ink-60); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--bc-ink-10); }
+.cv__riga { display: grid; grid-template-columns: 1fr; gap: 2px; padding: 8px 0; }
+@media (min-width: 640px) { .cv__riga { grid-template-columns: 9.5em 1fr; gap: 16px; } }
+.cv__periodo { font-family: var(--f-mono); font-size: 13px; color: var(--bc-ink-60); padding-top: 3px; }
+.cv__titolo { font-weight: 600; }
+.cv__sotto { color: var(--bc-ink-60); font-size: 15px; }
+.cv__testo { margin-top: 4px; font-size: 16px; white-space: pre-line; }
+.cv__profilo { max-width: 68ch; white-space: pre-line; }
+.cv__elenco { padding-left: 1.2em; display: grid; gap: 4px; }
+.cv__consenso { margin-top: 24px; font-size: 13px; color: var(--bc-ink-60); }
+
+/* ---------- Stampa: solo il dossier o il curriculum ---------- */
 #stampa { display: none; }
 @media print {
   @page { margin: 18mm 16mm; }
@@ -284,6 +302,14 @@ dialog > * + * { margin-top: 14px; }
   .dossier__titolo { font-size: 40pt; }
   .dossier__parte h3 { font-size: 18pt; }
   .voce blockquote { font-size: 13pt; }
+  .cv { border: 0; padding: 0; max-width: none; font-size: 10.5pt; line-height: 1.45; }
+  .cv__nome { font-size: 34pt; }
+  .cv__parte { break-inside: avoid; padding-top: 12px; }
+  .cv__riga { grid-template-columns: 30mm 1fr; gap: 10px; break-inside: avoid; }
+  .cv__periodo { font-size: 9pt; color: #444; }
+  .cv__parte h3 { font-size: 9pt; color: #444; }
+  .cv__sotto, .cv__consenso { color: #444; }
+  .cv__testo, .cv__sotto { font-size: inherit; }
 }
 .anni .campo textarea { min-height: 96px; }
 

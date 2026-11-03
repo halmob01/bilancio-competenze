@@ -756,8 +756,11 @@
   // ----- Documento e aspetto -----
   const FRASE_CONSENSO = 'Autorizzo il trattamento dei dati personali contenuti nel mio curriculum vitae in base all\'art. 13 del D. Lgs. 196/2003 e all\'art. 13 del Regolamento UE 2016/679 relativo alla protezione delle persone fisiche con riguardo al trattamento dei dati personali.';
 
-  function cvSezione(titolo, contenuto) {
-    return h('section', { class: 'cv__parte' }, h('h3', { text: titolo }), contenuto);
+  // Ogni sezione ha un titolo per ciascuna impaginazione; l'ordine delle sezioni lo decide il CSS.
+  function cvSezione(chiave, titoloOriginale, titoloModello, contenuto) {
+    return h('section', { class: 'cv__parte cv__parte--' + chiave },
+      h('h3', null, h('span', { class: 't-orig', text: titoloOriginale }), h('span', { class: 't-mod', text: titoloModello })),
+      contenuto);
   }
 
   function luogoFirma(v) { return pieno(v) ? v.trim() + ', ' : ''; }
@@ -773,6 +776,9 @@
     const col = D.CV_COLORI.find(function (x) { return x.id === f.colore; }) || D.CV_COLORI[0];
     const dim = D.CV_DIMENSIONI.find(function (x) { return x.id === f.dimensione; }) || D.CV_DIMENSIONI[1];
     el.style.setProperty('--cv-colore', col.hex);
+    // Nell'impaginazione originale i titoli restano grigi finché il colore è il nero.
+    el.style.setProperty('--cv-titoli', (f.impaginazione === 'originale' && f.colore === 'nero') ? '#666666' : col.hex);
+    D.CV_IMPAGINAZIONI.forEach(function (x) { el.classList.toggle('cv--impag-' + x.id, x.id === f.impaginazione); });
     el.style.setProperty('--cv-s', String(dim.scala));
     D.CV_CARATTERI.forEach(function (x) { el.classList.toggle('cv--' + x.id, x.id === f.carattere); });
     el.classList.toggle('cv--senza-firma', !f.firma);
@@ -792,8 +798,8 @@
           d.contatti.length ? h('ul', { class: 'cv__contatti' }, d.contatti.map(function (x) {
             return h('li', null, h('span', { class: 'meta', text: x.etichetta }), ' ' + x.valore);
           })) : null)),
-      d.profilo ? cvSezione('Profilo', h('p', { class: 'cv__profilo' }, conGrassetto(d.profilo))) : null,
-      d.esperienze.length ? cvSezione('Esperienze professionali', h('div', null, d.esperienze.map(function (e) {
+      d.profilo ? cvSezione('profilo', 'Profilo', 'Profilo', h('p', { class: 'cv__profilo' }, conGrassetto(d.profilo))) : null,
+      d.esperienze.length ? cvSezione('esperienze', 'Esperienze', 'Esperienze professionali', h('div', null, d.esperienze.map(function (e) {
         return h('div', { class: 'cv__riga' },
           h('span', { class: 'cv__periodo', text: e.periodo }),
           h('div', null,
@@ -801,15 +807,15 @@
             (e.dove || e.tipo) ? h('p', { class: 'cv__sotto', text: e.dove || e.tipo }) : null,
             e.descrizione ? h('p', { class: 'cv__testo' }, conGrassetto(e.descrizione)) : null));
       }))) : null,
-      d.formazione.length ? cvSezione('Istruzione e formazione', h('div', null, d.formazione.map(function (f) {
+      d.formazione.length ? cvSezione('formazione', 'Istruzione e formazione', 'Istruzione e formazione', h('div', null, d.formazione.map(function (f) {
         return h('div', { class: 'cv__riga' },
           h('span', { class: 'cv__periodo', text: f.periodo }),
           h('div', null, h('p', { class: 'cv__titolo', text: f.titolo }), f.ente ? h('p', { class: 'cv__sotto', text: f.ente }) : null));
       }))) : null,
-      d.competenze.length ? cvSezione('Competenze professionali', elenco(d.competenze)) : null,
-      d.lingue.length ? cvSezione('Lingue', elenco(d.lingue)) : null,
-      d.digitali.length ? cvSezione('Software e capacità digitali', elenco(d.digitali)) : null,
-      d.altro.length ? cvSezione('Interessi', elenco(d.altro)) : null,
+      d.competenze.length ? cvSezione('competenze', 'Competenze professionali', 'Competenze professionali', elenco(d.competenze)) : null,
+      d.lingue.length ? cvSezione('lingue', 'Lingue', 'Lingue', elenco(d.lingue)) : null,
+      d.digitali.length ? cvSezione('digitali', 'Competenze digitali', 'Software e capacità digitali', elenco(d.digitali)) : null,
+      d.altro.length ? cvSezione('altro', 'Altre informazioni', 'Interessi', elenco(d.altro)) : null,
       d.consenso ? h('p', { class: 'cv__consenso', text: FRASE_CONSENSO }) : null,
       h('p', { class: 'cv__firma' }, h('span', { class: 'cv__firma-luogo' }), dataOggi() + '   Firma ', h('span', { class: 'cv__firma-riga' })));
     applicaAspetto(art);
@@ -838,6 +844,8 @@
     };
     return h('section', { class: 'aspetto', 'aria-labelledby': 'aspetto-titolo' },
       h('h3', { id: 'aspetto-titolo', class: 'meta', text: 'Aspetto del curriculum' }),
+      gruppoScelte({ legenda: 'Impaginazione', nome: 'cv-impaginazione', riga: true, opzioni: D.CV_IMPAGINAZIONI.map(function (x) { return { id: x.id, testo: x.nome }; }),
+        valore: f.impaginazione, aggiorna: function (id) { cambia('impaginazione', id); } }),
       h('fieldset', { class: 'campo' },
         h('legend', { text: 'Colore dei titoli' }),
         h('div', { class: 'colori' }, D.CV_COLORI.map(function (c) {

@@ -547,7 +547,7 @@
         intestazione ? h('p', { class: 'meta', text: intestazione }) : null),
       parte('So fare', (soFare.length ? [h('ul', { class: 'voci' }, soFare)] : []).concat(daDoc), 'Ancora nulla: compila la sezione «Che cosa so fare».'),
       parte('Ho imparato così', b.hoImparato.length ? h('ul', { class: 'voci' }, b.hoImparato.map(function (x) { return voce(x.testo, x.fonte, x.rif, interattivo); })) : null,
-        'Ancora nulla: racconta le difficoltà e gli aiuti nelle esperienze, e come hai imparato nella sezione «Che cosa so fare».'),
+        'Ancora nulla: racconta le difficoltà e gli aiuti nelle esperienze e come hai imparato nella sezione «Che cosa so fare».'),
       parte('Posso dimostrarlo', b.possoDimostrarlo.length ? h('ul', { class: 'voci' }, b.possoDimostrarlo.map(function (x) { return voce(x.testo, x.fonte, x.rif, interattivo); })) : null,
         'Ancora nulla: indica le prove nelle schede esperienza o gli esempi nella sezione «Che cosa so fare».'),
       parte('Devo ancora imparare', (devo.length ? [h('ul', { class: 'voci' }, devo)] : []).concat(mai),
@@ -1156,7 +1156,7 @@
     $('invia').hidden = false;
     $('invia').addEventListener('click', inviaAlDocente);
     $('scarica').className = 'pulsante pulsante--secondario';
-    $('testo-dialogo').textContent = 'Sono salvate su questo dispositivo, in questo browser, e arrivano al docente solo quando premi «Invia al docente». Puoi inviarle più volte: conta l\'ultimo invio. Il curriculum non viene mai inviato: lo stampi tu.';
+    $('testo-dialogo').textContent = 'Sono salvate su questo dispositivo, in questo browser e arrivano al docente solo quando premi «Invia al docente». Puoi inviarle più volte: conta l\'ultimo invio. Il curriculum non viene mai inviato: lo stampi tu.';
   }
   $('chiudi-risposte').addEventListener('click', function () { $('dialogo-risposte').close(); });
   $('apri-indice').addEventListener('click', function () { $('dialogo-indice').showModal(); });

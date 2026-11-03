@@ -26,7 +26,7 @@ Regole didattiche applicate (da `design.md` §9):
 - **Nessuna riscrittura automatica.** La bozza per l'open day mette in fila le risposte dello studente senza cambiarle.
 - Il curriculum usa solo le parole dello studente. «Proponi dalle mie risposte» suggerisce una frase di competenza solo per le situazioni dichiarate **e** documentate con un esempio.
 - **Il curriculum non viene inviato al docente**: contiene recapiti personali (indirizzo, telefono, email, foto) e resta sul dispositivo, da stampare o salvare in PDF.
-- Prima di stampare lo studente può scegliere il **modello** (Contemporaneo, predefinito, oppure Classico, con l'ordine e i titoli del modello della scuola), il **colore dei titoli** (sei colori leggibili in stampa), **carattere** (moderno, elegante, semplice) e **dimensione**, aggiungere luogo, data e riga per la firma, e **correggere il testo direttamente sul foglio**. Le correzioni valgono per la stampa e restano finché i dati non cambiano; le parole fra due asterischi (**così**) vanno in grassetto.
+- Prima di stampare lo studente può scegliere il **modello** (Contemporaneo, predefinito, oppure Classico, con l'ordine e i titoli del modello della scuola), il **colore dei titoli** (sei colori leggibili in stampa), **carattere** (moderno, elegante, semplice) e **dimensione**, aggiungere luogo, data e riga per la firma e **correggere il testo direttamente sul foglio**. Le correzioni valgono per la stampa e restano finché i dati non cambiano; le parole fra due asterischi (**così**) vanno in grassetto.
 - Nessun punteggio, badge, classifica o colore diverso per indirizzo.
 
 ## Online e raccolta dei dati
@@ -53,7 +53,7 @@ Regole didattiche applicate (da `design.md` §9):
 - `css/tokens.css` — token di `design.md` §10 (palette Babel, tipografia e griglia di sito-filosofia) e `@font-face`.
 - `css/stile.css` — componenti e stampa.
 - `apps-script/Codice.gs` — script da incollare nel Foglio Google del docente.
-- `fonts/` — Anton, Geist, Geist Mono, EB Garamond (sottoinsieme latino, SIL Open Font License; licenze accanto ai file).
+- `fonts/` — Anton, Fira Sans, Fira Mono, EB Garamond (sottoinsieme latino, SIL Open Font License; licenze accanto ai file).
 
 ## Prova e verifica
 

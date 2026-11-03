@@ -38,7 +38,7 @@
       cv: 'Comprensione di consegne, schemi e documentazione tecnica',
       verbo: 'Capire',
       domanda: 'Quando ricevi un compito, riesci a capire che cosa ti viene chiesto?',
-      anche: 'Qui entrano anche la lettura di testi tecnici, in italiano e in inglese, e l\'ascolto di chi ti dà le indicazioni.',
+      anche: 'Qui entrano anche la lettura di testi tecnici, in italiano e in inglese e l\'ascolto di chi ti dà le indicazioni.',
       esempi: {
         elettrico: 'Leggere lo schema di un impianto civile e capire quali circuiti realizzare prima di prendere in mano i cavi.',
         informatica: 'Capire dal racconto di un utente che cosa non funziona sul suo computer, anche quando lo spiega in modo confuso.',
@@ -86,7 +86,7 @@
       cv: 'Capacità di spiegare e documentare il lavoro svolto',
       verbo: 'Spiegare',
       domanda: 'Sai spiegare a qualcuno quello che hai fatto o come si fa?',
-      anche: 'Qui entrano anche la scrittura di una relazione o di un rapporto, e l\'uso di un linguaggio adatto a chi ascolta.',
+      anche: 'Qui entrano anche la scrittura di una relazione o di un rapporto e l\'uso di un linguaggio adatto a chi ascolta.',
       esempi: {
         elettrico: 'Spiegare al cliente come funziona il nuovo impianto o compilare il rapporto di un intervento.',
         informatica: 'Spiegare a un utente non esperto una procedura passo per passo, oppure scriverla in un breve documento.',
@@ -195,7 +195,7 @@
     },
     {
       id: 'difficile',
-      etichetta: 'Una cosa che è stata difficile, e come l\'hai affrontata.',
+      etichetta: 'Una cosa che è stata difficile e come l\'hai affrontata.',
       esempio: '«All\'inizio non capivo gli schemi. Mi è servito rifarli a mano, più volte.»'
     },
     {

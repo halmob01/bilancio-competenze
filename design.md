@@ -54,21 +54,21 @@ Distribuzione visiva indicativa: 75–85% carta chiara; 10–20% testo/linee ner
 Font effettivamente dichiarati in `sito-filosofia/css/tokens.css` e caricati da `css/base.css`:
 
 - **Anton** (display): titoli principali, numeri di sezione e grandi parole isolabili. Mai per lunghi paragrafi. Font condensato, senza bisogno di fingere pesi che non possiede.
-- **Geist** (interfaccia): domande, spiegazioni brevi, pulsanti, selettori, risposta scritta, microtesti.
+- **Fira Sans** (interfaccia): domande, spiegazioni brevi, pulsanti, selettori, risposta scritta, microtesti.
 - **EB Garamond** (narrativa, con misura): brevi estratti del racconto personale, testo conclusivo destinato all'open day, blocchi di lettura; **non** per etichette o form.
-- **Geist Mono** (metadati): `01 / 06`, «TIROCINIO», «SALVATO», indicatori e piccoli dettagli editoriali.
+- **Fira Mono** (metadati): `01 / 06`, «TIROCINIO», «SALVATO», indicatori e piccoli dettagli editoriali.
 
-Corrispondenza con fonti: `--f-display: Anton`, `--f-sans: Geist`, `--f-libro: EB Garamond`, `--f-mono: Geist Mono`.
+Corrispondenza con fonti: `--f-display: Anton`, `--f-sans: Fira Sans`, `--f-libro: EB Garamond`, `--f-mono: Fira Mono`.
 
 Scala proposta **adattata alla funzione**, mantenendo le proporzioni del sito-filosofia:
 - H1 apertura Anton uppercase: `clamp(56px, 10vw, 120px)`, line-height `0.90`.
-- Titolo di sezione Geist 600: `clamp(30px, 5vw, 48px)`, line-height `1.08`.
-- Domanda principale Geist 600: `clamp(24px, 3.2vw, 36px)`, line-height `1.15`.
-- Corpo istruzioni Geist 400: `clamp(17px, 1.5vw, 19px)`, line-height `1.55–1.62`.
+- Titolo di sezione Fira Sans 600: `clamp(30px, 5vw, 48px)`, line-height `1.08`.
+- Domanda principale Fira Sans 600: `clamp(24px, 3.2vw, 36px)`, line-height `1.15`.
+- Corpo istruzioni Fira Sans 400: `clamp(17px, 1.5vw, 19px)`, line-height `1.55–1.62`.
 - Racconto conclusivo EB Garamond: `clamp(20px, 2vw, 23px)`, line-height `1.48`.
-- Metadati Geist Mono: `12–14px` con spaziatura misurata.
+- Metadati Fira Mono: `12–14px` con spaziatura misurata.
 
-Non impiegare EB Garamond per un lungo questionario su smartphone: il centro dell'esperienza deve rimanere Geist.
+Non impiegare EB Garamond per un lungo questionario su smartphone: il centro dell'esperienza deve rimanere Fira Sans.
 
 ## 5. Layout — da sito-filosofia
 
@@ -76,7 +76,7 @@ Non impiegare EB Garamond per un lungo questionario su smartphone: il centro del
 - **Gap:** 14px mobile, 20px tablet, 24px desktop.
 - **Margini:** 20px mobile (16px su schermi sotto 360px), da 28 a 72px su tablet/desktop.
 - **Massimo contenitore:** 1720px (ereditato), ma la colonna di testo resta stretta.
-- **Misura del testo:** circa 54ch per Geist; niente istruzioni a tutta larghezza.
+- **Misura del testo:** circa 54ch per Fira Sans; niente istruzioni a tutta larghezza.
 - **Ritmo verticale:** sezioni ampie, riferimento `clamp(64px, 12vw, 100px)`; fino a `clamp(96px, 9vw, 140px)` su desktop.
 - **Distribuzione desktop:** nella fase di lavoro usare 4–5 colonne per introduzione/promemoria e 7–8 per la risposta, con filetto divisorio; su mobile una sola colonna.
 
@@ -87,13 +87,13 @@ Non impiegare EB Garamond per un lungo questionario su smartphone: il centro del
 Metafore visive: **indice editoriale**, **timeline del percorso**, **nota a margine**, **filetto**, **numero grande**, **documento annotato**, **traccia di avanzamento**.
 
 Componenti:
-1. **Apertura** — Anton su fondo carta; un sommario breve in Geist; piccolo segno rosso. No hero fotografico.
-2. **Indice di percorso** — 6 sezioni, numerazione Geist Mono `01—06`; sul desktop rail laterale discreto; sul mobile barra sottile con nome tappa e stato.
-3. **Domanda** — titolo Geist, una consegna alla volta, esempio concreto apribile e non imposto.
+1. **Apertura** — Anton su fondo carta; un sommario breve in Fira Sans; piccolo segno rosso. No hero fotografico.
+2. **Indice di percorso** — 6 sezioni, numerazione Fira Mono `01—06`; sul desktop rail laterale discreto; sul mobile barra sottile con nome tappa e stato.
+3. **Domanda** — titolo Fira Sans, una consegna alla volta, esempio concreto apribile e non imposto.
 4. **Scheda esperienza** — superficie carta o bianca, bordo sottile, angoli lievemente arrotondati (raggio 8px); contesto, azione, prova, difficoltà, autonomia.
 5. **Scala di autonomia** — selettore a opzioni testuali esplicite; mai sola scala numerica o emoji.
 6. **Campo racconto** — textarea larga, leggibile, con spazio sufficiente; pulsante «Detta la risposta» solo se una soluzione privacy-compatibile è disponibile; trascrizione sempre rivedibile.
-7. **Blocco di aiuto** — superficie `--bc-mist`, filetto verticale, testo Geist; pochi casi reali adattati agli indirizzi.
+7. **Blocco di aiuto** — superficie `--bc-mist`, filetto verticale, testo Fira Sans; pochi casi reali adattati agli indirizzi.
 8. **Bilancio finale** — impaginazione tipo dossier, con sezioni chiare, citazioni in EB Garamond e margini ampi; possibilità di stampa e salvataggio.
 9. **Pulsanti** — pill come in sito-filosofia: primaria nera con testo bianco; secondaria trasparente con bordo nero. Altezze almeno 44–48px.
 10. **Progresso** — sottile linea nera con indicatore rosso; testo sempre presente («Sezione 2 di 6»).
@@ -109,11 +109,11 @@ Componenti:
 
 ### Home
 Titolo `BILANCIO DI COMPETENZE` (Anton)  
-Sottotitolo `Quattro anni. Che cosa hai imparato?` (Geist)  
+Sottotitolo `Quattro anni. Che cosa hai imparato?` (Fira Sans)  
 Spiegazione sobria in 2 frasi. Pulsante nero `Inizia`. Piccola indicazione «Puoi tornare sulle risposte per correggerle».
 
 ### Sezione «Le esperienze»
-`01 / 06` (Geist Mono); titolo «Le esperienze che ricordi» (Geist).  
+`01 / 06` (Fira Mono); titolo «Le esperienze che ricordi» (Fira Sans).  
 Timeline I–IV anno e tirocinio non rigidamente legati a una sola annualità. Possibilità di aggiungere esperienze multiple. Nei casi suggeriti distinguere tra *esempio* e *cosa ho fatto davvero*.
 
 ### Sezione «Che cosa so fare»
@@ -163,9 +163,9 @@ Il comportamento non deve distrarre mentre si leggono e si scrivono risposte per
 
   /* sito-filosofia — famiglie tipografiche */
   --f-display: "Anton", Impact, "Arial Narrow", sans-serif;
-  --f-sans: "Geist", system-ui, sans-serif;
+  --f-sans: "Fira Sans", system-ui, sans-serif;
   --f-libro: "EB Garamond", Garamond, serif;
-  --f-mono: "Geist Mono", ui-monospace, monospace;
+  --f-mono: "Fira Mono", ui-monospace, monospace;
 
   /* sito-filosofia — griglia e ritmo */
   --cols: 4;

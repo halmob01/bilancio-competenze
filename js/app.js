@@ -1145,12 +1145,13 @@
       aiuto('Clicca sul foglio per correggere una parola o una riga direttamente nel curriculum. Queste correzioni valgono solo per la stampa e restano finché non cambi i dati: per modifiche definitive usa «Modifica i dati».'),
       pannelloAspetto(doc),
       h('div', { class: 'home__azioni' },
-        h('button', { type: 'button', class: 'pulsante', onclick: function () { stampa('cv'); } }, 'Stampa il curriculum'),
+        h('button', { type: 'button', class: 'pulsante', onclick: scaricaWord }, 'Scarica in Word'),
+        h('button', { type: 'button', class: 'pulsante', onclick: salvaPdf }, 'Scarica in PDF'),
         h('button', { type: 'button', class: 'pulsante pulsante--testo', onclick: function () { vaiA('cv', 'contatti'); } }, 'Modifica i dati'),
         riuso ? h('button', { type: 'button', class: 'pulsante pulsante--testo', onclick: function () {
           chiedi('Annullare le correzioni scritte a mano sul foglio?', 'Annulla le correzioni', function () { cvManuale = null; ridisegna(); }, 'Tieni le correzioni');
         } }, 'Annulla le correzioni sul foglio') : null),
-      h('p', { class: 'nota', text: 'Dalla finestra di stampa puoi anche scegliere «Salva come PDF». Il curriculum resta su questo dispositivo e non viene inviato al docente.' }),
+      h('p', { class: 'nota', text: 'Il Word si apre e si modifica come un normale documento: in alcuni programmi i caratteri possono cambiare un po\'. Il PDF si crea dalla finestra di stampa: scegli «Salva come PDF» al posto della stampante. Il curriculum resta su questo dispositivo e non viene inviato al docente.' }),
       doc
     ];
     return [testa(metaSchermata(), 'Il tuo curriculum'), corpo(null, risposta, true)];
@@ -1312,14 +1313,166 @@
   function scaricaCopia() {
     clearTimeout(timerSalva);
     scriviArchivio();
-    const blob = new Blob([JSON.stringify(stato, null, 2)], { type: 'application/json' });
+    scaricaFile(new Blob([JSON.stringify(stato, null, 2)], { type: 'application/json' }), nomeFile());
+    $('salvato').textContent = 'Copia scaricata';
+  }
+
+  function scaricaFile(blob, nome) {
     const url = URL.createObjectURL(blob);
-    const a = h('a', { href: url, download: nomeFile() });
+    const a = h('a', { href: url, download: nome });
     document.body.appendChild(a);
     a.click();
     a.remove();
     setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
-    $('salvato').textContent = 'Copia scaricata';
+  }
+
+  // ---------- Curriculum in Word e in PDF ----------
+  // I tratti di testo di un elemento, con il grassetto di <strong> (le parole fra due asterischi).
+  function trattiDa(nodo) {
+    const out = [];
+    (function visita(n, grassetto) {
+      n.childNodes.forEach(function (c) {
+        if (c.nodeType === 3) { if (c.textContent) out.push({ t: c.textContent, b: grassetto }); }
+        else if (c.nodeType === 1) {
+          if (c.tagName === 'BR') out.push({ t: '\n', b: false });
+          else visita(c, grassetto || c.tagName === 'STRONG' || c.tagName === 'B');
+        }
+      });
+    })(nodo, false);
+    return out;
+  }
+
+  const ORDINE_CV = {
+    originale: { profilo: 1, formazione: 2, esperienze: 3, competenze: 4, lingue: 5, digitali: 6, altro: 7 },
+    modello: { profilo: 1, esperienze: 2, formazione: 3, competenze: 4, lingue: 5, digitali: 6, altro: 7 }
+  };
+
+  // Legge il curriculum così com'è sul foglio (comprese le correzioni a mano) e lo descrive per il file Word.
+  function modelloDaDocumento(el) {
+    const cls = el.classList;
+    const layout = cls.contains('cv--impag-europass') ? 'europass' : cls.contains('cv--impag-modello') ? 'modello' : 'originale';
+    const eu = layout === 'europass';
+    const foto = el.querySelector('.cv__foto');
+    const testoDi = function (sel, radice) { const x = (radice || el).querySelector(sel); return x ? x.textContent.trim() : ''; };
+    const m = {
+      layout: layout,
+      carattere: cls.contains('cv--classico') ? 'classico' : cls.contains('cv--semplice') ? 'semplice' : 'moderno',
+      scala: parseFloat(el.style.getPropertyValue('--cv-s')) || 1,
+      colore: el.style.getPropertyValue('--cv-colore').trim(),
+      titoli: el.style.getPropertyValue('--cv-titoli').trim(),
+      logo: null,
+      foto: foto ? bytesDaDataUrl(foto.getAttribute('src')) : null,
+      nome: testoDi('.cv__nome'),
+      occupazione: testoDi('.cv__occupazione'),
+      anagrafica: testoDi('.eu-anagrafica'),
+      contatti: Array.prototype.map.call(el.querySelectorAll('.cv__contatti li'), function (li) {
+        const et = li.querySelector('.meta');
+        const e = et ? et.textContent.trim() : '';
+        return { etichetta: e.replace(/:$/, ''), valore: li.textContent.replace(et ? et.textContent : '', '').trim() };
+      }),
+      sezioni: [],
+      consenso: testoDi('.cv__consenso'),
+      firma: cls.contains('cv--senza-firma') ? null : (testoDi('.cv__firma') ? testoDi('.cv__firma') + ' ' : null)
+    };
+    let parti = Array.prototype.slice.call(el.querySelectorAll(':scope > .cv__parte'));
+    if (!eu) {
+      const chiave = function (p) { return (p.className.match(/cv__parte--(\w+)/) || [])[1]; };
+      parti = parti.sort(function (a, b) { return (ORDINE_CV[layout][chiave(a)] || 9) - (ORDINE_CV[layout][chiave(b)] || 9); });
+    }
+    parti.forEach(function (p) {
+      const h3 = p.querySelector('h3');
+      const spanTitolo = !eu && h3 ? h3.querySelector(layout === 'modello' ? '.t-mod' : '.t-orig') : null;
+      const sez = { titolo: (spanTitolo || h3 || p).textContent.trim(), blocchi: [] };
+      (function visita(n) {
+        Array.prototype.forEach.call(n.children, function (c) {
+          if (c === h3) return;
+          if (c.classList.contains('cv__riga')) {
+            const dx = c.children[1];
+            const testo = dx ? dx.querySelector('.cv__testo') : null;
+            sez.blocchi.push({ t: 'riga', periodo: testoDi('.cv__periodo', c),
+              titolo: dx ? testoDi('.cv__titolo', dx) : '', sotto: dx ? testoDi('.cv__sotto', dx) : '', runs: testo ? trattiDa(testo) : [] });
+          } else if (c.classList.contains('cv__profilo')) {
+            sez.blocchi.push({ t: 'par', runs: trattiDa(c) });
+          } else if (c.classList.contains('cv__elenco')) {
+            Array.prototype.forEach.call(c.children, function (li) { sez.blocchi.push({ t: 'voce', runs: trattiDa(li) }); });
+          } else if (c.classList.contains('eu-madre')) {
+            const forte = c.querySelector('strong');
+            const et = forte ? forte.textContent.trim() : '';
+            sez.blocchi.push({ t: 'madre', etichetta: et, valore: c.textContent.replace(forte ? forte.textContent : '', '').trim() });
+          } else if (c.classList.contains('eu-nota')) {
+            sez.blocchi.push({ t: 'nota', testo: c.textContent.trim() });
+          } else if (c.tagName === 'TABLE') {
+            sez.blocchi.push({ t: 'lingue', righe: Array.prototype.map.call(c.querySelectorAll('tbody tr'), function (tr) {
+              const td = tr.querySelectorAll('td');
+              const lungo = td.length === 1;
+              return { lingua: tr.querySelector('th').textContent.trim(),
+                livelli: lungo ? null : Array.prototype.map.call(td, function (x) { return x.textContent.trim() === '–' ? '' : x.textContent.trim(); }),
+                testo: lungo ? td[0].textContent.trim() : '' };
+            }) });
+          } else if (c.tagName === 'P') {
+            sez.blocchi.push({ t: 'par', runs: trattiDa(c), grassetto: c.classList.contains('cv__titolo') });
+          } else {
+            visita(c);
+          }
+        });
+      })(p);
+      m.sezioni.push(sez);
+    });
+    return m;
+  }
+
+  function bytesDaDataUrl(u) {
+    const r = /^data:image\/(jpeg|png);base64,([A-Za-z0-9+\/=]+)$/.exec(u || '');
+    if (!r) return null;
+    const bin = atob(r[2]);
+    const dati = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) dati[i] = bin.charCodeAt(i);
+    return { dati: dati, est: r[1] === 'png' ? 'png' : 'jpeg' };
+  }
+
+  // Il logo Europass è un'immagine del sito: la si rilegge dal disegno, senza altre richieste.
+  function bytesLogo() {
+    return new Promise(function (risolvi) {
+      const img = new Image();
+      img.onload = function () {
+        try {
+          const c = document.createElement('canvas');
+          c.width = img.naturalWidth; c.height = img.naturalHeight;
+          c.getContext('2d').drawImage(img, 0, 0);
+          c.toBlob(function (b) {
+            if (!b) { risolvi(null); return; }
+            b.arrayBuffer().then(function (x) { risolvi(new Uint8Array(x)); }, function () { risolvi(null); });
+          }, 'image/png');
+        } catch (e) { risolvi(null); }
+      };
+      img.onerror = function () { risolvi(null); };
+      img.src = 'img/europass-logo.png';
+    });
+  }
+
+  function nomeFileCV(estensione) {
+    return nomeFile().replace(/^bilancio-competenze/, 'curriculum').replace(/\.json$/, '.' + estensione);
+  }
+
+  function scaricaWord() {
+    const modello = modelloDaDocumento(cvPerLaStampa());
+    const crea = function (logo) {
+      modello.logo = logo;
+      const byte = window.BC_DOCX.creaDocx(modello);
+      scaricaFile(new Blob([byte], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' }), nomeFileCV('docx'));
+      $('salvato').textContent = 'Word scaricato';
+    };
+    if (modello.layout === 'europass') bytesLogo().then(crea); else crea(null);
+  }
+
+  // Il PDF si crea dalla finestra di stampa: il titolo della pagina diventa il nome del file proposto.
+  function salvaPdf() {
+    const prima = document.title;
+    const nome = (stato.profilo.nome || '').trim();
+    document.title = 'Curriculum' + (nome ? ' ' + nome : '');
+    const ripristina = function () { document.title = prima; window.removeEventListener('afterprint', ripristina); };
+    window.addEventListener('afterprint', ripristina);
+    stampa('cv');
   }
 
   function caricaCopia(file) {

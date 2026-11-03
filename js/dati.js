@@ -35,6 +35,7 @@
   const SITUAZIONI = [
     {
       id: 'capire',
+      cv: 'Comprensione di consegne, schemi e documentazione tecnica',
       verbo: 'Capire',
       domanda: 'Quando ricevi un compito, riesci a capire che cosa ti viene chiesto?',
       anche: 'Qui entrano anche la lettura di testi tecnici, in italiano e in inglese, e l\'ascolto di chi ti dà le indicazioni.',
@@ -46,6 +47,7 @@
     },
     {
       id: 'fare',
+      cv: 'Esecuzione di lavori del proprio mestiere dall\'inizio alla fine',
       verbo: 'Fare',
       domanda: 'Sai realizzare un lavoro del tuo mestiere dall\'inizio alla fine?',
       anche: 'Qui entrano anche l\'organizzazione dei tempi, dei materiali e degli strumenti.',
@@ -57,6 +59,7 @@
     },
     {
       id: 'collaborare',
+      cv: 'Lavoro in squadra e rapporto con tutor, colleghi e clienti',
       verbo: 'Collaborare',
       domanda: 'Come lavori con gli altri: compagni, colleghi, tutor, clienti?',
       anche: 'Qui entrano anche il rispetto dei ruoli, la puntualità e il modo in cui chiedi e offri aiuto.',
@@ -68,6 +71,7 @@
     },
     {
       id: 'verificare',
+      cv: 'Controllo del risultato e rispetto delle norme di sicurezza e igiene',
       verbo: 'Verificare',
       domanda: 'Controlli il risultato del tuo lavoro e le condizioni di sicurezza?',
       anche: 'Qui entrano anche le misure, i calcoli e le norme di sicurezza e di igiene.',
@@ -79,6 +83,7 @@
     },
     {
       id: 'spiegare',
+      cv: 'Capacità di spiegare e documentare il lavoro svolto',
       verbo: 'Spiegare',
       domanda: 'Sai spiegare a qualcuno quello che hai fatto o come si fa?',
       anche: 'Qui entrano anche la scrittura di una relazione o di un rapporto, e l\'uso di un linguaggio adatto a chi ascolta.',
@@ -90,6 +95,7 @@
     },
     {
       id: 'migliorare',
+      cv: 'Analisi degli errori e capacità di migliorare il proprio lavoro',
       verbo: 'Migliorare',
       domanda: 'Quando qualcosa va storto, riesci a capire perché e a fare meglio la volta dopo?',
       anche: 'Qui entrano anche la ricerca di informazioni, la richiesta di un parere e la capacità di accettare una critica.',
@@ -123,7 +129,7 @@
     }
   ];
 
-  // Sei sezioni (design.md §6.2). Ogni sezione ha una o più schermate:
+  // Sette sezioni (design.md §6.2, più il curriculum). Ogni sezione ha una o più schermate:
   // una sola domanda principale per schermata.
   const SEZIONI = [
     {
@@ -153,6 +159,17 @@
       id: 'bilancio',
       titolo: 'Bilancio',
       schermate: [{ id: 'dossier', titolo: 'Il tuo bilancio' }]
+    },
+    {
+      id: 'cv',
+      titolo: 'Curriculum vitae',
+      schermate: [
+        { id: 'contatti', titolo: 'I tuoi dati' },
+        { id: 'formazione', titolo: 'La tua formazione' },
+        { id: 'esperienze', titolo: 'Le esperienze di lavoro' },
+        { id: 'competenze', titolo: 'Competenze, lingue e altro' },
+        { id: 'anteprima', titolo: 'Il tuo curriculum' }
+      ]
     },
     {
       id: 'orientamento',

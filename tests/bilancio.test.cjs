@@ -13,8 +13,9 @@ function conEsperienza(stato, campi) {
   return e;
 }
 
-test('sei sezioni, una sola domanda principale per schermata', () => {
-  assert.equal(D.SEZIONI.length, 6);
+test('sette sezioni, una sola domanda principale per schermata', () => {
+  assert.equal(D.SEZIONI.length, 7);
+  assert.deepEqual(D.SEZIONI.map((x) => x.id), ['percorso', 'esperienze', 'sofare', 'sguardo', 'bilancio', 'cv', 'orientamento']);
   D.SEZIONI.forEach((s) => assert.ok(s.schermate.length >= 1, s.id));
   assert.deepEqual(D.SEZIONI[2].schermate.map((x) => x.id), ['capire', 'fare', 'collaborare', 'verificare', 'spiegare', 'migliorare']);
 });
@@ -169,4 +170,86 @@ test('l\'unica richiesta di rete è l\'invio al foglio configurato', () => {
   const url = (config.match(/urlInvio:\s*'([^']*)'/) || [])[1];
   assert.ok(url === '' || /^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec$/.test(url), 'urlInvio: ' + url);
   assert.ok(!/https?:\/\//.test(html), 'nessuna risorsa esterna: font e script sono locali');
+});
+
+// ---------- Curriculum ----------
+function cvCompilato() {
+  const s = L.statoVuoto();
+  s.profilo = { nome: 'Luca Rossi', classe: '4A', indirizzo: 'elettrico' };
+  Object.assign(s.cv, { citta: 'Rozzano', telefono: '333 1234567', email: 'luca.rossi@example.org', profilo: 'Studente del quarto anno.' });
+  s.cv.formazione = [{ id: 'f1', periodo: '2023 – oggi', titolo: 'Formazione professionale, Elettrico', ente: 'Ente di formazione, Milano' }, { id: 'f2', periodo: '', titolo: '', ente: '' }];
+  const tir = conEsperienza(s, { titolo: 'Quadro in azienda', quando: 'tirocinio', azione: 'Ho cablato il quadro.' });
+  const aula = conEsperienza(s, { titolo: 'Impianto in laboratorio', quando: 'anno2', azione: 'Ho posato le canaline.' });
+  return { s, tir, aula };
+}
+
+test('il curriculum riporta solo le parole dello studente, in ordine', () => {
+  const { s, tir } = cvCompilato();
+  s.cv.esperienze[tir.id] = { dove: 'Impianti Verdi, Milano', periodo: 'marzo – maggio 2025' };
+  s.cv.competenze = 'Cablaggio di quadri\n\n  Lettura di schemi  ';
+  s.cv.lingue = 'Italiano – madrelingua';
+  s.cv.consenso = true;
+  const c = L.componiCV(s);
+  assert.equal(c.nome, 'Luca Rossi');
+  assert.deepEqual(c.contatti.map((x) => x.etichetta), ['Città', 'Telefono', 'Email']);
+  assert.equal(c.formazione.length, 1, 'le voci senza titolo non compaiono');
+  assert.deepEqual(c.esperienze.map((e) => [e.titolo, e.dove, e.periodo, e.descrizione]),
+    [['Quadro in azienda', 'Impianti Verdi, Milano', 'marzo – maggio 2025', 'Ho cablato il quadro.']]);
+  assert.deepEqual(c.competenze, ['Cablaggio di quadri', 'Lettura di schemi']);
+  assert.equal(c.consenso, true);
+  assert.deepEqual(c.mancanti, []);
+});
+
+test('nel curriculum il tirocinio è incluso di default e la scelta dello studente prevale', () => {
+  const { s, tir, aula } = cvCompilato();
+  assert.deepEqual(L.componiCV(s).esperienze.map((e) => e.id), [tir.id]);
+  s.cv.esperienze[tir.id] = { incluso: false };
+  s.cv.esperienze[aula.id] = { incluso: true };
+  assert.deepEqual(L.componiCV(s).esperienze.map((e) => e.id), [aula.id]);
+});
+
+test('il curriculum segnala che cosa manca e lo stato della sezione segue', () => {
+  const s = L.statoVuoto();
+  assert.equal(L.statoSezione(s, 'cv'), 'vuota');
+  assert.equal(L.componiCV(s).mancanti.length, 3);
+  s.cv.telefono = '333';
+  assert.equal(L.statoSezione(s, 'cv'), 'in_corso');
+  const { s: pieno } = cvCompilato();
+  assert.equal(L.statoSezione(pieno, 'cv'), 'in_corso', 'senza competenze o lingue non è completo');
+  pieno.cv.lingue = 'Italiano – madrelingua';
+  assert.equal(L.statoSezione(pieno, 'cv'), 'completa');
+});
+
+test('le competenze proposte vengono solo dalle situazioni dichiarate e documentate', () => {
+  const s = L.statoVuoto();
+  s.sofare.capire = { livello: 'autonomo_noto', esempio: 'Letto uno schema.', esperienze: [], come: '' };
+  s.sofare.fare = { livello: 'autonomo_noto', esempio: '', esperienze: [], come: '' };   // senza esempio
+  s.sofare.verificare = { livello: 'non_ancora', esempio: 'x', esperienze: [], come: '' }; // non dichiarata
+  s.sofare.spiegare = { livello: 'mai', esempio: '', esperienze: [], come: '' };
+  assert.deepEqual(L.suggerisciCompetenze(s), [D.SITUAZIONI[0].cv]);
+});
+
+test('il curriculum sopravvive alla copia e i dati non validi vengono scartati', () => {
+  const { s, tir } = cvCompilato();
+  s.cv.esperienze[tir.id] = { dove: 'Azienda', periodo: '2025', incluso: true };
+  assert.deepEqual(L.normalizza(JSON.parse(JSON.stringify(s))), s);
+  const n = L.normalizza({
+    esperienze: [{ id: 'a', titolo: 'T' }],
+    cv: { email: 42, consenso: 'sì', formazione: [null, { id: 'x', titolo: 'T' }, { id: 'x', titolo: 'Doppio' }],
+      esperienze: { a: { dove: 'D', incluso: 'sì' }, zzz: { dove: 'orfana' } } }
+  });
+  assert.equal(n.cv.email, '');
+  assert.equal(n.cv.consenso, false, 'solo true vale come consenso');
+  assert.equal(n.cv.formazione.length, 2);
+  assert.notEqual(n.cv.formazione[0].id, n.cv.formazione[1].id);
+  assert.deepEqual(n.cv.esperienze, { a: { dove: 'D', periodo: '' } });
+  assert.deepEqual(L.normalizza({}).cv, L.statoVuoto().cv);
+});
+
+test('l\'invio al docente non include il curriculum', () => {
+  const app = fs.readFileSync(path.join(__dirname, '../js/app.js'), 'utf8');
+  assert.ok(app.includes('body: JSON.stringify(senzaCV(stato))'));
+  assert.ok(/delete copia\.cv/.test(app));
+  const script = fs.readFileSync(path.join(__dirname, '../apps-script/Codice.gs'), 'utf8');
+  assert.ok(!/\.cv\b|telefono|email/i.test(script.replace(/Dati completi|^\s*\/\/.*$/gm, '')), 'lo script del foglio non legge dati del curriculum');
 });

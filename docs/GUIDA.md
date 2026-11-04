@@ -80,7 +80,7 @@ Un sito a parte, con la stessa grafica, a `…/diario/`. Durante il tirocinio lo
 
 ![Il tirocinio](guida/diario-2-tirocinio.png)
 
-**2. La settimana.** Giorni, che cosa ho fatto, che cosa ho imparato, che cosa è stato difficile, chi mi ha aiutato, obiettivi lavorati, come è andata.
+**2. La settimana.** Assenze o ritardi (e se sono stati comunicati ai tutor della scuola e dell'azienda), che cosa ho fatto, che cosa ho imparato, che cosa è stato difficile, chi mi ha aiutato, obiettivi lavorati, come è andata.
 
 ![La settimana](guida/diario-3-settimana.png)
 

@@ -9,7 +9,7 @@ const L = require('../js/bilancio.js');
 function diarioCompilato() {
   const s = D.statoVuoto();
   const t = Object.assign(D.tirocinioVuoto(), { azienda: 'Studio Rete Sicura', citta: 'Milano', dal: '2025-03-03', al: '2025-05-30', obiettivi: ['Imparare a leggere i log'] });
-  t.settimane.push(Object.assign(D.settimanaVuota('2025-03-03'), { fatto: 'Ho configurato due stampanti.', imparato: 'Leggere i log.', difficolta: 'Una stampante non si vedeva.', aiuto: 'Il tecnico.', umore: 'bene', giorni: ['lun', 'mar'] }));
+  t.settimane.push(Object.assign(D.settimanaVuota('2025-03-03'), { fatto: 'Ho configurato due stampanti.', imparato: 'Leggere i log.', difficolta: 'Una stampante non si vedeva.', aiuto: 'Il tecnico.', umore: 'bene', assenze: 'Giovedì: visita medica.', comunicato: true }));
   t.settimane.push(Object.assign(D.settimanaVuota('2025-03-10'), { fatto: 'Ho aggiornato i computer.', imparato: 'Fare le copie di sicurezza.' }));
   s.tirocini.push(t); s.corrente = t.id;
   return s;
@@ -19,7 +19,7 @@ test('il diario sopravvive alla copia e i dati non validi vengono scartati', () 
   const s = diarioCompilato();
   assert.deepEqual(D.normalizza(JSON.parse(JSON.stringify(s))), s);
   const n = D.normalizza({
-    tirocini: [null, { id: 'x', azienda: 42, dal: 'ieri', ore: '35', settimane: [{ id: 'a', dal: '2025-02-30x', umore: 'felicissimo', giorni: ['lun', 'dom'], fatto: 'ok' }, 7] }, { id: 'x', azienda: 'Doppio' }],
+    tirocini: [null, { id: 'x', azienda: 42, dal: 'ieri', ore: '35', settimane: [{ id: 'a', dal: '2025-02-30x', umore: 'felicissimo', assenze: 'Un ritardo.', comunicato: 'sì', fatto: 'ok' }, 7] }, { id: 'x', azienda: 'Doppio' }],
     corrente: 'inesistente'
   });
   assert.equal(n.tirocini.length, 2);
@@ -27,7 +27,9 @@ test('il diario sopravvive alla copia e i dati non validi vengono scartati', () 
   assert.equal(n.tirocini[0].dal, '');
   assert.ok(!('ore' in n.tirocini[0]) && !('ore' in n.tirocini[0].settimane[0]), 'le ore non esistono più: gli studenti fanno 8 ore al giorno');
   assert.equal(n.tirocini[0].settimane[0].umore, '');
-  assert.deepEqual(n.tirocini[0].settimane[0].giorni, ['lun']);
+  assert.equal(n.tirocini[0].settimane[0].assenze, 'Un ritardo.');
+  assert.equal(n.tirocini[0].settimane[0].comunicato, false, 'solo true vale come comunicato');
+  assert.ok(!('giorni' in n.tirocini[0].settimane[0]));
   assert.notEqual(n.tirocini[0].id, n.tirocini[1].id, 'gli id doppi si rinnovano');
   assert.equal(n.corrente, n.tirocini[0].id);
   assert.deepEqual(D.normalizza('boh'), D.statoVuoto());
@@ -98,4 +100,14 @@ test('il diario non ha più le ore: 8 ore al giorno, sempre', () => {
     const t = fs.readFileSync(path.join(__dirname, '..', f), 'utf8');
     assert.ok(!/\.ore\b|'ore'|Quante ore|ore a settimana/.test(t), f);
   });
+});
+
+test('assenze e ritardi: una domanda libera e una casella, senza elenco di giorni', () => {
+  const app = fs.readFileSync(path.join(__dirname, '../diario/js/app.js'), 'utf8');
+  assert.ok(app.includes("'Hai fatto assenze o ritardi?'"));
+  assert.ok(app.includes("Hai comunicato assenze o ritardi prima ai tutor della scuola e dell\\'azienda?"));
+  assert.ok(!/Quali giorni/.test(app));
+  const w = D.settimanaVuota('2025-03-03');
+  assert.equal(w.assenze, '');
+  assert.equal(w.comunicato, false);
 });

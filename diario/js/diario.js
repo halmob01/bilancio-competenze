@@ -13,11 +13,6 @@
   const MAX_BREVE = 200;
   const MAX_LUNGO = 4000;
 
-  const GIORNI = [
-    { id: 'lun', testo: 'Lun' }, { id: 'mar', testo: 'Mar' }, { id: 'mer', testo: 'Mer' },
-    { id: 'gio', testo: 'Gio' }, { id: 'ven', testo: 'Ven' }, { id: 'sab', testo: 'Sab' }
-  ];
-
   // Come è andata la settimana: poche frasi esplicite, mai una scala numerica o un'emoji.
   const UMORI = [
     { id: 'bene', testo: 'È andata bene' },
@@ -39,7 +34,7 @@
   }
 
   function settimanaVuota(dal) {
-    return { id: nuovoId('s'), dal: dal || '', giorni: [], fatto: '', imparato: '', difficolta: '', aiuto: '', umore: '', obiettivi: [], note: '' };
+    return { id: nuovoId('s'), dal: dal || '', assenze: '', comunicato: false, fatto: '', imparato: '', difficolta: '', aiuto: '', umore: '', obiettivi: [], note: '' };
   }
 
   // Ricostruisce uno stato valido da dati salvati o caricati: scarta chiavi sconosciute e tipi errati.
@@ -67,7 +62,7 @@
         vs[wid] = true;
         n.settimane.push({
           id: wid, dal: dataValida(w.dal),
-          giorni: (Array.isArray(w.giorni) ? w.giorni : []).filter(function (g) { return inElenco(g, GIORNI); }),
+          assenze: testo(w.assenze, MAX_LUNGO), comunicato: w.comunicato === true,
           fatto: testo(w.fatto, MAX_LUNGO), imparato: testo(w.imparato, MAX_LUNGO),
           difficolta: testo(w.difficolta, MAX_LUNGO), aiuto: testo(w.aiuto, MAX_LUNGO),
           umore: inElenco(w.umore, UMORI),
@@ -108,7 +103,7 @@
 
   const DIARIO = {
     CHIAVE: CHIAVE, VERSIONE: VERSIONE, MAX_TIROCINI: MAX_TIROCINI, MAX_SETTIMANE: MAX_SETTIMANE, MAX_OBIETTIVI: MAX_OBIETTIVI,
-    GIORNI: GIORNI, UMORI: UMORI,
+    UMORI: UMORI,
     statoVuoto: statoVuoto, tirocinioVuoto: tirocinioVuoto, settimanaVuota: settimanaVuota, normalizza: normalizza,
     lunedi: lunedi, piuGiorni: piuGiorni, prossimaSettimana: prossimaSettimana, etichettaSettimana: etichettaSettimana,
     completa: completa, pieno: pieno

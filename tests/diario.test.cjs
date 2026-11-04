@@ -8,8 +8,8 @@ const L = require('../js/bilancio.js');
 
 function diarioCompilato() {
   const s = D.statoVuoto();
-  const t = Object.assign(D.tirocinioVuoto(), { azienda: 'Studio Rete Sicura', citta: 'Milano', dal: '2025-03-03', al: '2025-05-30', ore: '35', obiettivi: ['Imparare a leggere i log'] });
-  t.settimane.push(Object.assign(D.settimanaVuota('2025-03-03'), { fatto: 'Ho configurato due stampanti.', imparato: 'Leggere i log.', difficolta: 'Una stampante non si vedeva.', aiuto: 'Il tecnico.', umore: 'bene', giorni: ['lun', 'mar'], ore: '30' }));
+  const t = Object.assign(D.tirocinioVuoto(), { azienda: 'Studio Rete Sicura', citta: 'Milano', dal: '2025-03-03', al: '2025-05-30', obiettivi: ['Imparare a leggere i log'] });
+  t.settimane.push(Object.assign(D.settimanaVuota('2025-03-03'), { fatto: 'Ho configurato due stampanti.', imparato: 'Leggere i log.', difficolta: 'Una stampante non si vedeva.', aiuto: 'Il tecnico.', umore: 'bene', giorni: ['lun', 'mar'] }));
   t.settimane.push(Object.assign(D.settimanaVuota('2025-03-10'), { fatto: 'Ho aggiornato i computer.', imparato: 'Fare le copie di sicurezza.' }));
   s.tirocini.push(t); s.corrente = t.id;
   return s;
@@ -19,13 +19,13 @@ test('il diario sopravvive alla copia e i dati non validi vengono scartati', () 
   const s = diarioCompilato();
   assert.deepEqual(D.normalizza(JSON.parse(JSON.stringify(s))), s);
   const n = D.normalizza({
-    tirocini: [null, { id: 'x', azienda: 42, dal: 'ieri', ore: 'abc12', settimane: [{ id: 'a', dal: '2025-02-30x', umore: 'felicissimo', giorni: ['lun', 'dom'], fatto: 'ok' }, 7] }, { id: 'x', azienda: 'Doppio' }],
+    tirocini: [null, { id: 'x', azienda: 42, dal: 'ieri', ore: '35', settimane: [{ id: 'a', dal: '2025-02-30x', umore: 'felicissimo', giorni: ['lun', 'dom'], fatto: 'ok' }, 7] }, { id: 'x', azienda: 'Doppio' }],
     corrente: 'inesistente'
   });
   assert.equal(n.tirocini.length, 2);
   assert.equal(n.tirocini[0].azienda, '');
   assert.equal(n.tirocini[0].dal, '');
-  assert.equal(n.tirocini[0].ore, '12', 'solo cifre');
+  assert.ok(!('ore' in n.tirocini[0]) && !('ore' in n.tirocini[0].settimane[0]), 'le ore non esistono più: gli studenti fanno 8 ore al giorno');
   assert.equal(n.tirocini[0].settimane[0].umore, '');
   assert.deepEqual(n.tirocini[0].settimane[0].giorni, ['lun']);
   assert.notEqual(n.tirocini[0].id, n.tirocini[1].id, 'gli id doppi si rinnovano');
@@ -45,26 +45,6 @@ test('la settimana proposta è quella dopo l\'ultima, sempre un lunedì', () => 
   assert.equal(D.etichettaSettimana('2025-03-03'), 'Settimana dal 3 marzo');
 });
 
-test('dal bilancio il diario prende solo ciò che serve: da imparare, ricordi del tirocinio, esperienze di tirocinio', () => {
-  const b = L.statoVuoto();
-  b.sguardo.ancora = 'Stimare i tempi di un lavoro.';
-  b.sofare.spiegare = { livello: 'non_ancora', esempio: '', esperienze: [], come: 'Più pratica.' };
-  b.sofare.fare = { livello: 'non_ancora', esempio: '', esperienze: [], come: '' };
-  b.anni.tirocinio = 'Due mesi in uno studio.'; b.anni.tirocinio2 = '   ';
-  const e = Object.assign(L.esperienzaVuota(), { titolo: 'Rete ufficio', quando: 'tirocinio', azione: 'x' });
-  const f = Object.assign(L.esperienzaVuota(), { titolo: 'Laboratorio', quando: 'anno2', azione: 'y' });
-  b.esperienze.push(e, f);
-  b.cv.telefono = '333 1234567'; b.cv.email = 'segreto@example.it';
-  const r = D.dalBilancio(JSON.parse(JSON.stringify(b)));
-  assert.ok(r.obiettivi.includes('Stimare i tempi di un lavoro.'));
-  assert.ok(r.obiettivi.includes('Spiegare: Più pratica.'));
-  assert.ok(r.obiettivi.includes('Fare: ancora da imparare'));
-  assert.deepEqual(r.ricordi, ['Due mesi in uno studio.']);
-  assert.deepEqual(r.esperienze, ['Rete ufficio']);
-  assert.ok(!JSON.stringify(r).includes('segreto') && !JSON.stringify(r).includes('333'), 'il curriculum non passa mai al diario');
-  assert.deepEqual(D.dalBilancio(null), { obiettivi: [], ricordi: [], esperienze: [] });
-});
-
 test('dal diario il bilancio propone schede esperienza con le parole dello studente', () => {
   const s = diarioCompilato();
   const p = L.esperienzeDalDiario(JSON.parse(JSON.stringify(s)));
@@ -75,6 +55,13 @@ test('dal diario il bilancio propone schede esperienza con le parole dello stude
   assert.ok(p[0].azione.includes('Settimana dal 03/03/2025: Ho configurato due stampanti.') && p[0].azione.includes('Settimana dal 10/03/2025: Ho aggiornato i computer.'));
   assert.ok(p[0].difficolta.includes('Una stampante non si vedeva.'));
   assert.ok(p[0].aiuto.includes('Il tecnico.'));
+  // per il curriculum: azienda, città, mesi e compiti dalle settimane
+  assert.equal(p[0].azienda, 'Studio Rete Sicura');
+  assert.equal(p[0].citta, 'Milano');
+  assert.equal(p[0].dalMese, '2025-03');
+  assert.equal(p[0].alMese, '2025-05');
+  assert.equal(p[0].compiti, 'Ho configurato due stampanti.\nHo aggiornato i computer.');
+  assert.ok(L.esperienzeDalDiario({ tirocini: [{ azienda: 'A', settimane: new Array(80).fill({ fatto: 'x'.repeat(500) }) }] })[0].compiti.length <= 1000, 'i compiti restano brevi');
   // dati sporchi o ostili
   assert.deepEqual(L.esperienzeDalDiario(null), []);
   assert.deepEqual(L.esperienzeDalDiario({ tirocini: 'no' }), []);
@@ -91,11 +78,24 @@ test('il diario non invia nulla in rete e non interpreta i testi come HTML', () 
   });
 });
 
-test('le chiavi di salvataggio dei due siti sono quelle del contratto', () => {
+test('il diario è indipendente: non legge il bilancio; sono il bilancio e il curriculum a importarlo', () => {
   assert.equal(D.CHIAVE, 'diario-tirocinio-v1');
-  assert.equal(D.CHIAVE_BILANCIO, 'bilancio-competenze-v1');
+  ['diario/js/diario.js', 'diario/js/app.js', 'diario/index.html'].forEach((f) => {
+    const t = fs.readFileSync(path.join(__dirname, '..', f), 'utf8');
+    assert.ok(!/bilancio-competenze-v1|BC_LOGICA|BC_DATI|js\/bilancio\.js/.test(t), f + ' non dipende dal bilancio');
+  });
   const app = fs.readFileSync(path.join(__dirname, '../js/app.js'), 'utf8');
   assert.ok(app.includes("'diario-tirocinio-v1'") && app.includes("const CHIAVE = 'bilancio-competenze-v1'"));
+  // importa nel bilancio (esperienze) e nel curriculum (esperienze di lavoro), anche da file
+  assert.ok(/riquadroDiario\(\{[^]*?Crea la scheda/.test(app) && /riquadroDiario\(\{[^]*?Aggiungi al curriculum/.test(app));
+  assert.ok(app.includes('scegliFileDiario') && app.includes('diarioCaricato'));
   const html = fs.readFileSync(path.join(__dirname, '../diario/index.html'), 'utf8');
   assert.ok(!/href="\.\.\/(index\.html)?"/.test(html) && !/bilancio-competenze\//.test(html), 'nessun collegamento visibile al bilancio');
+});
+
+test('il diario non ha più le ore: 8 ore al giorno, sempre', () => {
+  ['diario/js/diario.js', 'diario/js/app.js'].forEach((f) => {
+    const t = fs.readFileSync(path.join(__dirname, '..', f), 'utf8');
+    assert.ok(!/\.ore\b|'ore'|Quante ore|ore a settimana/.test(t), f);
+  });
 });

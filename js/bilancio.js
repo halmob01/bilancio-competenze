@@ -540,8 +540,15 @@
         }).filter(Boolean).join('\n\n').slice(0, MAX_LUNGO);
       };
       const periodo = [data(tir.dal) ? 'dal ' + data(tir.dal) : '', data(tir.al) ? 'al ' + data(tir.al) : ''].filter(Boolean).join(' ');
+      const mese = function (iso) { return /^\d{4}-\d{2}-\d{2}$/.test(iso) ? iso.slice(0, 7) : ''; };
       const proposta = {
         id: t(tir.id, 40),
+        azienda: azienda,
+        citta: t(tir.citta, 80),
+        dalMese: mese(tir.dal),
+        alMese: mese(tir.al),
+        // Per il curriculum: le cose fatte, una per settimana, da accorciare.
+        compiti: settimane.map(function (x) { return t(x.fatto, MAX_LUNGO); }).filter(Boolean).join('\n').slice(0, 1000),
         titolo: ('Tirocinio' + (azienda ? ' presso ' + azienda : '')).slice(0, MAX_BREVE),
         contesto: [azienda, t(tir.citta, 80), periodo].filter(Boolean).join(', ').slice(0, MAX_LUNGO),
         azione: raccogli('fatto'),

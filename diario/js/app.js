@@ -92,14 +92,6 @@
   }
   window.addEventListener('pagehide', function () { if (timerSalva) { clearTimeout(timerSalva); scriviArchivio(); } });
 
-  // ---------- Dal bilancio (sola lettura) ----------
-  function leggiBilancio() {
-    try {
-      const g = localStorage.getItem(D.CHIAVE_BILANCIO);
-      return D.dalBilancio(g ? JSON.parse(g) : null);
-    } catch (e) { return D.dalBilancio(null); }
-  }
-
   // ---------- Selezione ----------
   function corrente() {
     return stato.tirocini.find(function (t) { return t.id === stato.corrente; }) || stato.tirocini[0] || null;
@@ -226,41 +218,25 @@
   // ---------- 01 I tuoi tirocini ----------
   function moduloTirocinio(t) {
     const p = 'f-tir-' + t.id + '-';
-    const bil = leggiBilancio();
     return h('div', { class: 'scheda__modulo' },
       campo({ id: p + 'azienda', etichetta: 'Nome dell\'azienda', max: 200, valore: t.azienda, aggiorna: function (v) { t.azienda = v; } }),
       campo({ id: p + 'citta', etichetta: 'Città', max: 80, valore: t.citta, aggiorna: function (v) { t.citta = v; } }),
       h('div', { class: 'coppia' },
         campo({ id: p + 'dal', etichetta: 'Dal', tipo: 'date', valore: t.dal, aggiorna: function (v) { t.dal = v; } }),
         campo({ id: p + 'al', etichetta: 'Al', tipo: 'date', valore: t.al, aggiorna: function (v) { t.al = v; } })),
-      campo({ id: p + 'ore', etichetta: 'Quante ore a settimana, più o meno?', tipo: 'text', modo: 'numeric', max: 3, valore: t.ore, aggiorna: function (v) { t.ore = v.replace(/[^\d]/g, ''); } }),
       campo({ id: p + 'obiettivi', etichetta: 'Che cosa vuoi imparare in questo tirocinio?', area: true,
-        suggerimento: 'Un obiettivo per riga. Se hai già compilato il bilancio, qui sotto puoi riprendere quello che hai scritto di dover ancora imparare.',
+        suggerimento: 'Un obiettivo per riga, con parole tue. Per esempio: «Imparare a leggere uno schema elettrico».',
         valore: t.obiettivi.join('\n'), aggiorna: function (v) {
           t.obiettivi = v.split('\n').map(function (x) { return x.trim(); }).filter(Boolean).slice(0, D.MAX_OBIETTIVI);
         } }),
-      h('div', null, h('button', { type: 'button', class: 'pulsante pulsante--secondario pulsante--piccolo', onclick: function () {
-        if (!bil.obiettivi.length) { avvisa('Nel bilancio non hai ancora scritto che cosa devi imparare. Scrivi qui sotto i tuoi obiettivi.'); return; }
-        const nuovi = bil.obiettivi.filter(function (x) { return t.obiettivi.indexOf(x) === -1; });
-        t.obiettivi = t.obiettivi.concat(nuovi).slice(0, D.MAX_OBIETTIVI);
-        modificato(); ridisegna(p + 'obiettivi');
-      } }, 'Proponi dal mio bilancio')),
       h('div', { class: 'scheda__azioni' },
         h('button', { type: 'button', class: 'pulsante pulsante--secondario pulsante--piccolo', onclick: function () { aperto = null; ridisegna(); } }, 'Chiudi la scheda')));
   }
 
   function schermataTirocini() {
-    const bil = leggiBilancio();
-    const suggerimenti = [];
-    if (bil.ricordi.length || bil.esperienze.length) {
-      suggerimenti.push(aiuto(
-        h('p', { class: 'meta', text: 'Dal tuo bilancio' }),
-        bil.ricordi.length ? h('p', { text: 'Del tirocinio hai scritto: «' + bil.ricordi.join('» «') + '»' }) : null,
-        bil.esperienze.length ? h('p', { text: 'Esperienze già raccontate: ' + bil.esperienze.join(' · ') + '.' }) : null));
-    }
     const intro = [
       h('p', { text: 'Scrivi dove fai il tirocinio e che cosa vuoi imparare. Se ne fai più di uno, aggiungili uno alla volta.' })
-    ].concat(suggerimenti);
+    ];
     const elenco = stato.tirocini.length
       ? h('ul', { class: 'schede', 'aria-label': 'I tuoi tirocini' }, stato.tirocini.map(function (t, i) {
         const apertoQui = aperto === t.id;
@@ -312,7 +288,6 @@
       campo({ id: p + 'dal', etichetta: 'Settimana dal (il lunedì)', tipo: 'date', valore: w.dal, aggiorna: function (v) { w.dal = v; } }),
       gruppoScelte({ legenda: 'Quali giorni sei stato in azienda?', nome: p + 'giorni', riga: true, multipla: true, opzioni: D.GIORNI, valore: w.giorni,
         aggiorna: function (id, attiva) { w.giorni = w.giorni.filter(function (x) { return x !== id; }); if (attiva) w.giorni.push(id); modificato(); } }),
-      campo({ id: p + 'ore', etichetta: 'Quante ore in tutto?', modo: 'numeric', max: 3, valore: w.ore, aggiorna: function (v) { w.ore = v.replace(/[^\d]/g, ''); } }),
       h('p', { class: 'nota', text: 'Puoi dettare i testi: tocca il microfono sulla tastiera del telefono e controlla quello che ha scritto.' }),
       t2('fatto', 'Che cosa hai fatto, concretamente?', 'Racconta le tue azioni: che lavoro hai svolto e con quali strumenti.'),
       t2('imparato', 'Che cosa hai imparato di nuovo?', 'Una cosa che non sapevi fare o non avevi mai visto.'),
@@ -350,7 +325,7 @@
           h('div', { class: 'scheda__testa' },
             h('span', { class: 'meta', text: String(i + 1).padStart(2, '0') }),
             h('h3', { class: 'scheda__titolo', text: D.etichettaSettimana(w.dal) }),
-            apertoQui ? null : h('span', { class: 'meta', text: [w.ore ? w.ore + ' ore' : '', m.length ? 'Manca: ' + m.join(', ') : 'Completa'].filter(Boolean).join(' · ') })),
+            apertoQui ? null : h('span', { class: 'meta', text: m.length ? 'Manca: ' + m.join(', ') : 'Completa' })),
           apertoQui ? moduloSettimana(t, w) : h('div', { class: 'scheda__azioni' },
             h('button', { type: 'button', class: 'pulsante pulsante--secondario pulsante--piccolo', id: 'mod-' + w.id, 'aria-label': 'Modifica ' + D.etichettaSettimana(w.dal),
               onclick: function () { settimanaAperta = w.id; ridisegna('f-set-' + w.id + '-fatto'); } }, 'Modifica'),
@@ -381,7 +356,7 @@
 
   function riepilogo(t) {
     const ind = stato.tirocini.indexOf(t);
-    const intest = [periodo(t), t.citta, t.ore ? t.ore + ' ore a settimana' : '', t.settimane.length + (t.settimane.length === 1 ? ' settimana' : ' settimane')].filter(Boolean).join(' · ');
+    const intest = [periodo(t), t.citta, t.settimane.length + (t.settimane.length === 1 ? ' settimana' : ' settimane')].filter(Boolean).join(' · ');
     const settimane = ordinate(t);
     return h('article', { class: 'dossier', 'aria-label': 'Il tuo diario di bordo' },
       h('header', { class: 'dossier__testa' },
@@ -395,7 +370,7 @@
         const um = D.UMORI.find(function (u) { return u.id === w.umore; });
         return h('section', { class: 'dossier__parte' },
           h('h3', { text: D.etichettaSettimana(w.dal) }),
-          h('p', { class: 'meta', text: [giorni, w.ore ? w.ore + ' ore' : '', um ? um.testo : ''].filter(Boolean).join(' · ') }),
+          h('p', { class: 'meta', text: [giorni, um ? um.testo : ''].filter(Boolean).join(' · ') }),
           h('ul', { class: 'voci' }, [
             voce('Che cosa ho fatto', w.fatto), voce('Che cosa ho imparato', w.imparato), voce('Che cosa è stato difficile', w.difficolta),
             voce('Chi o che cosa mi ha aiutato', w.aiuto),
@@ -411,7 +386,7 @@
       h('div', { class: 'home__azioni' },
         h('button', { type: 'button', class: 'pulsante', onclick: function () { stampa(); } }, 'Stampa o salva in PDF'),
         h('button', { type: 'button', class: 'pulsante pulsante--secondario', onclick: scaricaCopia }, 'Scarica una copia')),
-      h('p', { class: 'nota', text: 'Le settimane che hai scritto compaiono anche nel bilancio di competenze, nella sezione «Le esperienze che ricordi», dove puoi trasformarle in una scheda esperienza.' }),
+      h('p', { class: 'nota', text: 'Il tuo bilancio di competenze e il tuo curriculum possono importare questo diario: dal bilancio, nella sezione «Le esperienze che ricordi» o nel curriculum, potrai scegliere il tirocinio e trasformarlo in una scheda. Se li compili su un altro dispositivo scarica una copia del diario e caricala da lì.' }),
       riepilogo(t)
     ];
     return [testa(meta(2), 'Il tuo diario'), corpo(null, risposta, true)];

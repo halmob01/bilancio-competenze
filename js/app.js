@@ -469,6 +469,14 @@
     return L.nomeQuando(nelFuturo ? scelto : id);
   }
 
+  // Il diario di bordo del tirocinio è un sito collegato (stesso indirizzo): se c'è, se ne leggono le settimane scritte.
+  function proposteDalDiario() {
+    try {
+      const g = localStorage.getItem('diario-tirocinio-v1');
+      return L.esperienzeDalDiario(g ? JSON.parse(g) : null);
+    } catch (e) { return []; }
+  }
+
   function schermataEsperienze() {
     const es = indirizziVisibili().map(function (ind) {
       const x = D.ESEMPI_ESPERIENZA[ind.id];
@@ -491,6 +499,24 @@
       }))) : null
     ];
     const pieneAbbastanza = stato.esperienze.length >= L.MAX_ESPERIENZE;
+    const dalDiario = proposteDalDiario();
+    if (dalDiario.length) {
+      intro.push(aiuto(
+        h('p', { class: 'meta', text: 'Dal tuo diario di bordo' }),
+        h('p', { text: 'Hai scritto il diario del tirocinio. Puoi trasformarlo in una scheda esperienza: poi rileggila e correggila.' }),
+        dalDiario.map(function (pr) {
+          const gia = stato.esperienze.some(function (x) { return x.titolo === pr.titolo; });
+          return h('p', null, h('button', { type: 'button', class: 'pulsante pulsante--secondario pulsante--piccolo', disabled: gia || pieneAbbastanza, onclick: function () {
+            const e = L.esperienzaVuota();
+            e.titolo = pr.titolo; e.quando = 'tirocinio'; e.contesto = pr.contesto; e.azione = pr.azione; e.difficolta = pr.difficolta; e.aiuto = pr.aiuto;
+            stato.esperienze.push(e);
+            esperienzaAperta = e.id;
+            modificato();
+            ridisegna('f-esp-' + e.id + '-titolo');
+          } }, gia ? 'Già nel bilancio: ' + pr.titolo : 'Crea la scheda: ' + pr.titolo), ' ',
+          h('span', { class: 'meta', text: pr.settimane + (pr.settimane === 1 ? ' settimana' : ' settimane') }));
+        })));
+    }
     const risposta = [
       stato.esperienze.length
         ? h('ul', { class: 'schede', 'aria-label': 'Le tue esperienze' }, stato.esperienze.map(function (e, i) { return schedaEsperienza(e, i + 1); }))

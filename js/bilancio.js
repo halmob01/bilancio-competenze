@@ -520,6 +520,39 @@
     };
   }
 
+  // Proposte di schede esperienza a partire dal diario di bordo (sito collegato, stessa origine).
+  // Legge solo i campi di testo che il contratto prevede (docs/DIARIO.md) e non si fida di nient'altro.
+  function esperienzeDalDiario(grezzo) {
+    if (!grezzo || typeof grezzo !== 'object' || !Array.isArray(grezzo.tirocini)) return [];
+    const t = function (v, max) { return typeof v === 'string' ? v.trim().slice(0, max) : ''; };
+    const data = function (iso) {
+      const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(typeof iso === 'string' ? iso : '');
+      return m ? m[3] + '/' + m[2] + '/' + m[1] : '';
+    };
+    return grezzo.tirocini.slice(0, 5).map(function (tir) {
+      if (!tir || typeof tir !== 'object') return null;
+      const settimane = (Array.isArray(tir.settimane) ? tir.settimane : []).slice(0, 80).filter(function (x) { return x && typeof x === 'object'; });
+      const azienda = t(tir.azienda, MAX_BREVE);
+      const raccogli = function (campo) {
+        return settimane.map(function (x) {
+          const testoCampo = t(x[campo], MAX_LUNGO);
+          return testoCampo ? 'Settimana dal ' + (data(x.dal) || '…') + ': ' + testoCampo : '';
+        }).filter(Boolean).join('\n\n').slice(0, MAX_LUNGO);
+      };
+      const periodo = [data(tir.dal) ? 'dal ' + data(tir.dal) : '', data(tir.al) ? 'al ' + data(tir.al) : ''].filter(Boolean).join(' ');
+      const proposta = {
+        id: t(tir.id, 40),
+        titolo: ('Tirocinio' + (azienda ? ' presso ' + azienda : '')).slice(0, MAX_BREVE),
+        contesto: [azienda, t(tir.citta, 80), periodo].filter(Boolean).join(', ').slice(0, MAX_LUNGO),
+        azione: raccogli('fatto'),
+        difficolta: raccogli('difficolta'),
+        aiuto: raccogli('aiuto'),
+        settimane: settimane.length
+      };
+      return (azienda || proposta.azione || proposta.difficolta) ? proposta : null;
+    }).filter(Boolean);
+  }
+
   function avanzamento(stato) {
     const stati = DATI.SEZIONI.map(function (s) { return statoSezione(stato, s.id); });
     return {
@@ -552,6 +585,7 @@
     suggerisciCompetenze: suggerisciCompetenze,
     lingueEuropass: lingueEuropass,
     anniDelPercorso: anniDelPercorso,
+    esperienzeDalDiario: esperienzeDalDiario,
     statoPerIlFoglio: statoPerIlFoglio,
     componiCV: componiCV,
     avanzamento: avanzamento,

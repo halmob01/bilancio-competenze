@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Diario di bordo</title>
+  <meta name="description" content="Diario di bordo del tirocinio: una scheda a settimana, con le tue parole.">
+  <meta name="theme-color" content="#FAF8F6">
+  <link rel="preload" href="../fonts/fira-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../fonts/anton-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="../css/tokens.css">
+  <link rel="stylesheet" href="../css/stile.css">
+  <script src="../js/dati.js" defer></script>
+  <script src="../js/bilancio.js" defer></script>
+  <script src="js/diario.js" defer></script>
+  <script src="js/app.js" defer></script>
+</head>
+<body>
+  <a class="salta" href="#principale">Vai al contenuto</a>
+
+  <header class="testata">
+    <div class="testata__riga">
+      <button type="button" class="testata__nome" id="vai-home">Diario di bordo</button>
+      <span class="meta testata__salvato" id="salvato" role="status" aria-live="polite"></span>
+      <button type="button" class="pulsante pulsante--secondario pulsante--piccolo" id="apri-salva">Salva e stampa</button>
+    </div>
+    <div class="tappa-mobile" id="tappa-mobile" hidden>
+      <button type="button" class="pulsante pulsante--secondario pulsante--piccolo" id="apri-indice">Indice</button>
+      <span class="meta" id="tappa-nome"></span>
+      <span class="meta" id="tappa-stato"></span>
+    </div>
+  </header>
+
+  <main id="principale" tabindex="-1"></main>
+
+  <dialog id="dialogo-salva" aria-labelledby="dialogo-salva-titolo">
+    <h2 id="dialogo-salva-titolo">Salva e stampa</h2>
+    <p>Il diario è salvato solo su questo dispositivo, in questo browser. Per riprendere il lavoro su un altro dispositivo scarica una copia e poi caricala da lì.</p>
+    <div class="dialogo__azioni">
+      <button type="button" class="pulsante" id="scarica">Scarica una copia</button>
+      <button type="button" class="pulsante pulsante--secondario" id="carica">Carica una copia</button>
+      <button type="button" class="pulsante pulsante--secondario" id="stampa-dialogo">Stampa il diario</button>
+    </div>
+    <div class="dialogo__azioni">
+      <button type="button" class="pulsante pulsante--secondario pulsante--piccolo" id="cancella">Cancella il diario</button>
+      <button type="button" class="pulsante pulsante--testo" id="chiudi-salva">Chiudi</button>
+    </div>
+    <input type="file" id="file-copia" accept="application/json,.json" hidden>
+  </dialog>
+
+  <dialog id="dialogo-indice" class="indice-dialogo" aria-labelledby="dialogo-indice-titolo">
+    <h2 id="dialogo-indice-titolo">Indice</h2>
+    <ol id="indice-elenco"></ol>
+    <button type="button" class="pulsante pulsante--testo" id="chiudi-indice">Chiudi</button>
+  </dialog>
+
+  <dialog id="dialogo-messaggio" aria-labelledby="messaggio-testo">
+    <p id="messaggio-testo"></p>
+    <div class="dialogo__azioni">
+      <button type="button" class="pulsante pulsante--secondario" id="messaggio-annulla">Annulla</button>
+      <button type="button" class="pulsante" id="messaggio-ok">Va bene</button>
+    </div>
+  </dialog>
+
+  <div id="stampa"></div>
+
+  <noscript><p style="padding:20px">Per compilare il diario serve JavaScript attivo nel browser.</p></noscript>
+</body>
+</html>

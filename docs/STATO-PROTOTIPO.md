@@ -71,3 +71,7 @@ I contenuti didattici (domande, esempi, frasi dei livelli) restano per ora come 
 ## Backend: da decidere
 
 Per salvare cv e diari di tutti gli studenti nelle cartelle di rete della scuola serve un servizio che riceva i file e li scriva in quelle cartelle: un sito statico non può scrivere su una cartella di rete. Prima di costruire qualcosa vanno chiarite alcune cose (dove sono i file della scuola, chi amministra la rete, come si identificano gli studenti, privacy dei minori). Vedi la discussione con il docente.
+
+## Diario di bordo (prototipo)
+
+Primo prototipo del diario del tirocinio in `diario/`, sito a parte sullo stesso indirizzo del bilancio, con scambio di dati nelle due direzioni (vedi [DIARIO.md](DIARIO.md)). Vale quanto detto per il bilancio: contenuti e domande sono esempi da rivedere con i docenti, il salvataggio è sul dispositivo e il backend di rete verrà deciso in un secondo momento.

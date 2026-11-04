@@ -501,7 +501,7 @@
     const carica = h('button', { type: 'button', class: 'pulsante pulsante--secondario pulsante--piccolo', onclick: scegliFileDiario }, 'Carica la copia di un diario');
     if (!proposte.length) {
       return h('details', { class: 'esempio' },
-        h('summary', { text: 'Hai scritto un diario di bordo del tirocinio?' }),
+        h('summary', { text: 'Hai scritto un diario di bordo dei tirocini?' }),
         h('div', { class: 'esempio__corpo' },
           h('p', { text: 'Se l\'hai compilato su questo dispositivo comparirà qui da solo. Se l\'hai scritto su un altro dispositivo scarica una copia dal diario e caricala qui.' }),
           h('p', null, carica)));
@@ -543,7 +543,7 @@
     ];
     const pieneAbbastanza = stato.esperienze.length >= L.MAX_ESPERIENZE;
     intro.push(riquadroDiario({
-      intro: 'Hai scritto il diario del tirocinio. Puoi trasformarlo in una scheda esperienza: poi rileggila e correggila.',
+      intro: 'Hai scritto il diario dei tirocini. Puoi trasformarne uno alla volta in una scheda esperienza: poi rileggila e correggila.',
       nome: function (pr) { return pr.titolo; },
       pulsante: function (pr) { return 'Crea la scheda: ' + pr.titolo; },
       gia: function (pr) { return pieneAbbastanza || stato.esperienze.some(function (x) { return x.titolo === pr.titolo; }); },
@@ -863,10 +863,11 @@
     ];
     const conAzione = stato.esperienze.filter(function (e) { return pieno(e.azione); });
     intro.push(riquadroDiario({
-      intro: 'Puoi aggiungere al curriculum un tirocinio del diario: azienda, città, periodo e i compiti presi dalle tue settimane. La mansione nel diario non c\'è: scrivila tu. Poi accorcia i compiti.',
-      nome: function (pr) { return pr.azienda || pr.titolo; },
-      pulsante: function (pr) { return 'Aggiungi al curriculum: ' + (pr.azienda || pr.titolo); },
-      gia: function (pr) { return c.lavoro.length >= L.MAX_LAVORO || c.lavoro.some(function (x) { return pieno(x.azienda) && pieno(pr.azienda) && x.azienda.trim() === pr.azienda; }); },
+      intro: 'Puoi aggiungere al curriculum i tirocini del diario, uno alla volta: azienda, città, periodo e i compiti presi dalle tue settimane. La mansione nel diario non c\'è: scrivila tu. Poi accorcia i compiti.',
+      nome: function (pr) { return pr.titolo.replace(/^Tirocinio presso /, ''); },
+      pulsante: function (pr) { return 'Aggiungi al curriculum: ' + pr.titolo.replace(/^Tirocinio presso /, ''); },
+      // Lo stesso tirocinio è la stessa azienda con lo stesso inizio: due tirocini nella stessa azienda in anni diversi sono due voci.
+      gia: function (pr) { return c.lavoro.length >= L.MAX_LAVORO || c.lavoro.some(function (x) { return pieno(x.azienda) && pieno(pr.azienda) && x.azienda.trim() === pr.azienda && (x.dal || '') === (pr.dalMese || ''); }); },
       crea: function (pr) {
         const l = L.lavoroVuoto('tirocinio');
         l.azienda = pr.azienda; l.citta = pr.citta; l.dal = pr.dalMese; l.al = pr.alMese; l.compiti = pr.compiti;

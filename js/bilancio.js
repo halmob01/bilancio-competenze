@@ -524,7 +524,7 @@
       const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(typeof iso === 'string' ? iso : '');
       return m ? m[3] + '/' + m[2] + '/' + m[1] : '';
     };
-    return grezzo.tirocini.slice(0, 12).map(function (tir) {
+    const proposte = grezzo.tirocini.slice(0, 12).map(function (tir) {
       if (!tir || typeof tir !== 'object') return null;
       const settimane = (Array.isArray(tir.settimane) ? tir.settimane : []).slice(0, 80).filter(function (x) { return x && typeof x === 'object'; });
       const azienda = t(tir.azienda, MAX_BREVE);
@@ -553,6 +553,17 @@
       };
       return (azienda || proposta.azione || proposta.difficolta) ? proposta : null;
     }).filter(Boolean);
+    // Due tirocini nella stessa azienda (anni diversi) non devono scambiarsi per lo stesso: si distinguono dal periodo.
+    const conteggio = {};
+    proposte.forEach(function (p) { conteggio[p.titolo] = (conteggio[p.titolo] || 0) + 1; });
+    const visti = {};
+    proposte.forEach(function (p) {
+      if (conteggio[p.titolo] < 2) return;
+      visti[p.titolo] = (visti[p.titolo] || 0) + 1;
+      const inizio = p.dalMese ? p.dalMese.slice(5) + '/' + p.dalMese.slice(0, 4) : '';
+      p.titolo = (p.titolo + ' (' + (inizio ? 'dal ' + inizio : visti[p.titolo]) + ')').slice(0, MAX_BREVE);
+    });
+    return proposte;
   }
 
   function avanzamento(stato) {

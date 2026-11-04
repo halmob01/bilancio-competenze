@@ -13,6 +13,12 @@
   const MAX_BREVE = 200;
   const MAX_LUNGO = 4000;
 
+  // Giorni della settimana, per indicare quando ci sono state assenze o ritardi.
+  const GIORNI = [
+    { id: 'lun', testo: 'Lun' }, { id: 'mar', testo: 'Mar' }, { id: 'mer', testo: 'Mer' },
+    { id: 'gio', testo: 'Gio' }, { id: 'ven', testo: 'Ven' }, { id: 'sab', testo: 'Sab' }
+  ];
+
   // Come è andata la settimana: poche frasi esplicite, mai una scala numerica o un'emoji.
   const UMORI = [
     { id: 'bene', testo: 'È andata bene' },
@@ -34,7 +40,7 @@
   }
 
   function settimanaVuota(dal) {
-    return { id: nuovoId('s'), dal: dal || '', assenze: '', comunicato: false, fatto: '', imparato: '', difficolta: '', aiuto: '', umore: '', obiettivi: [], note: '' };
+    return { id: nuovoId('s'), dal: dal || '', assenzeGiorni: [], assenze: '', comunicato: false, fatto: '', imparato: '', difficolta: '', aiuto: '', umore: '', obiettivi: [], note: '' };
   }
 
   // Ricostruisce uno stato valido da dati salvati o caricati: scarta chiavi sconosciute e tipi errati.
@@ -62,6 +68,7 @@
         vs[wid] = true;
         n.settimane.push({
           id: wid, dal: dataValida(w.dal),
+          assenzeGiorni: (Array.isArray(w.assenzeGiorni) ? w.assenzeGiorni : []).filter(function (g, i, a) { return inElenco(g, GIORNI) && a.indexOf(g) === i; }),
           assenze: testo(w.assenze, MAX_LUNGO), comunicato: w.comunicato === true,
           fatto: testo(w.fatto, MAX_LUNGO), imparato: testo(w.imparato, MAX_LUNGO),
           difficolta: testo(w.difficolta, MAX_LUNGO), aiuto: testo(w.aiuto, MAX_LUNGO),
@@ -103,7 +110,7 @@
 
   const DIARIO = {
     CHIAVE: CHIAVE, VERSIONE: VERSIONE, MAX_TIROCINI: MAX_TIROCINI, MAX_SETTIMANE: MAX_SETTIMANE, MAX_OBIETTIVI: MAX_OBIETTIVI,
-    UMORI: UMORI,
+    GIORNI: GIORNI, UMORI: UMORI,
     statoVuoto: statoVuoto, tirocinioVuoto: tirocinioVuoto, settimanaVuota: settimanaVuota, normalizza: normalizza,
     lunedi: lunedi, piuGiorni: piuGiorni, prossimaSettimana: prossimaSettimana, etichettaSettimana: etichettaSettimana,
     completa: completa, pieno: pieno

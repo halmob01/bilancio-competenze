@@ -3,8 +3,8 @@
 Un secondo sito, in `diario/`, con la stessa grafica del bilancio. Lo studente scrive **una scheda a settimana** durante il tirocinio: che cosa ha fatto, che cosa ha imparato, che cosa è stato difficile, chi lo ha aiutato, su quali obiettivi ha lavorato e come è andata la settimana. Gli studenti fanno 8 ore al giorno: **le ore non si chiedono**.
 
 - **Indirizzo:** `…/bilancio-competenze/diario/` (stesso indirizzo del bilancio, percorso diverso). Per gli studenti è un sito a parte: **non ci sono pulsanti** per passare dall'uno all'altro.
-- **Passi:** 01 I tuoi tirocini (azienda, città, periodo, obiettivi), 02 Le settimane (giorni, testi, come è andata), 03 Il diario (riepilogo da stampare o salvare in PDF).
-- **Più tirocini:** fino a 5, ognuno con le sue settimane; la settimana proposta è sempre quella dopo l'ultima.
+- **Passi:** 01 I tuoi tirocini (azienda, città, periodo, obiettivi), 02 Le settimane (assenze o ritardi con i giorni scelti e se sono stati comunicati ai tutor, testi, come è andata), 03 Il diario (riepilogo da stampare o salvare in PDF).
+- **Più tirocini:** fino a 12 (il numero cambia da studente a studente), ognuno con le sue settimane; la settimana proposta è sempre quella dopo l'ultima.
 - **Dettatura:** per ora con il microfono della tastiera del telefono (la scheda lo ricorda); una dettatura dentro l'app, che conservi solo il testo, è una funzione futura che dipende dal backend e dalla privacy.
 - **Salvataggio:** sul dispositivo (`localStorage`, chiave `diario-tirocinio-v1`) più copia `.json` da scaricare e ricaricare. Nessuna richiesta di rete. Il salvataggio nelle cartelle della scuola arriverà con il backend.
 - **Nessun tutor aziendale:** i soggetti sono lo studente e, più avanti, la scuola.
@@ -33,7 +33,7 @@ Regole del contratto:
 ```
 { versione: 1, aggiornato, corrente,
   tirocini: [ { id, azienda, citta, dal, al, obiettivi: [testo],
-    settimane: [ { id, dal, giorni: [lun..sab], fatto, imparato, difficolta, aiuto, umore, obiettivi: [testo], note } ] } ] }
+    settimane: [ { id, dal, assenzeGiorni: [lun..sab], assenze, comunicato, fatto, imparato, difficolta, aiuto, umore, obiettivi: [testo], note } ] } ] }
 ```
 
 ## Che cosa manca (idee per la prossima fase)

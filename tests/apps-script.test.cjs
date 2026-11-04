@@ -322,14 +322,13 @@ test('un bilancio con tutte le situazioni compilate arriva intero al foglio', ()
   });
 });
 
-test('i due tirocini arrivano insieme nel foglio', () => {
+test('i ricordi dei tirocini, anche lunghi o scritti con una versione precedente, arrivano al foglio', () => {
   const g = ambiente();
-  const s = statoCompilato();
-  s.anni.tirocinio = 'Negozio di computer.';
-  s.anni.tirocinio2 = 'Studio di assistenza.';
+  const s = L.normalizza(JSON.parse(JSON.stringify(statoCompilato())));
+  s.anni = L.normalizza({ anni: { tirocinio: 'Negozio di computer.', tirocinio2: 'Studio di assistenza.' } }).anni;
   assert.equal(g.invia(L.statoPerIlFoglio(s)).ok, true);
   const [h, r] = g.righe();
   const cella = r[h.findIndex((x) => /Tirocinio/.test(x))];
-  assert.match(cella, /Primo tirocinio: Negozio di computer\./);
-  assert.match(cella, /Secondo tirocinio: Studio di assistenza\./);
+  assert.match(cella, /Negozio di computer\./);
+  assert.match(cella, /Studio di assistenza\./);
 });

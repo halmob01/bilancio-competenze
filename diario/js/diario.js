@@ -7,12 +7,13 @@
 
   const CHIAVE = 'diario-tirocinio-v1';
   const VERSIONE = 1;
-  const MAX_TIROCINI = 5;
+  const MAX_TIROCINI = 12; // un percorso può avere molti tirocini, di anni e durate diverse
   const MAX_SETTIMANE = 80;
   const MAX_OBIETTIVI = 10;
   const MAX_BREVE = 200;
   const MAX_LUNGO = 4000;
 
+  // Giorni della settimana, per indicare quando ci sono state assenze o ritardi.
   const GIORNI = [
     { id: 'lun', testo: 'Lun' }, { id: 'mar', testo: 'Mar' }, { id: 'mer', testo: 'Mer' },
     { id: 'gio', testo: 'Gio' }, { id: 'ven', testo: 'Ven' }, { id: 'sab', testo: 'Sab' }
@@ -39,7 +40,7 @@
   }
 
   function settimanaVuota(dal) {
-    return { id: nuovoId('s'), dal: dal || '', giorni: [], fatto: '', imparato: '', difficolta: '', aiuto: '', umore: '', obiettivi: [], note: '' };
+    return { id: nuovoId('s'), dal: dal || '', assenzeGiorni: [], assenze: '', comunicato: false, fatto: '', imparato: '', difficolta: '', aiuto: '', umore: '', obiettivi: [], note: '' };
   }
 
   // Ricostruisce uno stato valido da dati salvati o caricati: scarta chiavi sconosciute e tipi errati.
@@ -67,7 +68,8 @@
         vs[wid] = true;
         n.settimane.push({
           id: wid, dal: dataValida(w.dal),
-          giorni: (Array.isArray(w.giorni) ? w.giorni : []).filter(function (g) { return inElenco(g, GIORNI); }),
+          assenzeGiorni: (Array.isArray(w.assenzeGiorni) ? w.assenzeGiorni : []).filter(function (g, i, a) { return inElenco(g, GIORNI) && a.indexOf(g) === i; }),
+          assenze: testo(w.assenze, MAX_LUNGO), comunicato: w.comunicato === true,
           fatto: testo(w.fatto, MAX_LUNGO), imparato: testo(w.imparato, MAX_LUNGO),
           difficolta: testo(w.difficolta, MAX_LUNGO), aiuto: testo(w.aiuto, MAX_LUNGO),
           umore: inElenco(w.umore, UMORI),

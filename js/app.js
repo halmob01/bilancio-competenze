@@ -350,21 +350,16 @@
     return [testa(metaSchermata(), 'Da dove parti'), corpo(intro, risposta)];
   }
 
-  // Dal secondo anno i tirocini possono essere più di uno (uno in prima e uno in seconda, due in terza):
-  // si chiedono due e si scrive al plurale. Se l'anno non è scelto si chiedono due.
-  function tirociniPlurali() {
-    return stato.profilo.anno !== 'anno1';
-  }
+  // I tirocini variano da studente a studente (alternanza simulata o tirocinio al primo anno, uno o più negli anni
+  // successivi, percorsi personalizzati): un solo campo, con parole che valgono per qualunque caso.
   function etichettaRicordo(k) {
-    if (k === 'tirocinio') return tirociniPlurali() ? 'Primo tirocinio' : 'Tirocinio o alternanza';
-    if (k === 'tirocinio2') return 'Secondo tirocinio';
-    return L.nomeQuando(k);
+    return k === 'tirocinio' ? 'Alternanza o tirocini' : L.nomeQuando(k);
   }
 
   function schermataAnni() {
-    const nomi = { anno1: 'I anno', anno2: 'II anno', anno3: 'III anno', anno4: 'IV anno', tirocinio: etichettaRicordo('tirocinio'), tirocinio2: etichettaRicordo('tirocinio2') };
+    const nomi = { anno1: 'I anno', anno2: 'II anno', anno3: 'III anno', anno4: 'IV anno', tirocinio: etichettaRicordo('tirocinio') };
     // Si chiede solo degli anni già vissuti; quelli nascosti restano nei dati se lo studente cambia anno.
-    const campi = L.anniDelPercorso(stato.profilo.anno).concat(tirociniPlurali() ? ['tirocinio', 'tirocinio2'] : ['tirocinio']);
+    const campi = L.anniDelPercorso(stato.profilo.anno).concat('tirocinio');
     const intro = [
       h('p', { text: stato.profilo.anno === 'anno1'
         ? 'Scrivi che cosa ricordi di questo primo anno: un laboratorio, una persona, un lavoro, un momento difficile. Bastano poche parole.'
@@ -373,7 +368,7 @@
       esempio('Vedi un esempio', h('p', { text: '«I anno: il primo circuito con il deviatore su un pannello di prova. Ho sbagliato i collegamenti e li ho rifatti due volte.»' }))
     ];
     const risposta = h('div', { class: 'anni' }, campi.map(function (k) {
-      return campo({ id: 'f-' + k, etichetta: nomi[k], suggerimento: k === 'tirocinio2' ? 'Se ne hai fatto uno solo, lascia vuoto questo campo.' : null, area: true, righe: 3, valore: stato.anni[k], aggiorna: function (v) { stato.anni[k] = v; } });
+      return campo({ id: 'f-' + k, etichetta: nomi[k], suggerimento: k === 'tirocinio' ? 'Scrivi di tutti quelli che hai fatto, anche se sono più di uno o in anni diversi.' : null, area: true, righe: 3, valore: stato.anni[k], aggiorna: function (v) { stato.anni[k] = v; } });
     }));
     return [testa(metaSchermata(), stato.profilo.anno === 'anno1' ? 'Il tuo primo anno in poche righe' : 'Il tuo percorso in poche righe'), corpo(intro, risposta)];
   }
@@ -506,7 +501,7 @@
     const carica = h('button', { type: 'button', class: 'pulsante pulsante--secondario pulsante--piccolo', onclick: scegliFileDiario }, 'Carica la copia di un diario');
     if (!proposte.length) {
       return h('details', { class: 'esempio' },
-        h('summary', { text: 'Hai scritto un diario di bordo del tirocinio?' }),
+        h('summary', { text: 'Hai scritto un diario di bordo dei tirocini?' }),
         h('div', { class: 'esempio__corpo' },
           h('p', { text: 'Se l\'hai compilato su questo dispositivo comparirà qui da solo. Se l\'hai scritto su un altro dispositivo scarica una copia dal diario e caricala qui.' }),
           h('p', null, carica)));
@@ -548,7 +543,7 @@
     ];
     const pieneAbbastanza = stato.esperienze.length >= L.MAX_ESPERIENZE;
     intro.push(riquadroDiario({
-      intro: 'Hai scritto il diario del tirocinio. Puoi trasformarlo in una scheda esperienza: poi rileggila e correggila.',
+      intro: 'Hai scritto il diario dei tirocini. Puoi trasformarne uno alla volta in una scheda esperienza: poi rileggila e correggila.',
       nome: function (pr) { return pr.titolo; },
       pulsante: function (pr) { return 'Crea la scheda: ' + pr.titolo; },
       gia: function (pr) { return pieneAbbastanza || stato.esperienze.some(function (x) { return x.titolo === pr.titolo; }); },
@@ -652,9 +647,8 @@
 
   // ---------- 04 Uno sguardo critico ----------
   function schermataSguardo(g) {
-    const plurale = tirociniPlurali() && g.domandaPlurale;
-    const domanda = plurale ? g.domandaPlurale : g.domanda;
-    const intro = [aiuto(plurale ? g.aiutoPlurale : g.aiuto), esempio('Vedi un esempio', h('p', { text: g.esempio }))];
+    const domanda = g.domanda;
+    const intro = [aiuto(g.aiuto), esempio('Vedi un esempio', h('p', { text: g.esempio }))];
     const risposta = campo({ id: 'f-sg-' + g.id, etichettaDa: 'titolo-schermata', area: true, lungo: true, valore: stato.sguardo[g.id],
       aggiorna: function (v) { stato.sguardo[g.id] = v; } });
     return [testa(metaSchermata(), domanda), corpo(intro, risposta)];
@@ -869,10 +863,11 @@
     ];
     const conAzione = stato.esperienze.filter(function (e) { return pieno(e.azione); });
     intro.push(riquadroDiario({
-      intro: 'Puoi aggiungere al curriculum un tirocinio del diario: azienda, città, periodo e i compiti presi dalle tue settimane. La mansione nel diario non c\'è: scrivila tu. Poi accorcia i compiti.',
-      nome: function (pr) { return pr.azienda || pr.titolo; },
-      pulsante: function (pr) { return 'Aggiungi al curriculum: ' + (pr.azienda || pr.titolo); },
-      gia: function (pr) { return c.lavoro.length >= L.MAX_LAVORO || c.lavoro.some(function (x) { return pieno(x.azienda) && pieno(pr.azienda) && x.azienda.trim() === pr.azienda; }); },
+      intro: 'Puoi aggiungere al curriculum i tirocini del diario, uno alla volta: azienda, città, periodo e i compiti presi dalle tue settimane. La mansione nel diario non c\'è: scrivila tu. Poi accorcia i compiti.',
+      nome: function (pr) { return pr.titolo.replace(/^Tirocinio presso /, ''); },
+      pulsante: function (pr) { return 'Aggiungi al curriculum: ' + pr.titolo.replace(/^Tirocinio presso /, ''); },
+      // Lo stesso tirocinio è la stessa azienda con lo stesso inizio: due tirocini nella stessa azienda in anni diversi sono due voci.
+      gia: function (pr) { return c.lavoro.length >= L.MAX_LAVORO || c.lavoro.some(function (x) { return pieno(x.azienda) && pieno(pr.azienda) && x.azienda.trim() === pr.azienda && (x.dal || '') === (pr.dalMese || ''); }); },
       crea: function (pr) {
         const l = L.lavoroVuoto('tirocinio');
         l.azienda = pr.azienda; l.citta = pr.citta; l.dal = pr.dalMese; l.al = pr.alMese; l.compiti = pr.compiti;

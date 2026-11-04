@@ -160,7 +160,7 @@
       : h('input', { type: o.tipo || 'text', id: o.id, maxlength: o.max || 200, autocomplete: 'off', inputmode: o.modo || null,
         'aria-describedby': sugg ? o.id + '-sugg' : null, value: o.valore || '',
         oninput: function (e) { o.aggiorna(e.target.value); modificato(); } });
-    return h('div', { class: 'campo' }, h('label', { for: o.id, text: o.etichetta }), sugg, controllo);
+    return h('div', { class: 'campo' }, h('label', { for: o.id, text: o.etichetta, class: o.nascosta ? 'visivamente-nascosto' : null }), sugg, controllo);
   }
   function gruppoScelte(o) {
     return h('fieldset', { class: 'campo' },
@@ -173,6 +173,11 @@
             onchange: function (e) { o.aggiorna(op.id, e.target.checked); } }),
           h('span', { text: op.testo }));
       })));
+  }
+  function casella(o) {
+    return h('label', { class: 'scelta', for: o.id },
+      h('input', { type: 'checkbox', id: o.id, checked: o.valore, onchange: function (e) { o.aggiorna(e.target.checked); } }),
+      h('span', { text: o.testo }));
   }
   function aiuto() {
     return h('div', { class: 'aiuto' }, Array.prototype.slice.call(arguments).map(function (t) { return typeof t === 'string' ? h('p', { text: t }) : t; }));
@@ -286,8 +291,20 @@
     };
     return h('div', { class: 'scheda__modulo' },
       campo({ id: p + 'dal', etichetta: 'Settimana dal (il lunedì)', tipo: 'date', valore: w.dal, aggiorna: function (v) { w.dal = v; } }),
-      gruppoScelte({ legenda: 'Quali giorni sei stato in azienda?', nome: p + 'giorni', riga: true, multipla: true, opzioni: D.GIORNI, valore: w.giorni,
-        aggiorna: function (id, attiva) { w.giorni = w.giorni.filter(function (x) { return x !== id; }); if (attiva) w.giorni.push(id); modificato(); } }),
+      // La domanda sulle assenze: si scelgono i giorni e si scrive quando e perché.
+      h('fieldset', { class: 'campo' },
+        h('legend', { text: 'Hai fatto assenze o ritardi?' }),
+        h('p', { class: 'campo__suggerimento', text: 'Se sì, scrivi quando e perché. Se no, lascia vuoto.' }),
+        h('div', { class: 'scelte scelte--riga', role: 'group', 'aria-label': 'In quali giorni' }, D.GIORNI.map(function (g) {
+          const id = p + 'assenzagiorno-' + g.id;
+          return h('label', { class: 'scelta', for: id },
+            h('input', { type: 'checkbox', id: id, value: g.id, checked: w.assenzeGiorni.indexOf(g.id) !== -1,
+              onchange: function (e) { w.assenzeGiorni = w.assenzeGiorni.filter(function (x) { return x !== g.id; }); if (e.target.checked) w.assenzeGiorni.push(g.id); modificato(); } }),
+            h('span', { text: g.testo }));
+        })),
+        campo({ id: p + 'assenze', etichetta: 'Quando e perché', nascosta: true, area: true, valore: w.assenze, aggiorna: function (v) { w.assenze = v; } })),
+      casella({ id: p + 'comunicato', testo: 'Hai comunicato assenze o ritardi prima ai tutor della scuola e dell\'azienda?', valore: w.comunicato,
+        aggiorna: function (v) { w.comunicato = v; modificato(); } }),
       h('p', { class: 'nota', text: 'Puoi dettare i testi: tocca il microfono sulla tastiera del telefono e controlla quello che ha scritto.' }),
       t2('fatto', 'Che cosa hai fatto, concretamente?', 'Racconta le tue azioni: che lavoro hai svolto e con quali strumenti.'),
       t2('imparato', 'Che cosa hai imparato di nuovo?', 'Una cosa che non sapevi fare o non avevi mai visto.'),
@@ -354,6 +371,14 @@
     return pieno(testoV) ? h('li', { class: 'voce' }, h('p', { class: 'meta', text: etichetta }), h('blockquote', { text: testoV.trim() })) : null;
   }
 
+  // Giorni scelti, testo libero e se sono stati comunicati ai tutor: vuoto se non ci sono state assenze o ritardi.
+  function riassuntoAssenze(w) {
+    const giorni = D.GIORNI.filter(function (g) { return w.assenzeGiorni.indexOf(g.id) !== -1; }).map(function (g) { return g.testo; }).join(', ');
+    if (!giorni && !pieno(w.assenze)) return '';
+    return [giorni ? 'Giorni: ' + giorni + '.' : '', pieno(w.assenze) ? w.assenze.trim() : '',
+      w.comunicato ? 'Comunicati prima ai tutor della scuola e dell\'azienda.' : 'Non comunicati prima ai tutor.'].filter(Boolean).join('\n');
+  }
+
   function riepilogo(t) {
     const ind = stato.tirocini.indexOf(t);
     const intest = [periodo(t), t.citta, t.settimane.length + (t.settimane.length === 1 ? ' settimana' : ' settimane')].filter(Boolean).join(' · ');
@@ -366,14 +391,14 @@
       t.obiettivi.length ? h('section', { class: 'dossier__parte' }, h('h3', { text: 'Che cosa voglio imparare' }),
         h('ul', { class: 'voci' }, t.obiettivi.map(function (o) { return h('li', { class: 'voce' }, h('blockquote', { text: o })); }))) : null,
       settimane.length ? settimane.map(function (w) {
-        const giorni = D.GIORNI.filter(function (g) { return w.giorni.indexOf(g.id) !== -1; }).map(function (g) { return g.testo; }).join(' ');
         const um = D.UMORI.find(function (u) { return u.id === w.umore; });
         return h('section', { class: 'dossier__parte' },
           h('h3', { text: D.etichettaSettimana(w.dal) }),
-          h('p', { class: 'meta', text: [giorni, um ? um.testo : ''].filter(Boolean).join(' · ') }),
+          h('p', { class: 'meta', text: um ? um.testo : '' }),
           h('ul', { class: 'voci' }, [
             voce('Che cosa ho fatto', w.fatto), voce('Che cosa ho imparato', w.imparato), voce('Che cosa è stato difficile', w.difficolta),
             voce('Chi o che cosa mi ha aiutato', w.aiuto),
+            voce('Assenze o ritardi', riassuntoAssenze(w)),
             w.obiettivi.length ? voce('Obiettivi su cui ho lavorato', w.obiettivi.join('\n')) : null, voce('Note', w.note)]));
       }) : h('section', { class: 'dossier__parte' }, h('p', { class: 'vuoto', text: 'Ancora nulla: scrivi la prima settimana nella sezione «Le settimane».' })));
   }

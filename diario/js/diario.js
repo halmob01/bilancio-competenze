@@ -1,14 +1,11 @@
 /* Diario di bordo del tirocinio — logica pura (stato, settimane, lettura del bilancio).
    Nessun accesso al DOM: usato dal browser (window.BC_DIARIO) e dai test Node.
-   Il diario e il bilancio stanno sullo stesso indirizzo e si scambiano dati leggendo il salvataggio dell'altro
-   (contratto in docs/DIARIO.md). Il diario non legge mai il curriculum. */
+   Il diario è indipendente: non legge nulla dal bilancio. È il bilancio (e il curriculum) a importare i tirocini dal diario
+   (contratto in docs/DIARIO.md). */
 (function (radice) {
   'use strict';
 
-  const L = (typeof module !== 'undefined' && module.exports) ? require('../../js/bilancio.js') : radice.BC_LOGICA;
-
   const CHIAVE = 'diario-tirocinio-v1';
-  const CHIAVE_BILANCIO = 'bilancio-competenze-v1';
   const VERSIONE = 1;
   const MAX_TIROCINI = 5;
   const MAX_SETTIMANE = 80;
@@ -38,11 +35,11 @@
   function statoVuoto() { return { versione: VERSIONE, aggiornato: '', corrente: '', tirocini: [] }; }
 
   function tirocinioVuoto() {
-    return { id: nuovoId('t'), azienda: '', citta: '', dal: '', al: '', ore: '', obiettivi: [], settimane: [] };
+    return { id: nuovoId('t'), azienda: '', citta: '', dal: '', al: '', obiettivi: [], settimane: [] };
   }
 
   function settimanaVuota(dal) {
-    return { id: nuovoId('s'), dal: dal || '', giorni: [], ore: '', fatto: '', imparato: '', difficolta: '', aiuto: '', umore: '', obiettivi: [], note: '' };
+    return { id: nuovoId('s'), dal: dal || '', giorni: [], fatto: '', imparato: '', difficolta: '', aiuto: '', umore: '', obiettivi: [], note: '' };
   }
 
   // Ricostruisce uno stato valido da dati salvati o caricati: scarta chiavi sconosciute e tipi errati.
@@ -58,7 +55,7 @@
       visti[id] = true;
       const n = {
         id: id, azienda: testo(t.azienda, MAX_BREVE), citta: testo(t.citta, 80),
-        dal: dataValida(t.dal), al: dataValida(t.al), ore: testo(t.ore, 6).replace(/[^\d]/g, ''),
+        dal: dataValida(t.dal), al: dataValida(t.al),
         obiettivi: (Array.isArray(t.obiettivi) ? t.obiettivi : []).slice(0, MAX_OBIETTIVI).map(function (x) { return testo(x, MAX_BREVE).trim(); }).filter(Boolean),
         settimane: []
       };
@@ -71,7 +68,6 @@
         n.settimane.push({
           id: wid, dal: dataValida(w.dal),
           giorni: (Array.isArray(w.giorni) ? w.giorni : []).filter(function (g) { return inElenco(g, GIORNI); }),
-          ore: testo(w.ore, 3).replace(/[^\d]/g, ''),
           fatto: testo(w.fatto, MAX_LUNGO), imparato: testo(w.imparato, MAX_LUNGO),
           difficolta: testo(w.difficolta, MAX_LUNGO), aiuto: testo(w.aiuto, MAX_LUNGO),
           umore: inElenco(w.umore, UMORI),
@@ -110,30 +106,12 @@
 
   function completa(w) { return pieno(w.fatto) && pieno(w.imparato); }
 
-  // ---------- Dal bilancio ----------
-  // Legge il salvataggio del bilancio con le sue stesse regole e ne ricava solo ciò che serve al diario.
-  function dalBilancio(grezzo) {
-    const vuoto = { obiettivi: [], ricordi: [], esperienze: [] };
-    if (!grezzo || typeof grezzo !== 'object' || !L) return vuoto;
-    const s = L.normalizza(grezzo);
-    const b = L.componiBilancio(s);
-    return {
-      // Quello che lo studente ha scritto di dover ancora imparare: obiettivi per il tirocinio.
-      obiettivi: b.devoImparare.map(function (x) {
-        if (!x.testo) return x.fonte + ': ancora da imparare';
-        return x.fonte === 'Uno sguardo critico' ? x.testo : x.fonte + ': ' + x.testo;
-      }),
-      ricordi: [s.anni.tirocinio, s.anni.tirocinio2].filter(pieno).map(function (x) { return x.trim(); }),
-      esperienze: s.esperienze.filter(function (e) { return e.quando === 'tirocinio' && pieno(e.titolo); }).map(function (e) { return e.titolo.trim(); })
-    };
-  }
-
   const DIARIO = {
-    CHIAVE: CHIAVE, CHIAVE_BILANCIO: CHIAVE_BILANCIO, VERSIONE: VERSIONE, MAX_TIROCINI: MAX_TIROCINI, MAX_SETTIMANE: MAX_SETTIMANE, MAX_OBIETTIVI: MAX_OBIETTIVI,
+    CHIAVE: CHIAVE, VERSIONE: VERSIONE, MAX_TIROCINI: MAX_TIROCINI, MAX_SETTIMANE: MAX_SETTIMANE, MAX_OBIETTIVI: MAX_OBIETTIVI,
     GIORNI: GIORNI, UMORI: UMORI,
     statoVuoto: statoVuoto, tirocinioVuoto: tirocinioVuoto, settimanaVuota: settimanaVuota, normalizza: normalizza,
     lunedi: lunedi, piuGiorni: piuGiorni, prossimaSettimana: prossimaSettimana, etichettaSettimana: etichettaSettimana,
-    completa: completa, dalBilancio: dalBilancio, pieno: pieno
+    completa: completa, pieno: pieno
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = DIARIO;
   else radice.BC_DIARIO = DIARIO;

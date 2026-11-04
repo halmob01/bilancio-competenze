@@ -469,12 +469,60 @@
     return L.nomeQuando(nelFuturo ? scelto : id);
   }
 
-  // Il diario di bordo del tirocinio è un sito collegato (stesso indirizzo): se c'è, se ne leggono le settimane scritte.
+  // ---------- Diario di bordo del tirocinio ----------
+  // Il diario è un sito a parte, sullo stesso indirizzo. Il bilancio e il curriculum ne importano i tirocini:
+  // dal salvataggio dello stesso browser oppure da una copia del diario caricata da file (per esempio da un altro dispositivo).
+  let diarioCaricato = null; // letto da file, resta in memoria e non viene salvato nel bilancio
+
   function proposteDalDiario() {
     try {
-      const g = localStorage.getItem('diario-tirocinio-v1');
-      return L.esperienzeDalDiario(g ? JSON.parse(g) : null);
+      const g = diarioCaricato || JSON.parse(localStorage.getItem('diario-tirocinio-v1') || 'null');
+      return L.esperienzeDalDiario(g);
     } catch (e) { return []; }
+  }
+
+  function scegliFileDiario() {
+    const inp = h('input', { type: 'file', accept: 'application/json,.json', hidden: true, onchange: function (e) {
+      const f = e.target.files[0];
+      inp.remove();
+      if (!f) return;
+      const lettore = new FileReader();
+      lettore.onload = function () {
+        let d;
+        try { d = JSON.parse(lettore.result); } catch (x) { avvisa('Il file non è una copia valida del diario.'); return; }
+        if (!d || d.versione !== 1 || !Array.isArray(d.tirocini)) { avvisa('Il file non è una copia valida del diario.'); return; }
+        diarioCaricato = d;
+        ridisegna();
+      };
+      lettore.readAsText(f);
+    } });
+    document.body.appendChild(inp);
+    inp.click();
+  }
+
+  // Il riquadro «Dal tuo diario di bordo». azione: { intro, pulsante(pr), gia(pr), crea(pr) }
+  function riquadroDiario(azione) {
+    const proposte = proposteDalDiario();
+    const carica = h('button', { type: 'button', class: 'pulsante pulsante--secondario pulsante--piccolo', onclick: scegliFileDiario }, 'Carica la copia di un diario');
+    if (!proposte.length) {
+      return h('details', { class: 'esempio' },
+        h('summary', { text: 'Hai scritto un diario di bordo del tirocinio?' }),
+        h('div', { class: 'esempio__corpo' },
+          h('p', { text: 'Se l\'hai compilato su questo dispositivo comparirà qui da solo. Se l\'hai scritto su un altro dispositivo scarica una copia dal diario e caricala qui.' }),
+          h('p', null, carica)));
+    }
+    return aiuto(
+      h('p', { class: 'meta', text: 'Dal tuo diario di bordo' }),
+      h('p', { text: azione.intro }),
+      proposte.map(function (pr) {
+        const gia = azione.gia(pr);
+        return h('p', null,
+          h('button', { type: 'button', class: 'pulsante pulsante--secondario pulsante--piccolo', disabled: gia, onclick: function () { azione.crea(pr); } }, gia ? 'Già inserito: ' + azione.nome(pr) : azione.pulsante(pr)),
+          ' ', h('span', { class: 'meta', text: pr.settimane + (pr.settimane === 1 ? ' settimana' : ' settimane') }));
+      }),
+      diarioCaricato ? h('p', null, h('span', { class: 'meta', text: 'Diario caricato da file. ' }),
+        h('button', { type: 'button', class: 'pulsante pulsante--testo', onclick: function () { diarioCaricato = null; ridisegna(); } }, 'Dimentica il file'))
+        : h('p', null, h('button', { type: 'button', class: 'pulsante pulsante--testo', onclick: scegliFileDiario }, 'Carica la copia di un altro diario')));
   }
 
   function schermataEsperienze() {
@@ -499,24 +547,20 @@
       }))) : null
     ];
     const pieneAbbastanza = stato.esperienze.length >= L.MAX_ESPERIENZE;
-    const dalDiario = proposteDalDiario();
-    if (dalDiario.length) {
-      intro.push(aiuto(
-        h('p', { class: 'meta', text: 'Dal tuo diario di bordo' }),
-        h('p', { text: 'Hai scritto il diario del tirocinio. Puoi trasformarlo in una scheda esperienza: poi rileggila e correggila.' }),
-        dalDiario.map(function (pr) {
-          const gia = stato.esperienze.some(function (x) { return x.titolo === pr.titolo; });
-          return h('p', null, h('button', { type: 'button', class: 'pulsante pulsante--secondario pulsante--piccolo', disabled: gia || pieneAbbastanza, onclick: function () {
-            const e = L.esperienzaVuota();
-            e.titolo = pr.titolo; e.quando = 'tirocinio'; e.contesto = pr.contesto; e.azione = pr.azione; e.difficolta = pr.difficolta; e.aiuto = pr.aiuto;
-            stato.esperienze.push(e);
-            esperienzaAperta = e.id;
-            modificato();
-            ridisegna('f-esp-' + e.id + '-titolo');
-          } }, gia ? 'Già nel bilancio: ' + pr.titolo : 'Crea la scheda: ' + pr.titolo), ' ',
-          h('span', { class: 'meta', text: pr.settimane + (pr.settimane === 1 ? ' settimana' : ' settimane') }));
-        })));
-    }
+    intro.push(riquadroDiario({
+      intro: 'Hai scritto il diario del tirocinio. Puoi trasformarlo in una scheda esperienza: poi rileggila e correggila.',
+      nome: function (pr) { return pr.titolo; },
+      pulsante: function (pr) { return 'Crea la scheda: ' + pr.titolo; },
+      gia: function (pr) { return pieneAbbastanza || stato.esperienze.some(function (x) { return x.titolo === pr.titolo; }); },
+      crea: function (pr) {
+        const e = L.esperienzaVuota();
+        e.titolo = pr.titolo; e.quando = 'tirocinio'; e.contesto = pr.contesto; e.azione = pr.azione; e.difficolta = pr.difficolta; e.aiuto = pr.aiuto;
+        stato.esperienze.push(e);
+        esperienzaAperta = e.id;
+        modificato();
+        ridisegna('f-esp-' + e.id + '-titolo');
+      }
+    }));
     const risposta = [
       stato.esperienze.length
         ? h('ul', { class: 'schede', 'aria-label': 'Le tue esperienze' }, stato.esperienze.map(function (e, i) { return schedaEsperienza(e, i + 1); }))
@@ -824,6 +868,20 @@
         h('dt', { text: 'Compiti' }), h('dd', { text: 'Cablare il quadro elettrico di una palazzina, collaudare i circuiti, tenere in ordine il posto di lavoro.' })))
     ];
     const conAzione = stato.esperienze.filter(function (e) { return pieno(e.azione); });
+    intro.push(riquadroDiario({
+      intro: 'Puoi aggiungere al curriculum un tirocinio del diario: azienda, città, periodo e i compiti presi dalle tue settimane. La mansione nel diario non c\'è: scrivila tu. Poi accorcia i compiti.',
+      nome: function (pr) { return pr.azienda || pr.titolo; },
+      pulsante: function (pr) { return 'Aggiungi al curriculum: ' + (pr.azienda || pr.titolo); },
+      gia: function (pr) { return c.lavoro.length >= L.MAX_LAVORO || c.lavoro.some(function (x) { return pieno(x.azienda) && pieno(pr.azienda) && x.azienda.trim() === pr.azienda; }); },
+      crea: function (pr) {
+        const l = L.lavoroVuoto('tirocinio');
+        l.azienda = pr.azienda; l.citta = pr.citta; l.dal = pr.dalMese; l.al = pr.alMese; l.compiti = pr.compiti;
+        const soloVuota = c.lavoro.length === 1 && !pieno(c.lavoro[0].azienda) && !pieno(c.lavoro[0].mansione) && !pieno(c.lavoro[0].compiti);
+        if (soloVuota) c.lavoro = [l]; else c.lavoro.push(l);
+        modificato();
+        ridisegna('f-cv-la-' + l.id + '-mansione');
+      }
+    }));
     const risposta = [
       h('ul', { class: 'schede', 'aria-label': 'Le tue esperienze di lavoro' }, c.lavoro.map(function (l, i) {
         const p = 'f-cv-la-' + l.id + '-';

@@ -74,13 +74,13 @@ Solo se si preme «Invia al docente»: una riga nel Foglio Google con indirizzo,
 
 ## Diario di bordo del tirocinio
 
-Un sito a parte, con la stessa grafica, a `…/diario/`. Durante il tirocinio lo studente scrive una scheda a settimana. I due siti si scambiano i dati senza pulsanti: il diario propone gli obiettivi presi dal bilancio, e il bilancio propone una scheda esperienza presa dal diario. Dettagli in [DIARIO.md](DIARIO.md).
+Un sito a parte, con la stessa grafica, a `…/diario/`. Durante il tirocinio lo studente scrive una scheda a settimana (le ore non si chiedono: sono 8 al giorno). È il bilancio, con il curriculum, a importare i tirocini dal diario dello stesso studente, dallo stesso dispositivo o caricando la copia del diario. Dettagli in [DIARIO.md](DIARIO.md).
 
-**1. I tirocini.** Azienda, città, periodo, ore e obiettivi. «Proponi dal mio bilancio» riprende ciò che lo studente ha scritto di dover ancora imparare.
+**1. I tirocini.** Azienda, città, periodo e obiettivi.
 
 ![Il tirocinio](guida/diario-2-tirocinio.png)
 
-**2. La settimana.** Giorni, ore, che cosa ho fatto, che cosa ho imparato, che cosa è stato difficile, chi mi ha aiutato, obiettivi lavorati, come è andata.
+**2. La settimana.** Giorni, che cosa ho fatto, che cosa ho imparato, che cosa è stato difficile, chi mi ha aiutato, obiettivi lavorati, come è andata.
 
 ![La settimana](guida/diario-3-settimana.png)
 
@@ -88,6 +88,6 @@ Un sito a parte, con la stessa grafica, a `…/diario/`. Durante il tirocinio lo
 
 ![Il diario](guida/diario-4-diario.png)
 
-**Nel bilancio.** Nella sezione «Le esperienze che ricordi» compare la proposta di una scheda esperienza dal diario, da rileggere e correggere.
+**Nel bilancio e nel curriculum.** Nelle «Esperienze che ricordi» il tirocinio diventa una scheda esperienza; nelle «Esperienze di lavoro» del curriculum diventa una voce con azienda, città, periodo e compiti, da completare con la mansione.
 
-![Proposta nel bilancio](guida/diario-5-bilancio.png)
+![Importazione nel curriculum](guida/diario-5-bilancio.png)

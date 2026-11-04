@@ -74,4 +74,4 @@ Per salvare cv e diari di tutti gli studenti nelle cartelle di rete della scuola
 
 ## Diario di bordo (prototipo)
 
-Primo prototipo del diario del tirocinio in `diario/`, sito a parte sullo stesso indirizzo del bilancio, con scambio di dati nelle due direzioni (vedi [DIARIO.md](DIARIO.md)). Vale quanto detto per il bilancio: contenuti e domande sono esempi da rivedere con i docenti, il salvataggio è sul dispositivo e il backend di rete verrà deciso in un secondo momento.
+Primo prototipo del diario del tirocinio in `diario/`, sito a parte sullo stesso indirizzo del bilancio. Il collegamento va dal diario al bilancio: il bilancio e il curriculum importano i tirocini dello studente, dallo stesso dispositivo o da una copia del diario caricata da file (vedi [DIARIO.md](DIARIO.md)); il diario non legge nulla dal bilancio. Le ore non si chiedono (8 al giorno). Vale quanto detto per il bilancio: contenuti e domande sono esempi da rivedere con i docenti, il salvataggio è sul dispositivo e il backend di rete verrà deciso in un secondo momento.

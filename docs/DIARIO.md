@@ -38,4 +38,4 @@ Regole del contratto:
 
 ## Che cosa manca (idee per la prossima fase)
 
-Dettatura nell'app che conservi solo il testo, salvataggio nelle cartelle della scuola, accesso con l'account scolastico, esportazione in Word e PDF come per il curriculum, vista per il docente. Vedi le note sul backend in [STATO-PROTOTIPO.md](STATO-PROTOTIPO.md).
+Dettatura nell'app che conservi solo il testo (metodo scelto in [FUTURO.md](FUTURO.md)), salvataggio nelle cartelle della scuola, accesso con l'account scolastico, esportazione in Word e PDF come per il curriculum, vista per il docente. Vedi le note sul backend in [STATO-PROTOTIPO.md](STATO-PROTOTIPO.md).

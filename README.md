@@ -40,7 +40,7 @@ Regole didattiche applicate (da `design.md` §9):
 - Prima dell'invio le risposte restano nel `localStorage` del browser (`bilancio-competenze-v1`), con salvataggio automatico dichiarato nella testata («Salvato alle 10:42»).
 - L'unica richiesta di rete è l'invio al foglio configurato. Font self-hosted, nessuno script esterno, nessuna telemetria.
 - Per l'invio servono nome e indirizzo; l'app genera un codice anonimo per riconoscere la riga dello studente.
-- Da «Le tue risposte»: invia al docente, **scarica una copia** (file `.json`), **carica una copia** per riprendere su un altro dispositivo, **stampa o salva in PDF** il dossier, **cancella** le risposte dal browser.
+- Da «Le tue risposte»: invia al docente, **scarica una copia** (file `.json`), **carica una copia** per riprendere su un altro dispositivo, **stampa o salva in PDF** il dossier, scarica il curriculum **in Word o in PDF** (entrambi si generano nel browser con i caratteri incorporati e riproducono il modello scelto, comprese le correzioni scritte sul foglio), **cancella** le risposte dal browser.
 - La dettatura **non** è implementata: è una funzione futura condizionata a una verifica della privacy.
 
 ## Struttura
@@ -49,6 +49,9 @@ Regole didattiche applicate (da `design.md` §9):
 - `js/config.js` — URL dell'applicazione web Apps Script per l'invio.
 - `js/dati.js` — contenuti: sezioni, situazioni, esempi per indirizzo, scala di autonomia, domande.
 - `js/bilancio.js` — logica pura: stato, normalizzazione dei dati caricati, completamento delle sezioni, composizione del dossier e della bozza.
+- `js/docx.js` — creazione del file Word (.docx) del curriculum, con i caratteri incorporati; senza librerie né richieste di rete.
+- `js/pdf.js` — creazione del PDF del curriculum, con i caratteri incorporati e il testo selezionabile, senza passare dalla stampa.
+- `fonts/ttf/` — sottoinsiemi latini dei caratteri (Fira Sans, Anton, EB Garamond, Liberation Sans) per incorporarli in Word e PDF.
 - `js/app.js` — interfaccia; costruisce il DOM con nodi e `textContent`.
 - `css/tokens.css` — token di `design.md` §10 (palette Babel, tipografia e griglia di sito-filosofia) e `@font-face`.
 - `css/stile.css` — componenti e stampa.

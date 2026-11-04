@@ -167,8 +167,10 @@ test('l\'unica richiesta di rete è l\'invio al foglio configurato', () => {
   const config = fs.readFileSync(path.join(__dirname, '../js/config.js'), 'utf8');
   assert.ok(!/innerHTML|insertAdjacentHTML|document\.write/.test(app));
   assert.ok(!/XMLHttpRequest|sendBeacon|WebSocket/.test(app));
-  assert.equal((app.match(/fetch\(/g) || []).length, 1);
+  // Due sole fetch: l'invio al foglio e la lettura dei caratteri del sito (cartella fonts/ttf, stesso indirizzo dell'app).
+  assert.equal((app.match(/fetch\(/g) || []).length, 2);
   assert.ok(app.includes('fetch(URL_INVIO'));
+  assert.ok(app.includes("fetch('fonts/ttf/' + n + '.ttf')"));
   const url = (config.match(/urlInvio:\s*'([^']*)'/) || [])[1];
   assert.ok(url === '' || /^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec$/.test(url), 'urlInvio: ' + url);
   assert.ok(!/https?:\/\//.test(html), 'nessuna risorsa esterna: font e script sono locali');
@@ -395,8 +397,10 @@ test('senza elenco di lingue valgono ancora le righe di testo delle versioni pre
 test('il logo Europass è nel repository ed è usato solo dal modello Europass', () => {
   const app = fs.readFileSync(path.join(__dirname, '../js/app.js'), 'utf8');
   assert.ok(fs.existsSync(path.join(__dirname, '../img/europass-logo.png')));
-  assert.equal(app.split('img/europass-logo.png').length - 1, 1);
+  // Due soli usi: il disegno nel modello Europass e la lettura per il file Word dello stesso modello.
+  assert.equal(app.split('img/europass-logo.png').length - 1, 2);
   assert.ok(app.indexOf('img/europass-logo.png') > app.indexOf('function cvEuropass'));
+  assert.ok(app.includes("modello.layout === 'europass'"));
 });
 
 test('il percorso si adatta all\'anno frequentato', () => {

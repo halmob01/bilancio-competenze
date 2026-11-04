@@ -56,3 +56,18 @@ Non toccati: `apps-script/Code.gs` e `Index.html` (versione alternativa con acce
 Nella prima schermata lo studente indica che anno frequenta. Da lì il percorso si adatta: la schermata dei ricordi chiede solo degli anni già vissuti (più il tirocinio), i periodi delle esperienze offrono solo quegli anni (più tirocinio e «fuori da scuola»), il bilancio mostra l'anno nell'intestazione e la sezione «Il tuo percorso» risulta completa con una riga per ogni anno vissuto (fino a un massimo di tre). Se l'anno non è scelto si mostrano tutti gli anni. Se lo studente cambia anno i testi già scritti restano. Dal secondo anno i tirocini possono essere più di uno (uno in prima e uno in seconda, due in terza): si chiedono due campi, «Primo tirocinio» e «Secondo tirocinio», e la domanda dello sguardo critico è al plurale. Nel foglio del docente i due testi arrivano insieme nella colonna «Tirocinio (ricordi)», introdotti da «Primo tirocinio:» e «Secondo tirocinio:», così lo script non cambia. Gli esempi non parlano di anni che lo studente non ha ancora vissuto. I testi non parlano più di «quarto anno».
 
 Lo script del docente non cambia: i dati dei ricordi mantengono le stesse chiavi (`anno1` ... `anno4`, `tirocinio`) e il nuovo campo `anno` del profilo viene ignorato dal foglio. Per ora l'anno non compare nel foglio: il docente lo legge dalla colonna Classe.
+
+## Curriculum in Word e in PDF
+
+Nell'anteprima del curriculum ci sono due pulsanti, entrambi senza servizi esterni e senza inviare dati. Partono dal foglio mostrato a schermo, quindi includono le correzioni scritte a mano, e riproducono i tre modelli (Contemporaneo, Classico, Europass con logo e tabella delle lingue), colore, carattere, dimensione, foto e firma.
+
+- **Scarica in Word** crea un `.docx` con i caratteri **incorporati nel file** (Fira Sans, Anton, EB Garamond; Arial per il carattere «Semplice», che è già in ogni computer): chi lo apre trova gli stessi caratteri del sito anche senza averli installati. Nel Word il grassetto di Fira Sans è il Bold (700) invece del SemiBold (600) del sito. Verificato con LibreOffice, che usa i caratteri incorporati pur non avendoli installati, e con `python-docx`; **non provato con Microsoft Word**: va controllato su Windows e su Mac (Word per Mac legge i caratteri incorporati dalle versioni recenti).
+- **Scarica in PDF** crea il PDF direttamente, con il testo selezionabile e gli stessi caratteri incorporati (per «Semplice» Liberation Sans, equivalente di Arial). L'impaginazione è stata confrontata con il PDF che produce la stampa del browser: stesso numero di pagine e stessa struttura, con differenze minime di spaziatura. Il PDF non applica la crenatura (kerning) fra le lettere. Se la creazione non riesce, l'app propone di aprire la finestra di stampa.
+
+I caratteri incorporati sono sottoinsiemi latini (lettere accentate comprese) di file con licenza OFL, in `fonts/ttf/`: un nome con caratteri fuori da questo insieme (per esempio cirillico o arabo) comparirebbe con un segno di riserva.
+
+I contenuti didattici (domande, esempi, frasi dei livelli) restano per ora come esempi da rivedere con i docenti. Lo script del Foglio Google resta quello attuale: l'app è un prototipo e la raccolta dei dati verrà ripensata (vedi sotto).
+
+## Backend: da decidere
+
+Per salvare cv e diari di tutti gli studenti nelle cartelle di rete della scuola serve un servizio che riceva i file e li scriva in quelle cartelle: un sito statico non può scrivere su una cartella di rete. Prima di costruire qualcosa vanno chiarite alcune cose (dove sono i file della scuola, chi amministra la rete, come si identificano gli studenti, privacy dei minori). Vedi la discussione con il docente.

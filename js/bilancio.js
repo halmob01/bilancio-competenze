@@ -34,7 +34,7 @@
       aggiornato: '',
       inviato: '',
       profilo: { nome: '', classe: '', indirizzo: '', anno: '' },
-      anni: { anno1: '', anno2: '', anno3: '', anno4: '', tirocinio: '', tirocinio2: '' },
+      anni: { anno1: '', anno2: '', anno3: '', anno4: '', tirocinio: '' },
       esperienze: [],
       sofare: sofare,
       sguardo: sguardo,
@@ -117,6 +117,8 @@
 
     const a = grezzo.anni || {};
     Object.keys(s.anni).forEach(function (k) { s.anni[k] = testo(a[k], MAX_LUNGO); });
+    // Una versione precedente aveva un secondo campo per i tirocini: il testo confluisce nell'unico campo, senza perdere nulla.
+    if (pieno(a.tirocinio2)) s.anni.tirocinio = [s.anni.tirocinio, testo(a.tirocinio2, MAX_LUNGO)].filter(pieno).join('\n\n').slice(0, MAX_LUNGO);
 
     const visti = {};
     (Array.isArray(grezzo.esperienze) ? grezzo.esperienze : []).slice(0, MAX_ESPERIENZE).forEach(function (e) {
@@ -209,17 +211,10 @@
     return s;
   }
 
-  // Quello che parte per il foglio del docente: senza curriculum e con i due tirocini nella colonna
-  // «Tirocinio» che lo script già conosce (la forma dei dati resta quella di sempre).
+  // Quello che parte per il foglio del docente: tutto il bilancio tranne il curriculum (recapiti e foto restano sul dispositivo).
   function statoPerIlFoglio(stato) {
     const copia = Object.assign({}, stato);
     delete copia.cv;
-    const anni = Object.assign({}, stato.anni);
-    const t1 = (anni.tirocinio || '').trim();
-    const t2 = (anni.tirocinio2 || '').trim();
-    delete anni.tirocinio2;
-    if (t2) anni.tirocinio = (t1 ? 'Primo tirocinio: ' + t1 + '\n\n' : '') + 'Secondo tirocinio: ' + t2;
-    copia.anni = anni;
     return copia;
   }
 
@@ -529,7 +524,7 @@
       const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(typeof iso === 'string' ? iso : '');
       return m ? m[3] + '/' + m[2] + '/' + m[1] : '';
     };
-    return grezzo.tirocini.slice(0, 5).map(function (tir) {
+    return grezzo.tirocini.slice(0, 12).map(function (tir) {
       if (!tir || typeof tir !== 'object') return null;
       const settimane = (Array.isArray(tir.settimane) ? tir.settimane : []).slice(0, 80).filter(function (x) { return x && typeof x === 'object'; });
       const azienda = t(tir.azienda, MAX_BREVE);

@@ -12,7 +12,7 @@ Titolo, tre righe di spiegazione e le sette sezioni. Chi ha già iniziato trova 
 
 ## 01 Il tuo percorso
 
-Anno frequentato, indirizzo, nome e classe, poi alcune righe libere per far riaffiorare i ricordi: un campo per ogni anno già vissuto più uno per il tirocinio. Scegliendo l'anno il percorso si adatta: un primo anno vede solo il primo anno, un terzo anno i primi tre. Anche l'elenco dei periodi nelle esperienze segue l'anno, e dal secondo anno si chiedono due tirocini.
+Anno frequentato, indirizzo, nome e classe, poi alcune righe libere per far riaffiorare i ricordi: un campo per ogni anno già vissuto più uno per l'alternanza e i tirocini. Scegliendo l'anno il percorso si adatta: un primo anno vede solo il primo anno, un terzo anno i primi tre. Anche l'elenco dei periodi nelle esperienze segue l'anno, e per i tirocini c'è un solo campo libero («Alternanza o tirocini»), perché il numero cambia da studente a studente.
 
 ![Il tuo percorso](guida/02-percorso.png)
 

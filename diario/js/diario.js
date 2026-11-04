@@ -7,7 +7,7 @@
 
   const CHIAVE = 'diario-tirocinio-v1';
   const VERSIONE = 1;
-  const MAX_TIROCINI = 5;
+  const MAX_TIROCINI = 12; // un percorso può avere molti tirocini, di anni e durate diverse
   const MAX_SETTIMANE = 80;
   const MAX_OBIETTIVI = 10;
   const MAX_BREVE = 200;

@@ -427,19 +427,23 @@ test('nessun riferimento al quarto anno nell\'interfaccia e nei testi dell\'app'
   });
 });
 
-test('due tirocini: nel foglio finiscono nella colonna che lo script già conosce', () => {
+test('i tirocini sono un solo campo libero: nessun numero fisso per anno', () => {
   const s = L.statoVuoto();
-  s.anni.tirocinio = 'Un mese in un negozio di computer.';
-  s.anni.tirocinio2 = 'Due mesi in uno studio.';
-  const f = L.statoPerIlFoglio(s);
-  assert.equal(f.anni.tirocinio, 'Primo tirocinio: Un mese in un negozio di computer.\n\nSecondo tirocinio: Due mesi in uno studio.');
-  assert.ok(!('tirocinio2' in f.anni), 'la forma dei dati inviati resta quella di sempre');
-  assert.equal(s.anni.tirocinio2, 'Due mesi in uno studio.', 'i dati dello studente non cambiano');
-  const solo2 = L.statoVuoto(); solo2.anni.tirocinio2 = 'Solo il secondo.';
-  assert.equal(L.statoPerIlFoglio(solo2).anni.tirocinio, 'Secondo tirocinio: Solo il secondo.');
-  const uno = L.statoVuoto(); uno.anni.tirocinio = 'Uno solo.';
-  assert.equal(L.statoPerIlFoglio(uno).anni.tirocinio, 'Uno solo.', 'con un solo tirocinio il testo non cambia');
-  assert.equal(L.normalizza({ anni: { tirocinio2: 'x' } }).anni.tirocinio2, 'x');
+  assert.ok('tirocinio' in s.anni && !('tirocinio2' in s.anni), 'un solo campo, di qualunque lunghezza');
+  // una versione precedente aveva un secondo campo: il testo confluisce nell'unico campo senza perdere nulla
+  const n = L.normalizza({ anni: { tirocinio: 'Un mese in un negozio di computer.', tirocinio2: 'Due mesi in uno studio.' } });
+  assert.equal(n.anni.tirocinio, 'Un mese in un negozio di computer.\n\nDue mesi in uno studio.');
+  assert.ok(!('tirocinio2' in n.anni));
+  assert.equal(L.normalizza({ anni: { tirocinio2: 'Solo questo.' } }).anni.tirocinio, 'Solo questo.');
+  // al foglio del docente parte il bilancio così com'è, senza curriculum
+  const f = L.statoPerIlFoglio(n);
+  assert.equal(f.anni.tirocinio, n.anni.tirocinio);
+  assert.ok(!('cv' in f));
+  // le parole non fissano né il singolare né il plurale né l'anno
+  const app = fs.readFileSync(path.join(__dirname, '../js/app.js'), 'utf8');
+  assert.ok(!/tirociniPlurali|tirocinio2|Primo tirocinio|Secondo tirocinio/.test(app));
+  const g = D.SGUARDO.find((x) => x.id === 'tirocinio');
+  assert.ok(/alternanza e i tirocini/.test(g.domanda) && !g.domandaPlurale);
 });
 
 test('i testi d\'esempio non parlano di anni che lo studente può non aver ancora vissuto', () => {

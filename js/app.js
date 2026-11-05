@@ -191,6 +191,18 @@
     if (!lavoro) return;
     const i = posizione();
     $('barra').style.width = ((i + 1) / SEQUENZA.length * 100) + '%';
+    // Nodi circolari in corrispondenza delle sette sezioni, senza alterare la navigazione.
+    const avanzamento = $('avanzamento');
+    avanzamento.querySelectorAll('.avanzamento__nodo').forEach(function (n) { n.remove(); });
+    D.SEZIONI.forEach(function (sezione, indice) {
+      const primaSchermata = SEQUENZA.findIndex(function (t) { return t[0] === indice; });
+      const percentuale = D.SEZIONI.length === 1 ? 50 : (primaSchermata / (SEQUENZA.length - 1)) * 100;
+      const nodo = document.createElement('span');
+      nodo.className = 'avanzamento__nodo' + (indice === vista.s ? ' avanzamento__nodo--attivo' : indice < vista.s ? ' avanzamento__nodo--completato' : '');
+      nodo.style.left = percentuale + '%';
+      nodo.setAttribute('aria-hidden', 'true');
+      avanzamento.appendChild(nodo);
+    });
     $('tappa-nome').textContent = D.SEZIONI[vista.s].titolo;
   }
 

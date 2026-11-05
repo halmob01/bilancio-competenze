@@ -58,7 +58,7 @@ a { color: inherit; }
 .avanzamento { height: 4px; background: var(--bc-red); position: relative; margin: 12px max(var(--m), calc((100% - var(--max-lavoro)) / 2 + var(--m))); }
 .avanzamento__barra { position: absolute; inset: 0 auto 0 0; background: var(--bc-red); transition: width var(--durata) ease; }
 .avanzamento__nodo { position: absolute; top: 50%; width: 18px; height: 18px; border: 5px solid var(--bc-red); border-radius: 50%; background: var(--bc-paper); box-shadow: none; transform: translate(-50%, -50%); pointer-events: none; }
-.avanzamento__nodo--attivo { background: var(--bc-paper); box-shadow: none; }
+.avanzamento__nodo--attivo { background: var(--bc-red); box-shadow: none; }
 .avanzamento__nodo--completato { background: var(--bc-paper); box-shadow: none; }
 .tappa-mobile { display: flex; align-items: center; gap: 10px; max-width: var(--max-lavoro); margin: 0 auto; padding: 8px var(--m) 10px; }
 .tappa-mobile .meta:last-child { margin-left: auto; }

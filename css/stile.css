@@ -124,7 +124,7 @@ a { color: inherit; }
   padding: 12px 0; cursor: pointer; min-height: 44px; font-size: 15px; line-height: 1.3;
 }
 .rail__voce[aria-current="step"] .rail__nome, .indice-dialogo__voce[aria-current="step"] .rail__nome { font-weight: 600; }
-.rail__voce[aria-current="step"] .rail__num::before { content: ""; display: inline-block; width: 6px; height: 6px; background: var(--bc-red); margin-right: 6px; vertical-align: middle; }
+.rail__voce[aria-current="step"] .rail__num::before { content: ""; display: inline-block; width: 6px; height: 6px; background: var(--bc-red); border-radius: 50%; margin-right: 6px; vertical-align: middle; }
 .rail__num { white-space: nowrap; }
 .rail__stato { grid-column: 2; }
 

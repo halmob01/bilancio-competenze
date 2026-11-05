@@ -38,7 +38,7 @@ a { color: inherit; }
   color: var(--bc-ink-60);
 }
 .meta strong { color: var(--bc-ink); font-weight: 400; }
-.segno { display: inline-block; width: 10px; height: 10px; background: var(--bc-red); border-radius: 50%; margin-right: 10px; vertical-align: baseline; }
+.segno { display: inline-block; width: 12px; height: 12px; border: 3px solid var(--bc-red); border-radius: 50%; background: transparent; margin-right: 10px; vertical-align: baseline; }
 .misura { max-width: var(--measure); }
 .libro { font-family: var(--f-libro); font-size: var(--t-racconto); line-height: 1.48; }
 
@@ -57,9 +57,9 @@ a { color: inherit; }
 .testata__salvato { margin-left: auto; text-align: right; }
 .avanzamento { height: 4px; background: var(--bc-red); position: relative; margin: 12px max(var(--m), calc((100% - var(--max-lavoro)) / 2 + var(--m))); }
 .avanzamento__barra { position: absolute; inset: 0 auto 0 0; background: var(--bc-red); transition: width var(--durata) ease; }
-.avanzamento__nodo { position: absolute; top: 50%; width: 18px; height: 18px; border: 5px solid var(--bc-red); border-radius: 50%; background: var(--bc-white); transform: translate(-50%, -50%); pointer-events: none; }
-.avanzamento__nodo--attivo { background: var(--bc-white); box-shadow: 0 0 0 2px var(--bc-red) inset; }
-.avanzamento__nodo--completato { background: var(--bc-white); }
+.avanzamento__nodo { position: absolute; top: 50%; width: 18px; height: 18px; border: 5px solid var(--bc-red); border-radius: 50%; background: var(--bc-paper); box-shadow: none; transform: translate(-50%, -50%); pointer-events: none; }
+.avanzamento__nodo--attivo { background: var(--bc-paper); box-shadow: none; }
+.avanzamento__nodo--completato { background: var(--bc-paper); box-shadow: none; }
 .tappa-mobile { display: flex; align-items: center; gap: 10px; max-width: var(--max-lavoro); margin: 0 auto; padding: 8px var(--m) 10px; }
 .tappa-mobile .meta:last-child { margin-left: auto; }
 

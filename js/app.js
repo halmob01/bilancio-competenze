@@ -995,6 +995,9 @@
           const g = L.linguaVuota();
           c.lingueElenco.push(g);
           modificato(); ridisegna('f-cv-lg-' + g.id + '-nome');
+          // La nuova scheda si porta in vista (su telefono resterebbe sotto la barra in basso) e il campo è pronto da scrivere.
+          const campoNuovo = $('f-cv-lg-' + g.id + '-nome');
+          if (campoNuovo) campoNuovo.closest('.scheda').scrollIntoView({ block: 'start' });
         } }, 'Aggiungi un\'altra lingua')));
   }
 

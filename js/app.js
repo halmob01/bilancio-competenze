@@ -201,12 +201,11 @@
   }
 
   function aggiornaTestata() {
-    const lavoro = !!vista;
-    $('avanzamento').hidden = !lavoro;
-    $('tappa-mobile').hidden = !lavoro;
-    if (!lavoro) return;
+    $('tappa-mobile').hidden = !vista;
+    // La traccia con i cerchi c'è anche nella prima pagina (nessun cerchio pieno finché non si comincia).
+    $('avanzamento').hidden = false;
     const i = posizione();
-    $('barra').style.width = ((i + 1) / SEQUENZA.length * 100) + '%';
+    $('barra').style.width = vista ? ((i + 1) / SEQUENZA.length * 100) + '%' : '0%';
     // Nodi circolari in corrispondenza delle sezioni, senza alterare la navigazione.
     const avanzamento = $('avanzamento');
     avanzamento.querySelectorAll('.avanzamento__nodo').forEach(function (n) { n.remove(); });
@@ -214,12 +213,12 @@
       const primaSchermata = SEQUENZA.findIndex(function (t) { return t[0] === indice; });
       const percentuale = D.SEZIONI.length === 1 ? 50 : (primaSchermata / (SEQUENZA.length - 1)) * 100;
       const nodo = document.createElement('span');
-      nodo.className = 'avanzamento__nodo' + (indice === vista.s ? ' avanzamento__nodo--attivo' : indice < vista.s ? ' avanzamento__nodo--completato' : '');
+      nodo.className = 'avanzamento__nodo' + (vista && indice === vista.s ? ' avanzamento__nodo--attivo' : vista && indice < vista.s ? ' avanzamento__nodo--completato' : '');
       nodo.style.left = percentuale + '%';
       nodo.setAttribute('aria-hidden', 'true');
       avanzamento.appendChild(nodo);
     });
-    $('tappa-nome').textContent = D.SEZIONI[vista.s].titolo;
+    if (vista) $('tappa-nome').textContent = D.SEZIONI[vista.s].titolo;
   }
 
   // ---------- Elementi ricorrenti ----------

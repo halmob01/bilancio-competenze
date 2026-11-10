@@ -134,7 +134,12 @@ test('due tirocini nella stessa azienda in anni diversi restano due proposte dis
   assert.equal(tanti.length, 7);
 });
 
-test('la traccia con i tre cerchi c\'è anche nella prima pagina del diario', () => {
+test('la traccia con i cerchi c\'è anche nella prima pagina del diario, del bilancio e del curriculum', () => {
+  ['js/app.js', 'cv/js/app.js'].forEach((f) => {
+    const a = fs.readFileSync(path.join(__dirname, '..', f), 'utf8');
+    const g = a.slice(a.indexOf('function aggiornaTestata'), a.indexOf('// ---------- Elementi ricorrenti'));
+    assert.ok(g.includes("$('avanzamento').hidden = false;") && !/avanzamento'\)\.hidden = !/.test(g), f);
+  });
   const app = fs.readFileSync(path.join(__dirname, '../diario/js/app.js'), 'utf8');
   const fn = app.slice(app.indexOf('function aggiornaTestata'), app.indexOf('// ---------- Elementi ricorrenti'));
   assert.ok(fn.includes("$('avanzamento').hidden = false;"), 'la traccia non si nasconde nella home');

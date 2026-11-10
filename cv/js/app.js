@@ -174,21 +174,20 @@
   }
 
   function aggiornaTestata() {
-    const lavoro = !!vista;
-    $('avanzamento').hidden = !lavoro;
-    $('tappa-mobile').hidden = !lavoro;
-    if (!lavoro) return;
-    $('barra').style.width = ((vista.k + 1) / PASSI.length * 100) + '%';
+    $('tappa-mobile').hidden = !vista;
+    // La traccia con i cerchi c'è anche nella prima pagina (nessun cerchio pieno finché non si comincia).
+    $('avanzamento').hidden = false;
+    $('barra').style.width = vista ? ((vista.k + 1) / PASSI.length * 100) + '%' : '0%';
     const avanzamento = $('avanzamento');
     avanzamento.querySelectorAll('.avanzamento__nodo').forEach(function (n) { n.remove(); });
     PASSI.forEach(function (_, i) {
       const nodo = document.createElement('span');
-      nodo.className = 'avanzamento__nodo' + (i === vista.k ? ' avanzamento__nodo--attivo' : i < vista.k ? ' avanzamento__nodo--completato' : '');
+      nodo.className = 'avanzamento__nodo' + (vista && i === vista.k ? ' avanzamento__nodo--attivo' : vista && i < vista.k ? ' avanzamento__nodo--completato' : '');
       nodo.style.left = (i / (PASSI.length - 1) * 100) + '%';
       nodo.setAttribute('aria-hidden', 'true');
       avanzamento.appendChild(nodo);
     });
-    $('tappa-nome').textContent = PASSI[vista.k].titolo;
+    if (vista) $('tappa-nome').textContent = PASSI[vista.k].titolo;
   }
 
   // ---------- Elementi ricorrenti ----------

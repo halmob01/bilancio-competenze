@@ -161,6 +161,33 @@
     return r.esperienze.some(function (id) { return trovaEsperienza(stato, id); });
   }
 
+  // Controllo di vaghezza delle risposte sulle esperienze. Non blocca niente e non riscrive niente: serve a far comparire
+  // un suggerimento mentre lo studente scrive. Restituisce '' se la risposta va bene, altrimenti un codice:
+  // 'generica' («tirocinio», «ho fatto lo stage»: dice dove, non che cosa), 'corta' (meno di sei parole).
+  const PAROLE_GENERICHE = ['tirocinio', 'stage', 'alternanza', 'esperienza', 'scuola', 'laboratorio', 'lavoro', 'azienda', 'officina', 'salone', 'ufficio'];
+  const FRASE_GENERICA = /^((ho|abbiamo) (fatto|svolto|frequentato|lavorato|imparato|aiutato)|sono stat[oa]|ero|siamo stati)( (il|lo|la|un|una|l'|in|a|da|nel|nella|presso|di|del|della|tutto|tanto|molto|varie|cose|roba|tirocinio|stage|alternanza|esperienza|scuola|laboratorio|lavoro|azienda|officina|salone|ufficio))*$/;
+
+  function parole(v) {
+    return String(v || '').toLowerCase().replace(/[’]/g, "'").replace(/\b(l|un|dell|nell|all|dall|sull)'/g, '$1 ').replace(/[^a-zàèéìòù0-9 ]+/g, ' ').replace(/\s+/g, ' ').trim();
+  }
+
+  function vaghezza(valore) {
+    const p = parole(valore);
+    if (!p) return '';
+    const n = p.split(' ').length;
+    if (n <= 3 && p.split(' ').every(function (x) { return PAROLE_GENERICHE.indexOf(x) !== -1 || /^(il|lo|la|un|una|in|a|di|del|della|nel|nella|presso|ho|fatto|svolto|stat[oa]|l')$/.test(x); })) return 'generica';
+    if (FRASE_GENERICA.test(p)) return 'generica';
+    if (n < 6) return 'corta';
+    return '';
+  }
+
+  // Un titolo che dice solo dove («Tirocinio», «Scuola») non aiuta a riconoscere l'esperienza.
+  function titoloGenerico(valore) {
+    const p = parole(valore);
+    if (!p) return false;
+    return p.split(' ').length <= 3 && p.split(' ').every(function (x) { return PAROLE_GENERICHE.indexOf(x) !== -1 || /^(il|lo|la|un|una|in|a|di|l')$/.test(x); });
+  }
+
   function esperienzaCompleta(e) {
     return pieno(e.titolo) && pieno(e.azione) && e.quando !== '';
   }
@@ -350,6 +377,8 @@
     normalizza: normalizza,
     haProva: haProva,
     esperienzaCompleta: esperienzaCompleta,
+    vaghezza: vaghezza,
+    titoloGenerico: titoloGenerico,
     statoSezione: statoSezione,
     componiBilancio: componiBilancio,
     componiOrientamento: componiOrientamento,

@@ -17,8 +17,11 @@ test('sei sezioni, schermate con un solo compito (il curriculum è un sito a par
   assert.equal(D.SEZIONI.length, 6);
   assert.deepEqual(D.SEZIONI.map((x) => x.id), ['percorso', 'esperienze', 'sofare', 'sguardo', 'bilancio', 'orientamento']);
   D.SEZIONI.forEach((s) => assert.ok(s.schermate.length >= 1, s.id));
-  // Le sei situazioni sono blocchi di un'unica schermata: i loro id non cambiano mai (li legge lo script del docente).
-  assert.deepEqual(D.SEZIONI[2].schermate.map((x) => x.id), ['situazioni']);
+  // «Che cosa so fare» è in due tempi (livello, poi esempio); lo sguardo critico ha le tre domande insieme.
+  // Gli id delle sei situazioni e delle tre risposte non cambiano mai (li legge lo script del docente).
+  assert.deepEqual(D.SEZIONI[2].schermate.map((x) => x.id), ['livelli', 'esempi']);
+  assert.deepEqual(D.SEZIONI[3].schermate.map((x) => x.id), ['domande']);
+  assert.deepEqual(D.SGUARDO.map((x) => x.id), ['scuola', 'tirocinio', 'ancora']);
   assert.deepEqual(D.SITUAZIONI.map((x) => x.id), ['capire', 'fare', 'collaborare', 'verificare', 'spiegare', 'migliorare']);
 });
 
@@ -251,4 +254,72 @@ test('i testi d\'esempio non parlano di anni che lo studente può non aver ancor
   const dati = fs.readFileSync(path.join(__dirname, '../js/dati.js'), 'utf8');
   assert.ok(!/\bal (terzo|secondo|primo) anno/i.test(dati));
   Object.values(D.ESEMPI_ESPERIENZA).forEach((x) => assert.ok(D.QUANDO.some((q) => q.id === x.quando), 'il periodo dell\'esempio è un id valido'));
+});
+
+// ---------- Interfaccia più corta: esperienze guidate, so fare in due tempi ----------
+test('«tirocinio» da solo o una frase che dice solo dove non basta: compare un suggerimento, mai un blocco', () => {
+  ['Tirocinio', 'tirocinio.', 'Ho fatto il tirocinio', 'Ho fatto lo stage in azienda', 'Stage', 'Ho aiutato', 'Ho fatto tutto', 'Lavoro']
+    .forEach((x) => assert.equal(L.vaghezza(x), 'generica', x));
+  ['Ho montato il quadro', 'Cose varie', 'Ho cablato un quadro']
+    .forEach((x) => assert.equal(L.vaghezza(x), 'corta', x));
+  ['Ho montato il quadro della palazzina con il tutor', 'Ho configurato due stampanti di rete e aggiornato i computer della segreteria.']
+    .forEach((x) => assert.equal(L.vaghezza(x), '', x));
+  assert.equal(L.vaghezza(''), '', 'un campo vuoto non è vago: è vuoto');
+  assert.equal(L.vaghezza('   '), '');
+  // le esperienze d'esempio dell'app non devono far comparire l'avviso
+  Object.values(D.ESEMPI_ESPERIENZA).forEach((e) => assert.equal(L.vaghezza(e.azione), '', e.titolo));
+  // un titolo che dice solo dove
+  ['Tirocinio', 'Il tirocinio', 'Scuola', 'Stage in azienda'].forEach((x) => assert.equal(L.titoloGenerico(x), true, x));
+  ['Quadro elettrico in tirocinio', 'Rete dell\'ufficio', ''].forEach((x) => assert.equal(L.titoloGenerico(x), false, x));
+  Object.values(D.ESEMPI_ESPERIENZA).forEach((e) => assert.equal(L.titoloGenerico(e.titolo), false, e.titolo));
+  // il controllo non cambia né salva niente: il bilancio riporta le parole dello studente così come sono
+  const s = L.statoVuoto();
+  const e = conEsperienza(s, { titolo: 'Tirocinio', azione: 'Tirocinio', quando: 'tirocinio' });
+  L.vaghezza(e.azione);
+  assert.equal(e.azione, 'Tirocinio');
+  assert.equal(L.esperienzaCompleta(e), true, 'non blocca il completamento');
+});
+
+test('i contesti raggruppano i periodi senza cambiare il dato salvato', () => {
+  const periodi = D.CONTESTI.reduce((m, c) => m.concat(c.quando), []);
+  assert.deepEqual(periodi.slice().sort(), D.QUANDO.map((x) => x.id).sort(), 'ogni periodo sta in un contesto, una volta sola');
+  assert.deepEqual(D.CONTESTI.map((c) => c.id), ['scuola', 'tirocinio', 'fuori']);
+  // il periodo resta quello di sempre: lo script del docente lo riconosce per id
+  const s = L.normalizza({ esperienze: [{ id: 'a', titolo: 'T', quando: 'tirocinio' }, { id: 'b', titolo: 'U', quando: 'anno2' }] });
+  assert.deepEqual(s.esperienze.map((e) => e.quando), ['tirocinio', 'anno2']);
+});
+
+test('«Che cosa so fare» in due tempi e lo sguardo critico in una schermata, con le regole di sempre', () => {
+  const app = fs.readFileSync(path.join(__dirname, '../js/app.js'), 'utf8');
+  assert.ok(app.includes('function schermataLivelli') && app.includes('function schermataEsempi') && !app.includes('function schermataSofare'));
+  assert.ok(app.includes('function elencoDettaglio') && app.includes('function corpoLargo'));
+  // dal bilancio si torna alla risposta: una situazione si apre negli esempi, una domanda dello sguardo critico si raggiunge nella schermata
+  assert.ok(/trovata = D\.SEZIONI\[s\]\.schermate\.findIndex\(function \(x\) \{ return x\.id === 'esempi'; \}\);\s*situazioneAperta = schermataId;/.test(app));
+  assert.ok(app.includes("$('blocco-sg-' + schermataId)"));
+  // le sei situazioni e le tre domande hanno gli id di sempre (li legge lo script del docente)
+  assert.deepEqual(D.SITUAZIONI.map((x) => x.id), ['capire', 'fare', 'collaborare', 'verificare', 'spiegare', 'migliorare']);
+  assert.ok(app.includes("'f-sg-' + g.id"));
+  // lo stato di «so fare» non dipende da dove si scrive: senza esempio la voce resta in sospeso
+  const s = L.statoVuoto();
+  D.SITUAZIONI.forEach((x) => { s.sofare[x.id].livello = 'autonomo_noto'; });
+  assert.equal(L.statoSezione(s, 'sofare'), 'in_corso');
+  assert.equal(L.componiBilancio(s).daDocumentare.length, 6);
+  const e = conEsperienza(s, { titolo: 'Rete', azione: 'Ho configurato la rete dell\'ufficio', quando: 'tirocinio' });
+  D.SITUAZIONI.forEach((x) => { s.sofare[x.id].esperienze = [e.id]; });
+  assert.equal(L.statoSezione(s, 'sofare'), 'completa', 'collegare una cosa raccontata vale come esempio');
+  // «mai affrontato» resta distinto da «non lo so ancora fare»
+  s.sofare.capire.livello = 'mai'; s.sofare.fare.livello = 'non_ancora';
+  const b = L.componiBilancio(s);
+  assert.deepEqual([b.maiAffrontato.length, b.devoImparare.length], [1, 1]);
+});
+
+test('l\'interfaccia delle esperienze non chiede più otto campi in fila e non scrive al posto dello studente', () => {
+  const app = fs.readFileSync(path.join(__dirname, '../js/app.js'), 'utf8');
+  assert.ok(app.includes('function dettaglioEsperienza') && !app.includes('function moduloEsperienza'));
+  assert.ok(app.includes("'Che cosa hai fatto tu, di preciso?'"));
+  // gli avvisi non cambiano i dati: nessuna assegnazione a e.azione / e.titolo dentro i controlli
+  const controlli = app.slice(app.indexOf('const controllaAzione'), app.indexOf('const dove = gruppoScelte'));
+  assert.ok(!/e\.(azione|titolo)\s*=[^=]/.test(controlli));
+  // le esperienze scritte con la versione precedente (anche senza periodo) restano raggiungibili
+  assert.ok(app.includes("'Da collocare'"));
 });

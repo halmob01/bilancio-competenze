@@ -148,19 +148,18 @@
   }
   function aggiornaTestata() {
     $('tappa-mobile').hidden = !vista;
-    $('avanzamento').hidden = !vista;
-    if (vista) {
-      $('barra').style.width = ((vista.s + 1) / SEZIONI.length * 100) + '%';
-      const avanzamento = $('avanzamento');
-      avanzamento.querySelectorAll('.avanzamento__nodo').forEach(function (n) { n.remove(); });
-      SEZIONI.forEach(function (_, i) {
-        const nodo = document.createElement('span');
-        nodo.className = 'avanzamento__nodo' + (i === vista.s ? ' avanzamento__nodo--attivo' : i < vista.s ? ' avanzamento__nodo--completato' : '');
-        nodo.style.left = (i / (SEZIONI.length - 1) * 100) + '%';
-        nodo.setAttribute('aria-hidden', 'true');
-        avanzamento.appendChild(nodo);
-      });
-    }
+    // La traccia con i tre cerchi c'è anche nella prima pagina (nessun cerchio pieno finché non si comincia).
+    $('avanzamento').hidden = false;
+    $('barra').style.width = vista ? ((vista.s + 1) / SEZIONI.length * 100) + '%' : '0%';
+    const avanzamento = $('avanzamento');
+    avanzamento.querySelectorAll('.avanzamento__nodo').forEach(function (n) { n.remove(); });
+    SEZIONI.forEach(function (_, i) {
+      const nodo = document.createElement('span');
+      nodo.className = 'avanzamento__nodo' + (vista && i === vista.s ? ' avanzamento__nodo--attivo' : vista && i < vista.s ? ' avanzamento__nodo--completato' : '');
+      nodo.style.left = (i / (SEZIONI.length - 1) * 100) + '%';
+      nodo.setAttribute('aria-hidden', 'true');
+      avanzamento.appendChild(nodo);
+    });
     if (vista) $('tappa-nome').textContent = SEZIONI[vista.s].titolo;
   }
 

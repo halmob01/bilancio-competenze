@@ -22,14 +22,15 @@ Il curriculum non è più una sezione del bilancio (fino al 10 novembre 2026 era
 | | Sezione | Schermate |
 |---|---|---|
 | 01 | Il tuo percorso | anno frequentato, indirizzo, nome e classe; gli anni già vissuti e il tirocinio in poche righe (il percorso mostra solo gli anni fino a quello frequentato) |
-| 02 | Le esperienze che ricordi | schede esperienza: quando, contesto, azione, prova, difficoltà, aiuto, autonomia |
-| 03 | Che cosa so fare | una schermata con sei situazioni comuni ai tre indirizzi: capire, fare, collaborare, verificare, spiegare, migliorare |
-| 04 | Uno sguardo critico | scuola, tirocinio, che cosa devo ancora imparare |
+| 02 | Che cosa hai fatto | cose precise, raggruppate per contesto (scuola e laboratorio, tirocinio, fuori): dove e quando, che cosa hai fatto tu, nome, difficoltà, aiuto, prova; da desktop elenco a sinistra e voce aperta a destra |
+| 03 | Che cosa so fare | in due tempi: il livello per sei situazioni comuni ai tre indirizzi (capire, fare, collaborare, verificare, spiegare, migliorare), poi l'esempio, collegando una cosa già raccontata o scrivendolo |
+| 04 | Uno sguardo critico | tre domande su una schermata: scuola, tirocinio, che cosa devo ancora imparare |
 | 05 | Bilancio | dossier: So fare / Ho imparato così / Posso dimostrarlo / Devo ancora imparare |
 | 06 | Orientamento | quattro domande guida, poi il testo per l'open day |
 
 Regole didattiche applicate (da `design.md` §9):
 
+- **Un suggerimento, mai un blocco, se la risposta è vaga.** Se nell'azione o nel nome di una cosa fatta compare solo «tirocinio», «scuola» o una frase molto breve, compare un suggerimento («dice dove eri, non che cosa hai fatto»). Il testo dello studente non viene cambiato né rifiutato.
 - **Nessuna competenza dichiarata con un solo click.** Se lo studente dice di saper fare qualcosa, serve un esempio scritto o un'esperienza collegata; altrimenti la voce compare nel bilancio come «da documentare».
 - **«Non l'ho mai affrontato» è distinto da «Non lo so ancora fare»** e finisce in una parte diversa del dossier.
 - **Esempi filtrati per indirizzo, categorie comuni.** Gli esempi si aprono a richiesta e sono sempre etichettati come esempi.

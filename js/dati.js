@@ -29,6 +29,13 @@
     { id: 'fuori', testo: 'Fuori da scuola' }
   ];
 
+  // Dove è successa una cosa: tre contesti che raggruppano i periodi. Il periodo (QUANDO) resta il dato salvato.
+  const CONTESTI = [
+    { id: 'scuola', titolo: 'A scuola e in laboratorio', breve: 'A scuola o in laboratorio', quando: ['anno1', 'anno2', 'anno3', 'anno4'] },
+    { id: 'tirocinio', titolo: 'In tirocinio o alternanza', breve: 'In tirocinio o alternanza', quando: ['tirocinio'] },
+    { id: 'fuori', titolo: 'Fuori da scuola', breve: 'Fuori da scuola', quando: ['fuori'] }
+  ];
+
   // Anni di frequenza: da qui il percorso mostra solo gli anni già vissuti.
   const ANNI = QUANDO.slice(0, 4);
 
@@ -146,19 +153,24 @@
     },
     {
       id: 'esperienze',
-      titolo: 'Le esperienze che ricordi',
-      schermate: [{ id: 'elenco', titolo: 'Le esperienze che ricordi' }]
+      titolo: 'Che cosa hai fatto',
+      schermate: [{ id: 'elenco', titolo: 'Che cosa hai fatto' }]
     },
     {
       id: 'sofare',
       titolo: 'Che cosa so fare',
-      // Una sola schermata con sei blocchi: gli id delle situazioni restano quelli di sempre.
-      schermate: [{ id: 'situazioni', titolo: 'Che cosa sai fare' }]
+      // Due tempi: prima il livello per ognuna delle sei situazioni, poi l'esempio per quelle che si dichiarano di saper fare.
+      // Gli id delle situazioni restano quelli di sempre (li legge lo script del docente).
+      schermate: [
+        { id: 'livelli', titolo: 'Quanto lo sai fare' },
+        { id: 'esempi', titolo: 'Un esempio per ogni «so fare»' }
+      ]
     },
     {
       id: 'sguardo',
       titolo: 'Uno sguardo critico',
-      schermate: SGUARDO.map(function (g) { return { id: g.id, titolo: g.domanda }; })
+      // Le tre domande stanno insieme su una schermata (gli id delle risposte restano quelli di sempre).
+      schermate: [{ id: 'domande', titolo: 'Uno sguardo critico' }]
     },
     {
       id: 'bilancio',
@@ -288,6 +300,7 @@
     INDIRIZZI: INDIRIZZI,
     AUTONOMIA: AUTONOMIA,
     QUANDO: QUANDO,
+    CONTESTI: CONTESTI,
     ANNI: ANNI,
     SITUAZIONI: SITUAZIONI,
     SGUARDO: SGUARDO,

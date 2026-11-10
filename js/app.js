@@ -147,12 +147,17 @@
 
   function vaiA(sezioneId, schermataId, esperienzaId) {
     const s = D.SEZIONI.findIndex(function (x) { return x.id === sezioneId; });
-    const trovata = D.SEZIONI[s].schermate.findIndex(function (x) { return x.id === schermataId; });
+    let trovata = D.SEZIONI[s].schermate.findIndex(function (x) { return x.id === schermataId; });
+    // Una situazione di «Che cosa so fare» si apre nel secondo tempo, quello degli esempi.
+    if (sezioneId === 'sofare' && trovata === -1 && D.SITUAZIONI.some(function (x) { return x.id === schermataId; })) {
+      trovata = D.SEZIONI[s].schermate.findIndex(function (x) { return x.id === 'esempi'; });
+      situazioneAperta = schermataId;
+    }
     const k = Math.max(0, trovata);
     esperienzaAperta = esperienzaId || null;
     vai(s, k, { tieniEsperienza: true });
-    // Una situazione di «Che cosa so fare» è un blocco della schermata: ci si porta lì.
-    const ancora = trovata === -1 ? $('blocco-' + schermataId) : null;
+    // Una domanda dello sguardo critico è un blocco della schermata: ci si porta lì.
+    const ancora = trovata === -1 ? $('blocco-sg-' + schermataId) : null;
     if (ancora) { ancora.scrollIntoView(); ancora.focus({ preventScroll: true }); }
   }
 
@@ -309,6 +314,43 @@
       h('div', { class: 'colonna-risposta' }, risposta));
   }
 
+  // Schermata a tutta larghezza: la spiegazione in una fascia in alto e il lavoro sotto, senza colonna stretta.
+  function corpoLargo(intro, risposta) {
+    return h('div', { class: 'schermata__corpo schermata__corpo--largo' },
+      intro ? h('div', { class: 'fascia' }, intro) : null,
+      h('div', { class: 'lavoro-largo' }, risposta));
+  }
+
+  // Da 900px c'è spazio per affiancare l'elenco e la voce aperta; sotto, una cosa per volta.
+  function largo() { return window.matchMedia('(min-width: 900px)').matches; }
+
+  // Elenco + dettaglio. gruppi: [{ id, titolo, azioni }] (facoltativi); voci: [{ id, gruppo, titolo, nota, stato }];
+  // aperta: id della voce aperta; dettaglio: il nodo della voce aperta; apri(id), chiudi(): azioni.
+  function elencoDettaglio(o) {
+    const gruppi = o.gruppi || [{ id: '' }];
+    const elenco = h('div', { class: 'ed__elenco', role: 'group', 'aria-label': o.aria },
+      gruppi.map(function (g) {
+        const voci = o.voci.filter(function (v) { return (v.gruppo || '') === g.id; });
+        return h('section', { class: 'ed__gruppo' },
+          g.titolo ? h('h3', { class: 'ed__titolo-gruppo', text: g.titolo }) : null,
+          voci.length ? h('ul', { class: 'ed__voci' }, voci.map(function (v) {
+            return h('li', null, h('button', {
+              type: 'button', id: o.prefisso + v.id,
+              class: 'ed__voce' + (v.id === o.aperta ? ' ed__voce--aperta' : '') + (v.stato === 'manca' ? ' ed__voce--manca' : ''),
+              'aria-current': v.id === o.aperta ? 'true' : null,
+              onclick: function () { o.apri(v.id); }
+            },
+              h('span', { class: 'ed__voce-titolo', text: v.titolo }),
+              v.nota ? h('span', { class: 'meta ed__voce-nota', text: v.nota }) : null));
+          })) : null,
+          g.azioni || null);
+      }));
+    const dettaglio = h('div', { class: 'ed__dettaglio' },
+      o.aperta ? h('button', { type: 'button', class: 'pulsante pulsante--testo ed__torna', onclick: o.chiudi }, 'Torna all\'elenco') : null,
+      o.dettaglio || h('p', { class: 'vuoto ed__vuoto', text: o.vuoto }));
+    return h('div', { class: 'ed' + (o.aperta ? ' ed--aperto' : '') }, elenco, dettaglio);
+  }
+
   function navigazione() {
     const i = posizione();
     const ultima = i === SEQUENZA.length - 1;
@@ -397,13 +439,36 @@
     return [testa(metaSchermata(), stato.profilo.anno === 'anno1' ? 'Il tuo primo anno in poche righe' : 'Il tuo percorso in poche righe'), corpo(intro, risposta)];
   }
 
-  // ---------- 02 Le esperienze ----------
+  // ---------- 02 Che cosa hai fatto ----------
+  // Una cosa precisa per volta, raggruppata per contesto (scuola, tirocinio, fuori). Il dato salvato resta quello di sempre:
+  // il contesto raggruppa i periodi (quando), non è un campo nuovo.
+  const contestoNuovo = {}; // id esperienza → contesto scelto prima di avere il periodo («scuola» chiede ancora l'anno)
+
+  function contestoDi(e) {
+    const c = D.CONTESTI.find(function (x) { return x.quando.indexOf(e.quando) !== -1; });
+    return c ? c.id : (contestoNuovo[e.id] || '');
+  }
+
   function mancanti(e) {
     const m = [];
-    if (!pieno(e.titolo)) m.push('un titolo');
-    if (!e.quando) m.push('quando');
     if (!pieno(e.azione)) m.push('che cosa hai fatto');
+    if (!pieno(e.titolo)) m.push('un nome');
+    if (!e.quando) m.push('dove e quando');
     return m;
+  }
+
+  function riassunto(testo) {
+    const s = String(testo || '').trim().replace(/\s+/g, ' ');
+    return s.length > 46 ? s.slice(0, 44).trim() + '…' : s;
+  }
+
+  function titoloVoce(e) {
+    return pieno(e.titolo) ? e.titolo.trim() : (pieno(e.azione) ? riassunto(e.azione) : 'Una cosa nuova');
+  }
+
+  function notaVoce(e) {
+    const m = mancanti(e);
+    return [L.nomeQuando(e.quando), m.length ? 'manca: ' + m[0] : 'completa'].filter(Boolean).join(' · ');
   }
 
   // Il periodo dell'esperienza: solo gli anni già vissuti, il tirocinio e «fuori da scuola».
@@ -415,77 +480,113 @@
     });
   }
 
-  function moduloEsperienza(e) {
-    const p = 'f-esp-' + e.id + '-';
-    const testoCampo = function (chiave, etichetta, suggerimento, area) {
-      return campo({ id: p + chiave, etichetta: etichetta, suggerimento: suggerimento, area: area, righe: 3, valore: e[chiave], aggiorna: function (v) { e[chiave] = v; } });
-    };
-    return h('div', { class: 'scheda__modulo' },
-      testoCampo('titolo', 'Titolo', 'Poche parole per riconoscerla, per esempio «Quadro elettrico in laboratorio».', false),
-      gruppoScelte({
-        legenda: 'Quando', nome: p + 'quando', riga: true, opzioni: opzioniQuando(e.quando), valore: e.quando,
-        aggiorna: function (id) { e.quando = id; modificato(); }
-      }),
-      testoCampo('azione', 'Che cosa hai fatto tu, concretamente?', 'Racconta le tue azioni, non quelle del gruppo in generale.', true),
-      testoCampo('prova', 'Come potresti dimostrarlo?', 'Una foto, un lavoro finito, una relazione, una scheda, il giudizio del tutor o del docente.', true),
-      testoCampo('difficolta', 'Che cosa non sapevi fare prima? Che cosa è stato difficile?', null, true),
-      testoCampo('aiuto', 'Quale aiuto ti è servito?', 'Da chi o da che cosa: un compagno, il tutor, un manuale, un video, un errore.', true),
-      h('details', { class: 'dettagli', open: pieno(e.contesto) || !!e.autonomia || e.situazioni.length > 0 },
-        h('summary', { text: 'Aggiungi dettagli' }),
-        h('div', { class: 'dettagli__corpo' },
-          testoCampo('contesto', 'Dove eri e con chi?', null, true),
-          gruppoScelte({
-            legenda: 'Oggi, quanto sapresti rifarlo?', nome: p + 'autonomia', opzioni: D.AUTONOMIA, valore: e.autonomia,
-            aggiorna: function (id) { e.autonomia = id; modificato(); }
-          }),
-          gruppoScelte({
-            legenda: 'In quali situazioni rientra?', nome: p + 'situazioni', riga: true, multipla: true,
-            opzioni: D.SITUAZIONI.map(function (s) { return { id: s.id, testo: s.verbo }; }), valore: e.situazioni,
-            aggiorna: function (id, attiva) {
-              e.situazioni = e.situazioni.filter(function (x) { return x !== id; });
-              if (attiva) e.situazioni.push(id);
-              modificato();
-            }
-          }))),
-      h('div', null, h('button', { type: 'button', class: 'pulsante pulsante--secondario pulsante--piccolo', onclick: function () {
-        esperienzaAperta = null; ridisegna('esp-' + e.id + '-modifica');
-      } }, 'Chiudi la scheda')));
-  }
-
-  function schedaEsperienza(e, n) {
-    const aperta = esperienzaAperta === e.id;
-    const m = mancanti(e);
-    return h('li', { class: 'scheda' + (aperta ? ' scheda--aperta' : ''), id: 'scheda-' + e.id },
-      h('div', { class: 'scheda__testa' },
-        h('span', { class: 'meta', text: String(n).padStart(2, '0') }),
-        h('h3', { class: 'scheda__titolo', text: pieno(e.titolo) ? e.titolo : 'Esperienza senza titolo' }),
-        aperta ? null : h('span', { class: 'meta', text: [L.nomeQuando(e.quando), m.length ? 'Manca: ' + m.join(', ') : 'Completa'].filter(Boolean).join(' · ') })),
-      aperta ? moduloEsperienza(e) : h('div', { class: 'scheda__azioni' },
-        h('button', { type: 'button', class: 'pulsante pulsante--secondario pulsante--piccolo', id: 'esp-' + e.id + '-modifica',
-          'aria-label': 'Modifica ' + (e.titolo || 'esperienza ' + n),
-          onclick: function () { esperienzaAperta = e.id; ridisegna('f-esp-' + e.id + '-titolo'); } }, 'Modifica'),
-        h('button', { type: 'button', class: 'pulsante pulsante--testo', 'aria-label': 'Elimina ' + (e.titolo || 'esperienza ' + n),
-          onclick: function () { eliminaEsperienza(e); } }, 'Elimina')));
+  function nuovaEsperienza(contestoId) {
+    const e = L.esperienzaVuota();
+    if (contestoId === 'tirocinio' || contestoId === 'fuori') e.quando = contestoId;
+    else { contestoNuovo[e.id] = 'scuola'; if (stato.profilo.anno) e.quando = stato.profilo.anno; }
+    stato.esperienze.push(e);
+    esperienzaAperta = e.id;
+    modificato();
+    ridisegna('f-esp-' + e.id + '-azione');
   }
 
   function eliminaEsperienza(e) {
-    chiedi('Eliminare l\'esperienza «' + (e.titolo || 'senza titolo') + '»? Non si può annullare.', 'Elimina', function () {
+    chiedi('Eliminare «' + titoloVoce(e) + '»? Non si può annullare.', 'Elimina', function () {
       stato.esperienze = stato.esperienze.filter(function (x) { return x.id !== e.id; });
       Object.keys(stato.sofare).forEach(function (k) {
         stato.sofare[k].esperienze = stato.sofare[k].esperienze.filter(function (id) { return id !== e.id; });
       });
+      esperienzaAperta = null;
       modificato();
-      ridisegna('aggiungi-esperienza');
+      ridisegna();
     });
   }
 
-  // L'esempio non deve parlare di un anno che lo studente non ha ancora vissuto:
-  // in quel caso mostra l'anno che frequenta.
-  function quandoEsempio(id) {
-    const anni = D.ANNI.map(function (x) { return x.id; });
-    const scelto = stato.profilo.anno;
-    const nelFuturo = scelto && anni.indexOf(id) !== -1 && anni.indexOf(id) > anni.indexOf(scelto);
-    return L.nomeQuando(nelFuturo ? scelto : id);
+  // Aggiorna nell'elenco il nome e lo stato della voce mentre si scrive, senza ridisegnare.
+  function aggiornaVoce(e) {
+    const b = $('esp-voce-' + e.id);
+    if (!b) return;
+    b.querySelector('.ed__voce-titolo').textContent = titoloVoce(e);
+    b.querySelector('.ed__voce-nota').textContent = notaVoce(e);
+    b.classList.toggle('ed__voce--manca', mancanti(e).length > 0);
+  }
+
+  const MESSAGGI_VAGHEZZA = {
+    generica: '«Tirocinio» o «scuola» dicono dove eri, non che cosa hai fatto. Scrivi una cosa precisa, con un verbo: «Ho montato…», «Ho configurato…», «Ho accolto…».',
+    corta: 'Racconta un po\' di più: con che cosa lavoravi, con chi, come è andata?'
+  };
+
+  function dettaglioEsperienza(e) {
+    const p = 'f-esp-' + e.id + '-';
+    const ctx = contestoDi(e);
+    const testoCampo = function (chiave, etichetta, suggerimento, righe, dopo) {
+      return campo({ id: p + chiave, etichetta: etichetta, suggerimento: suggerimento, area: true, righe: righe || 3, valore: e[chiave],
+        aggiorna: function (v) { e[chiave] = v; aggiornaVoce(e); if (dopo) dopo(); } });
+    };
+
+    // Avvisi che compaiono mentre si scrive: non bloccano niente.
+    const avvisoAzione = h('p', { class: 'suggerimento-vivo', id: p + 'azione-avviso', role: 'status', 'aria-live': 'polite', hidden: true });
+    const controllaAzione = function () {
+      const c = L.vaghezza(e.azione);
+      avvisoAzione.hidden = !c;
+      avvisoAzione.textContent = MESSAGGI_VAGHEZZA[c] || '';
+    };
+    const avvisoTitolo = h('p', { class: 'suggerimento-vivo', id: p + 'titolo-avviso', role: 'status', 'aria-live': 'polite', hidden: true });
+    const controllaTitolo = function () {
+      const g = L.titoloGenerico(e.titolo);
+      avvisoTitolo.hidden = !g;
+      avvisoTitolo.textContent = g ? '«' + e.titolo.trim() + '» dice solo dove. Dai un nome a quello che hai fatto: «Quadro elettrico in tirocinio», «Rete dell\'ufficio».' : '';
+    };
+
+    const dove = gruppoScelte({
+      legenda: 'Dove è successo?', nome: p + 'dove', riga: true,
+      opzioni: D.CONTESTI.map(function (c) { return { id: c.id, testo: c.breve }; }), valore: ctx,
+      aggiorna: function (id) {
+        if (id === 'scuola') {
+          contestoNuovo[e.id] = 'scuola';
+          if (D.CONTESTI[0].quando.indexOf(e.quando) === -1) e.quando = stato.profilo.anno || '';
+        } else { e.quando = id; delete contestoNuovo[e.id]; }
+        modificato();
+        ridisegna(p + 'dove-' + id);
+      }
+    });
+    const anno = ctx === 'scuola' ? gruppoScelte({
+      legenda: 'In che anno?', nome: p + 'anno', riga: true,
+      opzioni: opzioniQuando(e.quando).filter(function (x) { return D.CONTESTI[0].quando.indexOf(x.id) !== -1; }), valore: e.quando,
+      aggiorna: function (id) { e.quando = id; modificato(); aggiornaVoce(e); }
+    }) : null;
+    const luogo = ctx === 'tirocinio'
+      ? testoCampo('contesto', 'Dove eri e con chi?', 'L\'azienda, la città e chi ti seguiva. Per esempio: «Impianti Verdi, Milano, con il tutor Marco».', 2) : null;
+
+    const esempioAzione = esempio('Vedi un esempio', esempiPerIndirizzo(Object.keys(D.ESEMPI_ESPERIENZA).reduce(function (m, k) { m[k] = '«' + D.ESEMPI_ESPERIENZA[k].azione + '»'; return m; }, {})));
+
+    const forma = h('div', { class: 'ed__forma' },
+      h('h3', { text: 'Una cosa che hai fatto' }),
+      dove, anno, luogo,
+      testoCampo('azione', 'Che cosa hai fatto tu, di preciso?', 'Una cosa sola: un lavoro, un giorno, un compito. Comincia con un verbo: «Ho montato…», «Ho preparato…», «Ho spiegato…».', 4, controllaAzione),
+      avvisoAzione,
+      esempioAzione,
+      campo({ id: p + 'titolo', etichetta: 'Come la chiami? Poche parole', suggerimento: 'Serve a ritrovarla nell\'elenco: «Quadro elettrico in laboratorio».', max: 200, valore: e.titolo,
+        aggiorna: function (v) { e.titolo = v; aggiornaVoce(e); controllaTitolo(); } }),
+      avvisoTitolo,
+      h('div', { class: 'due-colonne' },
+        testoCampo('difficolta', 'Che cosa è stato difficile?', 'Che cosa non sapevi fare prima?', 3),
+        testoCampo('aiuto', 'Chi o che cosa ti ha aiutato?', 'Un compagno, il tutor, un manuale, un video, un errore.', 3)),
+      testoCampo('prova', 'Come potresti dimostrarlo?', 'Una foto, un lavoro finito, una relazione, il giudizio del tutor o del docente.', 3),
+      h('details', { class: 'dettagli', open: !!e.autonomia || (ctx !== 'tirocinio' && pieno(e.contesto)) },
+        h('summary', { text: 'Altri dettagli' }),
+        h('div', { class: 'dettagli__corpo' },
+          ctx !== 'tirocinio' ? testoCampo('contesto', 'Dove eri e con chi?', null, 2) : null,
+          gruppoScelte({
+            legenda: 'Oggi, quanto sapresti rifarlo?', nome: p + 'autonomia', riga: true, opzioni: D.AUTONOMIA, valore: e.autonomia,
+            aggiorna: function (id) { e.autonomia = id; modificato(); }
+          }))),
+      h('div', { class: 'ed__azioni-fine' },
+        h('button', { type: 'button', class: 'pulsante', onclick: function () { esperienzaAperta = null; ridisegna('esp-voce-' + e.id); } }, 'Fatto'),
+        h('button', { type: 'button', class: 'pulsante pulsante--testo', onclick: function () { eliminaEsperienza(e); } }, 'Elimina')));
+    controllaAzione();
+    controllaTitolo();
+    return forma;
   }
 
   // ---------- Diario di bordo del tirocinio ----------
@@ -545,137 +646,198 @@
   }
 
   function schermataEsperienze() {
-    const es = indirizziVisibili().map(function (ind) {
-      const x = D.ESEMPI_ESPERIENZA[ind.id];
-      return h('div', null,
-        h('p', { class: 'meta', text: 'Esempio · ' + ind.nome }),
-        h('dl', null,
-          h('dt', { text: 'Titolo' }), h('dd', { text: x.titolo }),
-          h('dt', { text: 'Quando' }), h('dd', { text: quandoEsempio(x.quando) }),
-          h('dt', { text: 'Azione' }), h('dd', { text: x.azione }),
-          h('dt', { text: 'Prova' }), h('dd', { text: x.prova }),
-          h('dt', { text: 'Difficoltà' }), h('dd', { text: x.difficolta })));
-    });
     const anni = Object.keys(stato.anni).filter(function (k) { return pieno(stato.anni[k]); });
+    const pieneAbbastanza = stato.esperienze.length >= L.MAX_ESPERIENZE;
     const intro = [
-      h('p', { text: 'Scegli almeno due esperienze: a scuola, in laboratorio, in tirocinio o fuori. Per ognuna racconta che cosa hai fatto tu, come puoi dimostrarlo e che cosa è stato difficile.' }),
-      aiuto('L\'esempio serve solo a capire che cosa scrivere. Nel bilancio entra soltanto quello che hai fatto davvero.'),
-      esempio('Vedi un esempio (non è una tua esperienza)', es),
+      h('p', { text: 'Racconta le cose che hai fatto davvero, una alla volta: un lavoro, un montaggio, un trattamento, una consegna. Non «il tirocinio» in generale: una cosa precisa che hai fatto lì.' }),
+      aiuto('Bastano due o tre cose. Per ognuna dici dove, che cosa hai fatto tu e come potresti dimostrarlo. Nel bilancio entra solo quello che scrivi.'),
       anni.length ? esempio('I tuoi appunti sul percorso', h('dl', null, anni.map(function (k) {
         return [h('dt', { text: etichettaRicordo(k) }), h('dd', { text: stato.anni[k] })];
-      }))) : null
-    ];
-    const pieneAbbastanza = stato.esperienze.length >= L.MAX_ESPERIENZE;
-    intro.push(riquadroDiario({
-      intro: 'Hai scritto il diario dei tirocini. Puoi trasformarne uno alla volta in una scheda esperienza: poi rileggila e correggila.',
-      nome: function (pr) { return pr.titolo; },
-      pulsante: function (pr) { return 'Crea la scheda: ' + pr.titolo; },
-      gia: function (pr) { return pieneAbbastanza || stato.esperienze.some(function (x) { return x.titolo === pr.titolo; }); },
-      crea: function (pr) {
-        const e = L.esperienzaVuota();
-        e.titolo = pr.titolo; e.quando = 'tirocinio'; e.contesto = pr.contesto; e.azione = pr.azione; e.difficolta = pr.difficolta; e.aiuto = pr.aiuto;
-        stato.esperienze.push(e);
-        esperienzaAperta = e.id;
-        modificato();
-        ridisegna('f-esp-' + e.id + '-titolo');
-      }
-    }));
-    const risposta = [
-      stato.esperienze.length
-        ? h('ul', { class: 'schede', 'aria-label': 'Le tue esperienze' }, stato.esperienze.map(function (e, i) { return schedaEsperienza(e, i + 1); }))
-        : h('p', { class: 'vuoto', text: 'Non hai ancora inserito esperienze.' }),
-      h('div', null,
-        h('button', { type: 'button', class: 'pulsante', id: 'aggiungi-esperienza', disabled: pieneAbbastanza, onclick: function () {
+      }))) : null,
+      riquadroDiario({
+        intro: 'Hai scritto il diario dei tirocini. Puoi trasformarne uno alla volta in una cosa da raccontare: poi rileggila e correggila.',
+        nome: function (pr) { return pr.titolo; },
+        pulsante: function (pr) { return 'Crea la scheda: ' + pr.titolo; },
+        gia: function (pr) { return pieneAbbastanza || stato.esperienze.some(function (x) { return x.titolo === pr.titolo; }); },
+        crea: function (pr) {
           const e = L.esperienzaVuota();
+          e.titolo = pr.titolo; e.quando = 'tirocinio'; e.contesto = pr.contesto; e.azione = pr.azione; e.difficolta = pr.difficolta; e.aiuto = pr.aiuto;
           stato.esperienze.push(e);
           esperienzaAperta = e.id;
           modificato();
-          ridisegna('f-esp-' + e.id + '-titolo');
-        } }, 'Aggiungi un\'esperienza'))
-    ];
-    return [testa(metaSchermata(), 'Le esperienze che ricordi'), corpo(intro, risposta)];
-  }
-
-  // ---------- 03 Che cosa so fare ----------
-  function bloccoSituazione(sit) {
-    const r = stato.sofare[sit.id];
-    const l = D.AUTONOMIA.find(function (a) { return a.id === r.livello; });
-    const p = 'f-sf-' + sit.id + '-';
-    const conAzione = stato.esperienze.filter(function (e) { return pieno(e.azione); });
-
-    const avviso = h('p', { class: 'avviso', id: p + 'avviso', role: 'note', hidden: !(l && l.dichiara && !L.haProva(stato, sit.id)) },
-      'Manca ancora un esempio: scrivilo qui sotto o collega un\'esperienza. Per ora nel bilancio la voce resta in sospeso.');
-    function aggiornaAvviso() { avviso.hidden = !(l && l.dichiara && !L.haProva(stato, sit.id)); }
-
-    const parti = [
-      h('h3', { id: 'blocco-' + sit.id, tabindex: '-1', text: sit.domanda }),
-      h('p', { class: 'blocco__nota', text: sit.anche }),
-      esempio('Vedi un esempio', esempiPerIndirizzo(sit.esempi)),
-      gruppoScelte({
-        legenda: 'Quanto lo sai fare oggi?', nome: p + 'livello', opzioni: D.AUTONOMIA, valore: r.livello,
-        aggiorna: function (id, _, idInput) { r.livello = id; modificato(); ridisegna(idInput); }
+          ridisegna('f-esp-' + e.id + '-azione');
+        }
       })
     ];
 
+    // Da desktop c'è sempre una voce aperta; sul telefono si parte dall'elenco.
+    if (!esperienzaAperta && stato.esperienze.length && largo()) {
+      const prima = stato.esperienze.find(function (x) { return mancanti(x).length; }) || stato.esperienze[0];
+      esperienzaAperta = prima.id;
+    }
+    const aperta = stato.esperienze.find(function (x) { return x.id === esperienzaAperta; }) || null;
+    if (!aperta) esperienzaAperta = null;
+
+    const gruppi = D.CONTESTI.map(function (c) {
+      return {
+        id: c.id, titolo: c.titolo,
+        azioni: h('p', { class: 'ed__azioni' }, h('button', { type: 'button', class: 'pulsante pulsante--secondario pulsante--piccolo', disabled: pieneAbbastanza,
+          'aria-label': 'Aggiungi una cosa: ' + c.titolo.toLowerCase(), onclick: function () { nuovaEsperienza(c.id); } }, '+ Aggiungi'))
+      };
+    });
+    const senza = stato.esperienze.filter(function (e) { return !contestoDi(e); });
+    if (senza.length) gruppi.push({ id: 'senza', titolo: 'Da collocare' });
+
+    const risposta = elencoDettaglio({
+      aria: 'Le cose che hai fatto', prefisso: 'esp-voce-', aperta: esperienzaAperta,
+      gruppi: gruppi,
+      voci: stato.esperienze.map(function (e) {
+        return { id: e.id, gruppo: contestoDi(e) || 'senza', titolo: titoloVoce(e), nota: notaVoce(e), stato: mancanti(e).length ? 'manca' : 'ok' };
+      }),
+      apri: function (id) { esperienzaAperta = id; ridisegna('f-esp-' + id + '-azione'); },
+      chiudi: function () { const id = esperienzaAperta; esperienzaAperta = null; ridisegna('esp-voce-' + id); },
+      dettaglio: aperta ? dettaglioEsperienza(aperta) : null,
+      vuoto: 'Scegli dove è successa una cosa e premi «+ Aggiungi». Poi racconta che cosa hai fatto tu.'
+    });
+    return [testa(metaSchermata(), 'Che cosa hai fatto'), corpoLargo(intro, risposta)];
+  }
+
+  // ---------- 03 Che cosa so fare (in due tempi) ----------
+  // Primo tempo: il livello per ognuna delle sei situazioni. Secondo tempo: l'esempio, scegliendo tra le cose già raccontate
+  // o scrivendolo, solo per le situazioni che si dichiarano di saper fare. Le regole non cambiano: senza esempio la voce resta
+  // «da documentare»; «mai affrontato» è diverso da «non lo so ancora fare».
+  let situazioneAperta = null;
+
+  function livelloDi(sit) {
+    return D.AUTONOMIA.find(function (a) { return a.id === stato.sofare[sit.id].livello; }) || null;
+  }
+
+  function rigaLivello(sit) {
+    const r = stato.sofare[sit.id];
+    const p = 'f-sf-' + sit.id + '-';
+    const scegli = function (id, idFocus) { r.livello = id; modificato(); ridisegna(idFocus); };
+    const radio = h('div', { class: 'livelli__scelte' }, D.AUTONOMIA.map(function (a) {
+      const id = p + 'livello-' + a.id;
+      return h('label', { class: 'livello', for: id },
+        h('input', { type: 'radio', name: p + 'livello', id: id, value: a.id, checked: r.livello === a.id, onchange: function () { scegli(a.id, id); } }),
+        h('span', { text: a.testo }));
+    }));
+    // Sul telefono un selettore: una riga per situazione invece di cinque.
+    const select = h('select', { class: 'livelli__select', id: p + 'livello-select', 'aria-label': sit.domanda, onchange: function (ev) { scegli(ev.target.value, p + 'livello-select'); } },
+      h('option', { value: '', text: 'Scegli la frase più vicina…' }),
+      D.AUTONOMIA.map(function (a) { return h('option', { value: a.id, text: a.testo, selected: r.livello === a.id }); }));
+    return h('div', { class: 'livelli__riga', role: 'group', 'aria-labelledby': 'blocco-' + sit.id },
+      h('h3', { id: 'blocco-' + sit.id, tabindex: '-1', text: sit.domanda }),
+      esempio('Che cosa conta · un esempio', [h('p', { text: sit.anche })].concat(esempiPerIndirizzo(sit.esempi))),
+      radio, select);
+  }
+
+  function schermataLivelli() {
+    const fatte = D.SITUAZIONI.filter(function (s) { return stato.sofare[s.id].livello; }).length;
+    const intro = [
+      h('p', { text: 'Sei situazioni di lavoro tra le più comuni. Per ognuna scegli la frase più vicina alla verità di oggi.' }),
+      aiuto('Non c\'è una risposta giusta: «non l\'ho mai affrontato» è una risposta come le altre. Se dici di saperlo fare, nel passo dopo ti chiediamo un esempio: senza esempio la voce resta in sospeso nel bilancio.'),
+      h('p', { class: 'meta livelli__conta', role: 'status', text: fatte + ' situazioni su ' + D.SITUAZIONI.length + ' con una risposta' })
+    ];
+    const risposta = h('div', { class: 'livelli' }, D.SITUAZIONI.map(rigaLivello));
+    return [testa(metaSchermata(), 'Quanto lo sai fare, oggi?'), corpoLargo(intro, risposta)];
+  }
+
+  function notaSituazione(sit) {
+    const l = livelloDi(sit);
+    if (!l) return { nota: 'scegli prima il livello', stato: 'manca' };
+    if (l.dichiara) return L.haProva(stato, sit.id) ? { nota: 'so fare · con esempio', stato: 'ok' } : { nota: 'so fare · manca l\'esempio', stato: 'manca' };
+    return { nota: l.breve + ' · facoltativo', stato: 'ok' };
+  }
+
+  function dettaglioSituazione(sit) {
+    const r = stato.sofare[sit.id];
+    const l = livelloDi(sit);
+    const p = 'f-sf-' + sit.id + '-';
+    const parti = [
+      h('h3', { id: 'blocco-' + sit.id, tabindex: '-1', text: sit.domanda }),
+      l
+        ? h('p', { class: 'nota' }, 'Hai scelto: «' + l.testo + '». ',
+          h('button', { type: 'button', class: 'pulsante pulsante--testo', onclick: function () { vaiA('sofare', 'livelli'); } }, 'Cambia'))
+        : h('p', { class: 'nota' }, 'Prima scegli quanto lo sai fare. ',
+          h('button', { type: 'button', class: 'pulsante pulsante--testo', onclick: function () { vaiA('sofare', 'livelli'); } }, 'Vai alla scelta'))
+    ];
     if (l && l.dichiara) {
+      const avviso = h('p', { class: 'avviso', id: p + 'avviso', role: 'note', hidden: L.haProva(stato, sit.id) },
+        'Manca ancora un esempio: collega una cosa che hai raccontato o scrivilo qui sotto. Per ora nel bilancio la voce resta in sospeso.');
+      const aggiornaAvviso = function () {
+        avviso.hidden = L.haProva(stato, sit.id);
+        const b = $('sf-voce-' + sit.id);
+        if (b) { const n = notaSituazione(sit); b.querySelector('.ed__voce-nota').textContent = n.nota; b.classList.toggle('ed__voce--manca', n.stato === 'manca'); }
+      };
       parti.push(
         avviso,
-        campo({ id: p + 'esempio', etichetta: 'Un esempio concreto: quando l\'hai fatto e che cosa hai fatto?', area: true, valore: r.esempio,
-          aggiorna: function (v) { r.esempio = v; aggiornaAvviso(); } }),
-        conAzione.length ? h('div', { class: 'campo' },
-          h('label', { for: p + 'riprendi', text: 'Riprendi il testo da una tua esperienza' }),
-          h('select', { id: p + 'riprendi', onchange: function (ev) {
-            const sc = conAzione.find(function (x) { return x.id === ev.target.value; });
-            ev.target.value = '';
-            if (!sc) return;
-            const applica = function () {
-              r.esempio = sc.azione.trim();
-              if (r.esperienze.indexOf(sc.id) === -1) r.esperienze.push(sc.id);
-              modificato(); ridisegna(p + 'esempio');
-            };
-            if (pieno(r.esempio)) chiedi('Sostituire l\'esempio già scritto con il testo della scheda?', 'Sostituisci', applica);
-            else applica();
-          } },
-            h('option', { value: '', text: 'Scegli una scheda…' }),
-            conAzione.map(function (x) { return h('option', { value: x.id, text: pieno(x.titolo) ? x.titolo : 'Esperienza senza titolo' }); }))) : null,
         stato.esperienze.length
           ? gruppoScelte({
-            legenda: 'Collega una o più delle tue esperienze', nome: p + 'esperienze', multipla: true,
-            opzioni: stato.esperienze.map(function (e, i) { return { id: e.id, testo: e.titolo || 'Esperienza ' + (i + 1) }; }),
+            legenda: 'Dove l\'hai fatto? Collega una o più delle cose che hai raccontato', nome: p + 'esperienze', multipla: true,
+            opzioni: stato.esperienze.map(function (e) { return { id: e.id, testo: titoloVoce(e) }; }),
             valore: r.esperienze,
             aggiorna: function (id, attiva) {
               r.esperienze = r.esperienze.filter(function (x) { return x !== id; });
               if (attiva) r.esperienze.push(id);
-              aggiornaAvviso(); modificato();
+              modificato(); aggiornaAvviso();
             }
           })
-          : h('p', { class: 'nota' }, 'Non hai ancora esperienze da collegare. ',
-            h('button', { type: 'button', class: 'pulsante pulsante--testo', onclick: function () { vaiA('esperienze', 'elenco'); } }, 'Vai alle esperienze')),
-        campo({ id: p + 'come', etichetta: 'Come l\'hai imparato? Chi o che cosa ti ha aiutato?', area: true, valore: r.come, aggiorna: function (v) { r.come = v; } }));
+          : h('p', { class: 'nota' }, 'Non hai ancora raccontato cose che hai fatto. ',
+            h('button', { type: 'button', class: 'pulsante pulsante--testo', onclick: function () { vaiA('esperienze', 'elenco'); } }, 'Vai a «Che cosa hai fatto»')),
+        campo({ id: p + 'esempio', etichetta: 'Oppure scrivi un esempio: quando l\'hai fatto e che cosa hai fatto?', area: true, righe: 3, valore: r.esempio,
+          aggiorna: function (v) { r.esempio = v; aggiornaAvviso(); } }),
+        campo({ id: p + 'come', etichetta: 'Come l\'hai imparato? Chi o che cosa ti ha aiutato?', area: true, righe: 3, valore: r.come, aggiorna: function (v) { r.come = v; } }));
     } else if (l && l.id === 'non_ancora') {
-      parti.push(campo({ id: p + 'come', etichetta: 'Che cosa ti servirebbe per impararlo?', area: true, valore: r.come, aggiorna: function (v) { r.come = v; } }));
+      parti.push(campo({ id: p + 'come', etichetta: 'Che cosa ti servirebbe per impararlo?', area: true, righe: 3, valore: r.come, aggiorna: function (v) { r.come = v; } }));
     } else if (l && l.id === 'mai') {
-      parti.push(campo({ id: p + 'come', etichetta: 'Ti piacerebbe affrontarlo? In quale occasione?', area: true, valore: r.come, aggiorna: function (v) { r.come = v; } }));
+      parti.push(campo({ id: p + 'come', etichetta: 'Ti piacerebbe affrontarlo? In quale occasione?', area: true, righe: 3, valore: r.come, aggiorna: function (v) { r.come = v; } }));
     }
-    return h('section', { class: 'blocco', 'aria-labelledby': 'blocco-' + sit.id }, parti);
+    parti.push(esempio('Vedi un esempio', esempiPerIndirizzo(sit.esempi)));
+    parti.push(h('div', { class: 'ed__azioni-fine' },
+      h('button', { type: 'button', class: 'pulsante', onclick: function () { situazioneAperta = null; ridisegna('sf-voce-' + sit.id); } }, 'Fatto')));
+    return h('div', { class: 'ed__forma', role: 'group', 'aria-labelledby': 'blocco-' + sit.id }, parti);
   }
 
-  function schermataSofare() {
+  function schermataEsempi() {
+    const dichiarate = D.SITUAZIONI.filter(function (s) { const l = livelloDi(s); return l && l.dichiara; });
+    const senzaProva = dichiarate.filter(function (s) { return !L.haProva(stato, s.id); });
     const intro = [
-      h('p', { text: 'Sei domande sulle situazioni di lavoro più comuni. Per ognuna scegli la frase più vicina alla verità di oggi.' }),
-      aiuto('Se dici di saperlo fare, scrivi anche un esempio: senza esempio la voce resta in sospeso nel bilancio. Non c\'è una risposta giusta: «non l\'ho mai affrontato» è una risposta come le altre.')
+      h('p', { text: 'Per ogni cosa che dici di saper fare serve un esempio: collega una delle cose che hai raccontato oppure scrivilo con parole tue.' }),
+      aiuto(dichiarate.length
+        ? (senzaProva.length ? 'Ti manca l\'esempio per ' + senzaProva.length + (senzaProva.length === 1 ? ' situazione' : ' situazioni') + '. Per le altre puoi aggiungere, se vuoi, come hai imparato o che cosa ti servirebbe.'
+          : 'Hai un esempio per tutte le situazioni che dichiari di saper fare. Per le altre puoi aggiungere, se vuoi, una riga.')
+        : 'Non hai dichiarato di saper fare nessuna situazione: non serve nessun esempio. Puoi aggiungere una riga alle altre, se vuoi.')
     ];
-    const risposta = h('div', { class: 'blocchi' }, D.SITUAZIONI.map(bloccoSituazione));
-    return [testa(metaSchermata(), 'Che cosa sai fare, oggi?'), corpo(intro, risposta)];
+    if (!situazioneAperta && largo()) situazioneAperta = (senzaProva[0] || dichiarate[0] || D.SITUAZIONI[0]).id;
+    const aperta = D.SITUAZIONI.find(function (s) { return s.id === situazioneAperta; }) || null;
+    if (!aperta) situazioneAperta = null;
+    const risposta = elencoDettaglio({
+      aria: 'Le sei situazioni', prefisso: 'sf-voce-', aperta: situazioneAperta,
+      voci: D.SITUAZIONI.map(function (s) { const n = notaSituazione(s); return { id: s.id, titolo: s.verbo, nota: n.nota, stato: n.stato }; }),
+      apri: function (id) { situazioneAperta = id; ridisegna('blocco-' + id); },
+      chiudi: function () { const id = situazioneAperta; situazioneAperta = null; ridisegna('sf-voce-' + id); },
+      dettaglio: aperta ? dettaglioSituazione(aperta) : null,
+      vuoto: 'Scegli una situazione dall\'elenco.'
+    });
+    return [testa(metaSchermata(), 'Un esempio per ogni «so fare»'), corpoLargo(intro, risposta)];
   }
 
   // ---------- 04 Uno sguardo critico ----------
-  function schermataSguardo(g) {
-    const domanda = g.domanda;
-    const intro = [aiuto(g.aiuto), esempio('Vedi un esempio', h('p', { text: g.esempio }))];
-    const risposta = campo({ id: 'f-sg-' + g.id, etichettaDa: 'titolo-schermata', area: true, lungo: true, valore: stato.sguardo[g.id],
-      aggiorna: function (v) { stato.sguardo[g.id] = v; } });
-    return [testa(metaSchermata(), domanda), corpo(intro, risposta)];
+  // Le tre domande stanno insieme: gli id delle risposte (scuola, tirocinio, ancora) restano quelli di sempre.
+  function schermataSguardo() {
+    const intro = [
+      h('p', { text: 'Tre domande per guardare il tuo percorso con occhio critico. Puoi essere critico: questo bilancio non è una valutazione della scuola su di te.' }),
+      aiuto('Bastano poche righe. Un episodio preciso vale più di un elenco di aggettivi.')
+    ];
+    const risposta = h('div', { class: 'blocchi blocchi--tre' }, D.SGUARDO.map(function (g) {
+      return h('section', { class: 'blocco', 'aria-labelledby': 'blocco-sg-' + g.id },
+        h('h3', { id: 'blocco-sg-' + g.id, tabindex: '-1', text: g.domanda }),
+        h('p', { class: 'blocco__nota', text: g.aiuto }),
+        campo({ id: 'f-sg-' + g.id, etichettaDa: 'blocco-sg-' + g.id, area: true, righe: 6, valore: stato.sguardo[g.id], aggiorna: function (v) { stato.sguardo[g.id] = v; } }),
+        esempio('Vedi un esempio', h('p', { text: g.esempio })));
+    }));
+    return [testa(metaSchermata(), 'Uno sguardo critico'), corpoLargo(intro, risposta)];
   }
 
   // ---------- 05 Bilancio ----------
@@ -796,8 +958,8 @@
     switch (sez.id) {
       case 'percorso': return sch.id === 'chi' ? schermataChi() : schermataAnni();
       case 'esperienze': return schermataEsperienze();
-      case 'sofare': return schermataSofare();
-      case 'sguardo': return schermataSguardo(D.SGUARDO.find(function (g) { return g.id === sch.id; }));
+      case 'sofare': return sch.id === 'livelli' ? schermataLivelli() : schermataEsempi();
+      case 'sguardo': return schermataSguardo();
       case 'bilancio': return schermataBilancio();
       case 'orientamento': return sch.id === 'domande' ? schermataOrientamentoDomande() : schermataOrientamentoTesto();
     }

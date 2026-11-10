@@ -3,75 +3,60 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Bilancio di competenze</title>
-  <meta name="description" content="Che cosa hai imparato finora? Bilancio riflessivo delle competenze per gli studenti IeFP di tutti gli anni.">
+  <title>Percorsi per gli studenti</title>
+  <meta name="description" content="Diario di bordo del tirocinio, bilancio di competenze e curriculum: scegli da dove partire.">
   <meta name="theme-color" content="#FAF8F6">
   <link rel="preload" href="fonts/fira-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="fonts/anton-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="css/tokens.css">
-  <link rel="stylesheet" href="css/stile.css?v=20261105-2">
-  <script src="js/config.js" defer></script>
-  <script src="js/dati.js" defer></script>
-  <script src="js/bilancio.js" defer></script>
-  <script src="js/docx.js" defer></script>
-  <script src="js/pdf.js" defer></script>
-  <script src="js/app.js" defer></script>
+  <link rel="stylesheet" href="css/stile.css?v=20261110-1">
 </head>
 <body>
   <a class="salta" href="#principale">Vai al contenuto</a>
 
   <header class="testata">
     <div class="testata__riga">
-      <button type="button" class="testata__nome" id="vai-home">Bilancio di competenze</button>
-      <span class="meta testata__salvato" id="salvato" role="status" aria-live="polite"></span>
-      <button type="button" class="pulsante pulsante--secondario pulsante--piccolo" id="apri-risposte">Salva e stampa</button>
-    </div>
-    <div class="avanzamento" id="avanzamento" hidden><div class="avanzamento__barra" id="barra"></div></div>
-    <div class="tappa-mobile" id="tappa-mobile" hidden>
-      <button type="button" class="pulsante pulsante--secondario pulsante--piccolo" id="apri-indice">Indice</button>
-      <span class="meta" id="tappa-nome"></span>
-      <span class="meta" id="tappa-stato"></span>
+      <span class="testata__nome testata__nome--fermo">Percorsi per gli studenti</span>
     </div>
   </header>
 
-  <main id="principale" tabindex="-1"></main>
+  <main id="principale" tabindex="-1">
+    <div class="home home--percorsi">
+      <h1>Cosa vuoi fare oggi?</h1>
+      <p class="home__sottotitolo">Scegli da dove partire.</p>
+      <p class="home__testo misura">Tre strumenti per raccontare quello che impari, durante gli anni di formazione. Ognuno salva il tuo lavoro su questo dispositivo e puoi riprenderlo quando vuoi. Il curriculum può prendere i dati dal bilancio e dal diario.</p>
 
-  <dialog id="dialogo-risposte" aria-labelledby="dialogo-risposte-titolo">
-    <h2 id="dialogo-risposte-titolo">Salva e stampa</h2>
-    <p id="testo-dialogo">Sono salvate solo su questo dispositivo, in questo browser. Nessun dato viene inviato a un server.</p>
-    <div id="esito-dialogo"></div>
-    <p>Per riprendere il lavoro su un altro dispositivo scarica una copia e poi caricala da lì.</p>
-    <div class="dialogo__azioni">
-      <button type="button" class="pulsante" id="invia" hidden>Invia al docente</button>
-      <button type="button" class="pulsante" id="scarica">Scarica una copia</button>
-      <button type="button" class="pulsante pulsante--secondario" id="carica">Carica una copia</button>
-      <button type="button" class="pulsante pulsante--secondario" id="stampa-dialogo">Stampa il bilancio</button>
-      <button type="button" class="pulsante pulsante--secondario" id="stampa-cv-dialogo">Stampa il curriculum</button>
+      <ul class="percorsi" aria-label="I percorsi">
+        <li>
+          <a class="percorso" href="diario/">
+            <span class="meta percorso__num">01 · Una scheda a settimana</span>
+            <span class="percorso__titolo">Diario di bordo</span>
+            <span class="percorso__testo">Durante il tirocinio scrivi che cosa hai fatto, che cosa hai imparato e che cosa è stato difficile.</span>
+            <span class="percorso__apri">Apri il diario</span>
+          </a>
+        </li>
+        <li>
+          <a class="percorso" href="bilancio/">
+            <span class="meta percorso__num">02 · Circa tre ore</span>
+            <span class="percorso__titolo">Bilancio di competenze</span>
+            <span class="percorso__testo">Ricostruisci le tue esperienze, riconosci quello che sai fare e quello che devi ancora imparare.</span>
+            <span class="percorso__apri">Apri il bilancio</span>
+          </a>
+        </li>
+        <li>
+          <a class="percorso" href="cv/">
+            <span class="meta percorso__num">03 · Circa mezz'ora</span>
+            <span class="percorso__titolo">Curriculum</span>
+            <span class="percorso__testo">Il foglio da consegnare a un'azienda, da scaricare in Word o in PDF.</span>
+            <span class="percorso__apri">Apri il curriculum</span>
+          </a>
+        </li>
+      </ul>
+
+      <p class="nota">Se usi un computer condiviso, al termine scarica una copia del tuo lavoro e cancellalo da questo browser.</p>
     </div>
-    <p class="nota">Se usi un computer condiviso, al termine scarica la copia e poi cancella le risposte da questo browser.</p>
-    <div class="dialogo__azioni">
-      <button type="button" class="pulsante pulsante--secondario pulsante--piccolo" id="cancella">Cancella tutte le risposte</button>
-      <button type="button" class="pulsante pulsante--testo" id="chiudi-risposte">Chiudi</button>
-    </div>
-    <input type="file" id="file-copia" accept="application/json,.json" hidden>
-  </dialog>
+  </main>
 
-  <dialog id="dialogo-indice" class="indice-dialogo" aria-labelledby="dialogo-indice-titolo">
-    <h2 id="dialogo-indice-titolo">Indice</h2>
-    <ol id="indice-elenco"></ol>
-    <button type="button" class="pulsante pulsante--testo" id="chiudi-indice">Chiudi</button>
-  </dialog>
-
-  <dialog id="dialogo-messaggio" aria-labelledby="messaggio-testo">
-    <p id="messaggio-testo"></p>
-    <div class="dialogo__azioni">
-      <button type="button" class="pulsante pulsante--secondario" id="messaggio-annulla">Annulla</button>
-      <button type="button" class="pulsante" id="messaggio-ok">Va bene</button>
-    </div>
-  </dialog>
-
-  <div id="stampa"></div>
-
-  <noscript><p style="padding:20px">Per compilare il bilancio serve JavaScript attivo nel browser.</p></noscript>
+  <noscript><p style="padding:20px">Questa pagina funziona anche senza JavaScript, ma i tre percorsi ne hanno bisogno per essere compilati.</p></noscript>
 </body>
 </html>

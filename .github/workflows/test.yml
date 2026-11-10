@@ -17,9 +17,11 @@ jobs:
           node --check js/config.js
           node --check js/dati.js
           node --check js/bilancio.js
+          node --check js/cv.js
           node --check js/docx.js
           node --check js/pdf.js
           node --check js/app.js
+          node --check cv/js/app.js
           node --check diario/js/diario.js
           node --check diario/js/app.js
       - name: Test logica e contenuti

@@ -133,7 +133,7 @@
     }
   ];
 
-  // Sette sezioni (design.md §6.2, più il curriculum). Ogni sezione ha una o più schermate:
+  // Sei sezioni (design.md §6.2). Il curriculum è un sito a parte (cv/). Ogni sezione ha una o più schermate:
   // una sola domanda principale per schermata.
   const SEZIONI = [
     {
@@ -164,18 +164,6 @@
       id: 'bilancio',
       titolo: 'Bilancio',
       schermate: [{ id: 'dossier', titolo: 'Il tuo bilancio' }]
-    },
-    {
-      id: 'cv',
-      titolo: 'Curriculum vitae',
-      schermate: [
-        { id: 'contatti', titolo: 'I tuoi dati' },
-        { id: 'profilo', titolo: 'Che lavoro cerchi' },
-        { id: 'formazione', titolo: 'La tua formazione' },
-        { id: 'esperienze', titolo: 'Le esperienze di lavoro' },
-        { id: 'competenze', titolo: 'Competenze, lingue e altro' },
-        { id: 'anteprima', titolo: 'Il tuo curriculum' }
-      ]
     },
     {
       id: 'orientamento',

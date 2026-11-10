@@ -1,12 +1,12 @@
 # Guida breve al Bilancio di competenze
 
-Percorso per gli studenti IeFP di tutti gli anni, in circa tre ore e in sette sezioni. Le schermate qui sotto mostrano uno **studente di prova** (Marco Rossi, Informatica) con il percorso già compilato. Per provarlo da soli: «Salva e stampa», poi «Carica una copia» e scegliere [`guida/studente-di-prova.json`](guida/studente-di-prova.json). **Non premere «Invia al docente» con lo studente di prova**: la riga arriverebbe nel foglio vero.
+Percorso per gli studenti IeFP di tutti gli anni, in circa tre ore e in sei sezioni (il curriculum è un sito a parte, `/cv/`: le schermate di questa guida sono precedenti alla separazione e lo mostrano ancora dentro il bilancio). Le schermate qui sotto mostrano uno **studente di prova** (Marco Rossi, Informatica) con il percorso già compilato. Per provarlo da soli: «Salva e stampa», poi «Carica una copia» e scegliere [`guida/studente-di-prova.json`](guida/studente-di-prova.json). **Non premere «Invia al docente» con lo studente di prova**: la riga arriverebbe nel foglio vero.
 
 **Come funziona in generale.** Le risposte si salvano da sole nel browser e ci si può tornare in ogni momento. Nessuna domanda è obbligatoria e si può sempre andare avanti. Non ci sono voti né punteggi.
 
 ## Home
 
-Titolo, tre righe di spiegazione e le sette sezioni. Chi ha già iniziato trova «Riprendi da dove eri».
+Titolo, tre righe di spiegazione e le sezioni. Chi ha già iniziato trova «Riprendi da dove eri».
 
 ![Home](guida/01-home.png)
 

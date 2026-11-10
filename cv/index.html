@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Curriculum</title>
+  <meta name="description" content="Il tuo curriculum: scrivilo con parole tue e scaricalo in Word o in PDF.">
+  <meta name="theme-color" content="#FAF8F6">
+  <link rel="preload" href="../fonts/fira-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../fonts/anton-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="../css/tokens.css">
+  <link rel="stylesheet" href="../css/stile.css?v=20261110-1">
+  <script src="../js/dati.js" defer></script>
+  <script src="../js/bilancio.js" defer></script>
+  <script src="../js/cv.js" defer></script>
+  <script src="../js/docx.js" defer></script>
+  <script src="../js/pdf.js" defer></script>
+  <script src="js/app.js" defer></script>
+</head>
+<body>
+  <a class="salta" href="#principale">Vai al contenuto</a>
+
+  <header class="testata">
+    <div class="testata__riga">
+      <a class="testata__tutti" href="../">Tutti i percorsi</a>
+      <button type="button" class="testata__nome" id="vai-home">Curriculum</button>
+      <span class="meta testata__salvato" id="salvato" role="status" aria-live="polite"></span>
+      <button type="button" class="pulsante pulsante--secondario pulsante--piccolo" id="apri-risposte">Salva e stampa</button>
+    </div>
+    <div class="avanzamento" id="avanzamento" hidden><div class="avanzamento__barra" id="barra"></div></div>
+    <div class="tappa-mobile" id="tappa-mobile" hidden>
+      <button type="button" class="pulsante pulsante--secondario pulsante--piccolo" id="apri-indice">Indice</button>
+      <span class="meta" id="tappa-nome"></span>
+      <span class="meta" id="tappa-stato"></span>
+    </div>
+  </header>
+
+  <main id="principale" tabindex="-1"></main>
+
+  <dialog id="dialogo-risposte" aria-labelledby="dialogo-risposte-titolo">
+    <h2 id="dialogo-risposte-titolo">Salva e stampa</h2>
+    <p>Il curriculum è salvato solo su questo dispositivo, in questo browser. Contiene recapiti personali e foto: nessun dato viene inviato a un server, né al docente.</p>
+    <p>Per riprendere il lavoro su un altro dispositivo scarica una copia e poi caricala da lì. Per consegnarlo, scaricalo in Word o in PDF dall'ultimo passo.</p>
+    <div class="dialogo__azioni">
+      <button type="button" class="pulsante" id="scarica">Scarica una copia</button>
+      <button type="button" class="pulsante pulsante--secondario" id="carica">Carica una copia</button>
+      <button type="button" class="pulsante pulsante--secondario" id="stampa-dialogo">Stampa il curriculum</button>
+    </div>
+    <p class="nota">Se usi un computer condiviso, al termine scarica la copia e poi cancella il curriculum da questo browser.</p>
+    <div class="dialogo__azioni">
+      <button type="button" class="pulsante pulsante--secondario pulsante--piccolo" id="cancella">Cancella il curriculum</button>
+      <button type="button" class="pulsante pulsante--testo" id="chiudi-risposte">Chiudi</button>
+    </div>
+    <input type="file" id="file-copia" accept="application/json,.json" hidden>
+  </dialog>
+
+  <dialog id="dialogo-indice" class="indice-dialogo" aria-labelledby="dialogo-indice-titolo">
+    <h2 id="dialogo-indice-titolo">Indice</h2>
+    <ol id="indice-elenco"></ol>
+    <button type="button" class="pulsante pulsante--testo" id="chiudi-indice">Chiudi</button>
+  </dialog>
+
+  <dialog id="dialogo-messaggio" aria-labelledby="messaggio-testo">
+    <p id="messaggio-testo"></p>
+    <div class="dialogo__azioni">
+      <button type="button" class="pulsante pulsante--secondario" id="messaggio-annulla">Annulla</button>
+      <button type="button" class="pulsante" id="messaggio-ok">Va bene</button>
+    </div>
+  </dialog>
+
+  <div id="stampa"></div>
+
+  <noscript><p style="padding:20px">Per compilare il curriculum serve JavaScript attivo nel browser.</p></noscript>
+</body>
+</html>

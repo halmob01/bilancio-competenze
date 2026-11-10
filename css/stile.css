@@ -55,6 +55,13 @@ a { color: inherit; }
 }
 .testata__nome { font-family: var(--f-sans); font-weight: 600; font-size: 15px; letter-spacing: .01em; background: none; border: 0; padding: 10px 0; cursor: pointer; min-height: 44px; }
 .testata__salvato { margin-left: auto; text-align: right; }
+.testata__nome--fermo { cursor: default; display: inline-flex; align-items: center; }
+/* Link discreto alla pagina iniziale con i tre percorsi. */
+.testata__tutti {
+  font-size: 14px; color: var(--bc-ink-60); text-decoration: underline; text-underline-offset: 3px;
+  display: inline-flex; align-items: center; min-height: 44px; padding-right: 8px; white-space: nowrap;
+}
+.testata__tutti:hover { color: var(--bc-ink); text-decoration-thickness: 2px; }
 .avanzamento { height: 4px; background: var(--bc-red); position: relative; margin: 12px max(var(--m), calc((100% - var(--max-lavoro)) / 2 + var(--m))); }
 .avanzamento__barra { position: absolute; inset: 0 auto 0 0; background: var(--bc-red); transition: width var(--durata) ease; }
 .avanzamento__nodo { position: absolute; top: 50%; width: 18px; height: 18px; border: 5px solid var(--bc-red); border-radius: 50%; background: var(--bc-paper); box-shadow: none; transform: translate(-50%, -50%); pointer-events: none; }
@@ -101,12 +108,31 @@ a { color: inherit; }
 @media (min-width: 768px) {
   .home__indice ol { grid-template-columns: repeat(2, 1fr); column-gap: var(--gap); }
 }
+/* ---------- Pagina iniziale: i tre percorsi ---------- */
+.home--percorsi h1 { max-width: 12ch; }
+.percorsi { list-style: none; padding: 0; display: grid; gap: var(--gap); margin: 8px 0 32px; }
+.percorso {
+  display: flex; flex-direction: column; gap: 10px; height: 100%;
+  background: var(--bc-white); border: 1.5px solid var(--bc-ink); border-radius: var(--radius-card);
+  padding: 22px 22px 20px; text-decoration: none; color: var(--bc-ink);
+  transition: background var(--durata);
+}
+.percorso:hover { background: var(--bc-mist); }
+.percorso__titolo { font-size: var(--t-domanda); font-weight: 600; line-height: 1.12; }
+.percorso__testo { max-width: 40ch; }
+.percorso__apri { margin-top: auto; padding-top: 10px; font-weight: 600; text-decoration: underline; text-underline-offset: 4px; }
+.percorso:hover .percorso__apri { text-decoration-thickness: 2px; }
+@media (min-width: 768px) {
+  .percorsi { grid-template-columns: repeat(3, 1fr); }
+}
+
 /* Da 1000px la home è a due colonne: presentazione a sinistra, indice delle sezioni a destra. */
 @media (min-width: 1000px) {
   .home { display: grid; grid-template-columns: 7fr 5fr; column-gap: clamp(48px, 7vw, 112px); align-content: start; }
   .home > * { grid-column: 1; }
   .home > .home__indice { grid-column: 2; grid-row: 1 / span 5; margin-top: 0; align-self: start; }
   .home__indice ol { grid-template-columns: 1fr; }
+  .home--percorsi { display: block; }
 }
 
 /* ---------- Area di lavoro ---------- */
@@ -416,6 +442,16 @@ dialog > * + * { margin-top: 14px; }
 .anni .campo textarea { min-height: 96px; }
 .coppia { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; }
 .coppia:has(> .campo:only-child) { grid-template-columns: 1fr; }
+
+/* Sul telefono la testata di lavoro è piena: il link ai percorsi sta nella schermata iniziale di ogni sito. */
+.home__tutti { display: none; }
+@media (max-width: 639px) {
+  .testata__tutti { display: none; }
+  .home__tutti {
+    display: inline-flex; align-items: center; min-height: 44px; margin-bottom: 12px;
+    font-size: 14px; color: var(--bc-ink-60); text-underline-offset: 3px;
+  }
+}
 
 @media (max-width: 479px) {
   .testata__riga { gap: 8px; }

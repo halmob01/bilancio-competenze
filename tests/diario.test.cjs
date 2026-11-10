@@ -81,19 +81,24 @@ test('il diario non invia nulla in rete e non interpreta i testi come HTML', () 
   });
 });
 
-test('il diario è indipendente: non legge il bilancio; sono il bilancio e il curriculum a importarlo', () => {
+test('il diario è indipendente: non legge il bilancio; sono il bilancio e il curriculum a importarlo (il solo link è alla pagina iniziale)', () => {
   assert.equal(D.CHIAVE, 'diario-tirocinio-v1');
   ['diario/js/diario.js', 'diario/js/app.js', 'diario/index.html'].forEach((f) => {
     const t = fs.readFileSync(path.join(__dirname, '..', f), 'utf8');
     assert.ok(!/bilancio-competenze-v1|BC_LOGICA|BC_DATI|js\/bilancio\.js/.test(t), f + ' non dipende dal bilancio');
   });
   const app = fs.readFileSync(path.join(__dirname, '../js/app.js'), 'utf8');
+  const cv = fs.readFileSync(path.join(__dirname, '../cv/js/app.js'), 'utf8');
   assert.ok(app.includes("'diario-tirocinio-v1'") && app.includes("const CHIAVE = 'bilancio-competenze-v1'"));
+  assert.ok(cv.includes("'diario-tirocinio-v1'"));
   // importa nel bilancio (esperienze) e nel curriculum (esperienze di lavoro), anche da file
-  assert.ok(/riquadroDiario\(\{[^]*?Crea la scheda/.test(app) && /riquadroDiario\(\{[^]*?Aggiungi al curriculum/.test(app));
+  assert.ok(/riquadroDiario\(\{[^]*?Crea la scheda/.test(app) && /riquadroDiario\(\{[^]*?Aggiungi al curriculum/.test(cv));
   assert.ok(app.includes('scegliFileDiario') && app.includes('diarioCaricato'));
+  assert.ok(cv.includes('scegliFileDiario') && cv.includes('diarioCaricato'));
+  // dal diario l'unico collegamento visibile è «Tutti i percorsi», verso la pagina iniziale: mai direttamente al bilancio o al curriculum
   const html = fs.readFileSync(path.join(__dirname, '../diario/index.html'), 'utf8');
-  assert.ok(!/href="\.\.\/(index\.html)?"/.test(html) && !/bilancio-competenze\//.test(html), 'nessun collegamento visibile al bilancio');
+  assert.deepEqual(html.match(/href="\.\.\/"/g), ['href="../"']);
+  assert.ok(!/href="\.\.\/(bilancio|cv)\//.test(html) && !/bilancio-competenze\//.test(html), 'nessun collegamento diretto al bilancio o al curriculum');
 });
 
 test('il diario non ha più le ore: 8 ore al giorno, sempre', () => {

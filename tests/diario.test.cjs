@@ -133,3 +133,12 @@ test('due tirocini nella stessa azienda in anni diversi restano due proposte dis
   const tanti = L.esperienzeDalDiario({ tirocini: Array.from({ length: 7 }, (_, i) => ({ azienda: 'Az' + i, settimane: [{ fatto: 'x' }] })) });
   assert.equal(tanti.length, 7);
 });
+
+test('la traccia con i tre cerchi c\'è anche nella prima pagina del diario', () => {
+  const app = fs.readFileSync(path.join(__dirname, '../diario/js/app.js'), 'utf8');
+  const fn = app.slice(app.indexOf('function aggiornaTestata'), app.indexOf('// ---------- Elementi ricorrenti'));
+  assert.ok(fn.includes("$('avanzamento').hidden = false;"), 'la traccia non si nasconde nella home');
+  assert.ok(!/avanzamento'\)\.hidden = !vista/.test(fn));
+  // nella home nessun cerchio è pieno e la barra è a zero
+  assert.ok(fn.includes("vista ? ((vista.s + 1) / SEZIONI.length * 100) + '%' : '0%'"));
+});

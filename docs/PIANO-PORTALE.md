@@ -259,6 +259,8 @@ Oggi sul server **non c'è nessun backup dei dati**. Per il nostro progetto, pri
 
 Ogni studente ritrova il suo lavoro anche nella **sua cartella sui computer della scuola**, già pronto da aprire, senza fare niente.
 
+**Chiarimento (12 novembre 2026).** Gli studenti lavorano **sempre e solo sul server online** (`afolmet-rozzano.sytes.net`): dal telefono in tirocinio, da casa e dai PC della scuola (aprendo il portale nel browser). Il **computer della scuola con le cartelle degli studenti non è su Internet e non deve esserlo**: riceve soltanto la copia notturna. Funziona perché il server online sta anche dentro la rete della scuola (dall'interno il suo nome porta all'indirizzo `192.168.10.24`, nella stessa rete dei PC): la copia passa dentro la scuola, senza aprire niente verso l'esterno, sia che la mandi il server online sia che la vada a prendere il computer interno.
+
 - **Una copia, in un solo verso**: dal portale alla cartella. Il portale resta la fonte; quello che lo studente cambia nella cartella non torna indietro (lo dice un file `LEGGIMI` nella cartella).
 - **Cosa ci mette**, in una sottocartella `Portale` della cartella dello studente: diario, bilancio, portfolio e curriculum in **PDF** (e il curriculum anche in **Word**), le **foto** del portfolio e un file con tutti i dati (lo stesso del «pacchetto completo», §9). I PDF e il Word si generano sul server con lo stesso codice dei siti (`js/pdf.js` e `js/docx.js` funzionano anche in Node; le correzioni scritte a mano sull'anteprima del curriculum restano solo nel browser).
 - **Quando**: ogni notte, e solo per chi ha cambiato qualcosa dall'ultima volta.

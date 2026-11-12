@@ -100,7 +100,7 @@ Ripreso dal laboratorio, che funziona già con studenti veri.
 
 Sicurezza: permesso firmato in un cookie `HttpOnly`, `Secure`, `SameSite=Strict`; blocco dopo troppi tentativi sbagliati; il codice in chiaro solo dove serve per ristampare i cartellini.
 
-**Decisione del 12 novembre 2026: niente PIN per ora**, basta il codice del cartellino (più semplice per gli studenti). Per contenere il rischio di un cartellino fotografato senza aggiungere passaggi: codice di 6 caratteri dopo la sigla della classe (praticamente impossibile da indovinare, con il blocco dei tentativi); nel pannello il docente vede l'ultimo accesso e i dispositivi collegati di ogni studente e può scollegarli rigenerando il codice; per le cancellazioni c'è un «cestino» di 30 giorni, così un dispetto si annulla. Il PIN (4 cifre, chiesto solo su un dispositivo nuovo) resta pronto da aggiungere se servirà: il resto del sistema non cambia.
+**Decisione del 12 novembre 2026: niente PIN per ora**, basta il codice del cartellino (più semplice per gli studenti). Per contenere il rischio di un cartellino fotografato senza aggiungere passaggi: codice di 6 caratteri dopo la sigla della classe (praticamente impossibile da indovinare, con il blocco dei tentativi); nel pannello il docente vede l'ultimo accesso e i dispositivi collegati di ogni studente e può scollegarli rigenerando il codice; per le cancellazioni c'è un **cestino di 30 giorni**: quello che viene cancellato (un'attività con le sue foto, una settimana del diario, un'esperienza, un intero documento) resta recuperabile per 30 giorni **dallo studente e dal docente**, così un dispetto o un errore si annulla. Dopo 30 giorni si cancella davvero. Il PIN (4 cifre, chiesto solo su un dispositivo nuovo) resta pronto da aggiungere se servirà: il resto del sistema non cambia.
 
 ## 5. Dati
 
@@ -212,6 +212,7 @@ Un pannello semplice, da PC:
 - **Classi e studenti**: crea, importa un elenco incollato, stampa i cartellini con QR, rigenera i codici, sposta da una classe all'altra a inizio anno.
 - **Avanzamento**: per ogni studente, a che punto è con diario, bilancio, portfolio e curriculum (completo, in corso, da iniziare). Niente punteggi né classifiche.
 - **Lettura**: il lavoro dello studente in sola lettura (senza i dati di contatto del curriculum).
+- **Cestino**: le cose cancellate dagli studenti della classe negli ultimi 30 giorni, con chi le ha cancellate e quando; il docente le ripristina con un clic.
 - **Conferma delle attività del portfolio**: «ho visto questo lavoro». È la conferma di un fatto, non un voto: resta coerente con il bilancio non valutativo.
 - **Esportazione** della classe (riepilogo in foglio di calcolo): quando c'è, il **Foglio Google può andare in pensione**. Fino ad allora l'invio di oggi continua a funzionare.
 

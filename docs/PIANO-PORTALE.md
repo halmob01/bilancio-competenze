@@ -90,7 +90,12 @@ Ripreso dal laboratorio, che funziona già con studenti veri.
 **Studenti** (niente email, niente password da ricordare):
 - Il docente prepara la classe (nome e cognome, classe, indirizzo, anno) e stampa i **cartellini**: nome, classe, codice personale scritto (per esempio `3ELA-K7Q2`, senza lettere che si confondono) e **QR**.
 - Lo studente inquadra il QR con la fotocamera del telefono → si apre il portale già dentro. Il codice viaggia nella parte dell'indirizzo dopo `#`, che non finisce nei registri del server.
-- Il telefono resta collegato fino al 31 agosto. Dal PC della scuola si scrive il codice; c'è sempre «Esci», e sui PC condivisi si esce da soli dopo un po' di inattività.
+- Il telefono resta collegato fino al 31 agosto.
+- **Dai PC della scuola**, per chi preferisce lavorare con tastiera e schermo grande, tre modi:
+  1. **QR sullo schermo** (consigliato): il PC mostra un QR, lo studente lo inquadra con il telefono su cui è già entrato e il PC si collega, come WhatsApp Web. Niente da digitare, il codice non compare sullo schermo;
+  2. **il codice del cartellino**, scritto a mano, per chi non ha il telefono con sé;
+  3. il **PIN**, se un giorno lo aggiungeremo (§ decisione qui sotto).
+  Sui PC il collegamento dura solo finché il browser è aperto, si chiude da solo dopo un periodo di inattività e «Esci» è sempre in vista. Uscendo si può scegliere di togliere anche la copia del lavoro salvata in quel browser.
 - **Prima volta in aula, senza cartellini**: QR della classe alla lavagna (scade dopo 5 minuti), lo studente sceglie il suo nome, il docente conferma con un clic. Finché non è confermato, il lavoro resta solo sul telefono.
 - Cartellino perso o fotografato da un compagno: il docente **rigenera** il codice, il vecchio smette di funzionare, il lavoro resta.
 
@@ -253,6 +258,20 @@ Oggi sul server **non c'è nessun backup dei dati**. Per il nostro progetto, pri
 - **fuori dal server** (un altro disco, un NAS, un altro computer della scuola): chi e dove lo decide il collega;
 - una **prova di ripristino** all'inizio e una volta all'anno: un backup mai provato non è un backup.
 
+## 14 bis. Copia nelle cartelle personali della rete della scuola
+
+Ogni studente ritrova il suo lavoro anche nella **sua cartella sui computer della scuola**, già pronto da aprire, senza fare niente.
+
+- **Una copia, in un solo verso**: dal portale alla cartella. Il portale resta la fonte; quello che lo studente cambia nella cartella non torna indietro (lo dice un file `LEGGIMI` nella cartella).
+- **Cosa ci mette**, in una sottocartella `Portale` della cartella dello studente: diario, bilancio, portfolio e curriculum in **PDF** (e il curriculum anche in **Word**), le **foto** del portfolio e un file con tutti i dati (lo stesso del «pacchetto completo», §9). I PDF e il Word si generano sul server con lo stesso codice dei siti (`js/pdf.js` e `js/docx.js` funzionano anche in Node; le correzioni scritte a mano sull'anteprima del curriculum restano solo nel browser).
+- **Quando**: ogni notte, e solo per chi ha cambiato qualcosa dall'ultima volta.
+- **Dove scrive**: **solo** dentro la sottocartella `Portale`. Non legge, non cambia e non cancella niente altro nella cartella dello studente.
+- **Come**: un'attività programmata sul server del portale che raggiunge la condivisione di rete delle cartelle degli studenti con un **account di servizio** che può scrivere solo lì. In alternativa, se chi gestisce la rete preferisce, uno script sul server delle cartelle che **va a prendere** i file dal portale con una chiave sua. La scelta dipende da com'è fatta la rete (vedi le domande sotto).
+- **Abbinamento**: per ogni studente il portale deve sapere il nome della sua cartella di rete (di solito il suo nome utente di Windows). Lo si inserisce importando l'elenco della classe, una volta all'anno.
+- **I docenti** che oggi leggono le cartelle degli studenti vedranno anche questa copia: va detto nell'informativa (§13).
+
+Domande per chi gestisce la rete della scuola: dove stanno le cartelle degli studenti (quale server, Windows o NAS, e il percorso della condivisione); come si chiamano gli account degli studenti; se il server del portale può raggiungere quella condivisione; se si può creare un account di servizio che scriva solo nelle sottocartelle `Portale`.
+
 ## 15. Fasi
 
 Ogni fase si chiude con test automatici, prova nel browser su telefono e PC e documentazione aggiornata. Dimensione: S = pochi giorni di lavoro, M = una o due settimane, L = di più.
@@ -265,6 +284,7 @@ Ogni fase si chiude con test automatici, prova nel browser su telefono e PC e do
 | **F3 Competenze** | catalogo dagli allegati regionali; frasi semplici riviste dai docenti; uso in portfolio, bilancio e curriculum | ogni indirizzo e anno ha il suo elenco, approvato da un docente dell'indirizzo | allegati B2; docenti | M |
 | **F4 Lingue** | testi in file per lingua; inglese e arabo (con RTL); curriculum anche in inglese | un'intera sessione si fa in arabo e in inglese; il test delle frasi mancanti è verde | (meglio prima di F2) | M |
 | **F5 Docenti** | conferme delle attività; esportazione della classe; lettura dei documenti; pensione del Foglio Google | un docente segue la classe senza il Foglio | F1, F2 | M |
+| **F5 bis Copia nelle cartelle** | attività notturna che scrive PDF, Word, foto e dati nella cartella di rete di ogni studente; abbinamento studente-cartella | uno studente apre la sua cartella da un PC della scuola e trova il suo lavoro aggiornato alla sera prima | F1, F2; chi gestisce la rete | M |
 | **F6 Rifinitura** | prove con studenti per indirizzo; tempi reali; accessibilità; guida per studenti e docenti | dati delle prove raccolti e problemi principali risolti | tutto | M |
 
 **Ordine consigliato**: F0 → F1 → **F4 prima di F2** (così il portfolio nasce già tradotto) → F2 → F3 (può partire in parallelo appena arrivano gli allegati) → F5 → F6. Le domande e i testi di ogni sito si rifiniscono in parallelo con i docenti.
@@ -286,7 +306,7 @@ Ogni fase si chiude con test automatici, prova nel browser su telefono e PC e do
 
 ## 17. Decisioni da prendere
 
-Già presa: accesso con il solo codice del cartellino, senza PIN (§4).
+Già prese: accesso con il solo codice del cartellino, senza PIN (§4); accesso anche dai PC della scuola, con il QR sullo schermo o il codice (§4); copia notturna del lavoro di ogni studente nella sua cartella di rete (§14 bis).
 
 
 1. **Percorso dei siti** sul server (la cartella `catalfamo`: percorso esatto) e indirizzo pubblico (resta `sytes.net` o un sottodominio di AFOL?).

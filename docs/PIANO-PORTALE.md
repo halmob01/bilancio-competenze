@@ -91,10 +91,7 @@ Ripreso dal laboratorio, che funziona già con studenti veri.
 - Il docente prepara la classe (nome e cognome, classe, indirizzo, anno) e stampa i **cartellini**: nome, classe, codice personale scritto (per esempio `3ELA-K7Q2`, senza lettere che si confondono) e **QR**.
 - Lo studente inquadra il QR con la fotocamera del telefono → si apre il portale già dentro. Il codice viaggia nella parte dell'indirizzo dopo `#`, che non finisce nei registri del server.
 - Il telefono resta collegato fino al 31 agosto.
-- **Dai PC della scuola**, per chi preferisce lavorare con tastiera e schermo grande, tre modi:
-  1. **QR sullo schermo** (consigliato): il PC mostra un QR, lo studente lo inquadra con il telefono su cui è già entrato e il PC si collega, come WhatsApp Web. Niente da digitare, il codice non compare sullo schermo;
-  2. **il codice del cartellino**, scritto a mano, per chi non ha il telefono con sé;
-  3. il **PIN**, se un giorno lo aggiungeremo (§ decisione qui sotto).
+- **Dai PC della scuola**, per chi preferisce lavorare con tastiera e schermo grande, si entra con il **codice identificativo del cartellino**, scritto nel campo di accesso. In più, per comodità, il PC può mostrare un **QR sullo schermo** da inquadrare con il telefono su cui lo studente è già entrato (come WhatsApp Web): niente da digitare. Nessun PIN.
   Sui PC il collegamento dura solo finché il browser è aperto, si chiude da solo dopo un periodo di inattività e «Esci» è sempre in vista. Uscendo si può scegliere di togliere anche la copia del lavoro salvata in quel browser.
 - **Prima volta in aula, senza cartellini**: QR della classe alla lavagna (scade dopo 5 minuti), lo studente sceglie il suo nome, il docente conferma con un clic. Finché non è confermato, il lavoro resta solo sul telefono.
 - Cartellino perso o fotografato da un compagno: il docente **rigenera** il codice, il vecchio smette di funzionare, il lavoro resta.
@@ -306,7 +303,7 @@ Ogni fase si chiude con test automatici, prova nel browser su telefono e PC e do
 
 ## 17. Decisioni da prendere
 
-Già prese: accesso con il solo codice del cartellino, senza PIN (§4); accesso anche dai PC della scuola, con il QR sullo schermo o il codice (§4); copia notturna del lavoro di ogni studente nella sua cartella di rete (§14 bis).
+Già prese: accesso con il solo codice del cartellino, senza PIN (§4); accesso anche dai PC della scuola con il codice identificativo del cartellino, senza PIN (§4); copia notturna del lavoro di ogni studente nella sua cartella di rete (§14 bis).
 
 
 1. **Percorso dei siti** sul server (la cartella `catalfamo`: percorso esatto) e indirizzo pubblico (resta `sytes.net` o un sottodominio di AFOL?).

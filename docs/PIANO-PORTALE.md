@@ -100,6 +100,8 @@ Ripreso dal laboratorio, che funziona già con studenti veri.
 
 Sicurezza: permesso firmato in un cookie `HttpOnly`, `Secure`, `SameSite=Strict`; blocco dopo troppi tentativi sbagliati; il codice in chiaro solo dove serve per ristampare i cartellini.
 
+**Decisione del 12 novembre 2026: niente PIN per ora**, basta il codice del cartellino (più semplice per gli studenti). Per contenere il rischio di un cartellino fotografato senza aggiungere passaggi: codice di 6 caratteri dopo la sigla della classe (praticamente impossibile da indovinare, con il blocco dei tentativi); nel pannello il docente vede l'ultimo accesso e i dispositivi collegati di ogni studente e può scollegarli rigenerando il codice; per le cancellazioni c'è un «cestino» di 30 giorni, così un dispetto si annulla. Il PIN (4 cifre, chiesto solo su un dispositivo nuovo) resta pronto da aggiungere se servirà: il resto del sistema non cambia.
+
 ## 5. Dati
 
 **Uno studente, un profilo, quattro documenti.**
@@ -282,6 +284,9 @@ Ogni fase si chiude con test automatici, prova nel browser su telefono e PC e do
 | Una sola persona che sviluppa | codice semplice, senza framework, con test e documentazione in `docs/` |
 
 ## 17. Decisioni da prendere
+
+Già presa: accesso con il solo codice del cartellino, senza PIN (§4).
+
 
 1. **Percorso dei siti** sul server (la cartella `catalfamo`: percorso esatto) e indirizzo pubblico (resta `sytes.net` o un sottodominio di AFOL?).
 2. **`mod_proxy`**: il collega accetta di attivarlo?

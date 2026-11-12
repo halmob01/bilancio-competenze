@@ -208,6 +208,20 @@ Dove si usa: nel portfolio per etichettare le attività; nel bilancio come secon
 | Diario | PDF per tirocinio | da fare (era già in lista) |
 | Pacchetto completo | file ZIP con tutti i dati e le foto | da fare: è anche il modo di portarsi via il proprio lavoro alla fine del percorso |
 
+## 9 bis. La mia area (pagina personale dello studente)
+
+Quando lo studente è entrato, la pagina iniziale diventa **la sua area**: un posto solo dove vede e ritrova tutto il suo lavoro, dal telefono e dal PC.
+
+- **I quattro percorsi** (diario, bilancio, portfolio, curriculum) come oggi le card, ma con il suo stato: «in corso», «completo», ultima modifica, e il pulsante per continuare da dove era.
+- **I miei documenti**: per ogni documento i pulsanti per scaricarlo (PDF; Word per il curriculum) e per stamparlo; più «Scarica tutto» (il pacchetto completo con dati e foto, §9).
+- **Gli anni**: alla fine di ogni anno (o quando il docente chiude l'anno) il portale conserva una **copia fissa** di bilancio e curriculum di quell'anno, per esempio «Bilancio, III anno, giugno 2027». Lo studente le ritrova tutte negli anni successivi, accanto alla versione in corso: si vede il percorso, che è lo scopo del portfolio. Il portfolio invece è uno solo e cresce negli anni.
+- **Cestino**: le cose cancellate negli ultimi 30 giorni, da ripristinare (§4).
+- **Il mio profilo**: nome e classe (li mette il docente), lingua dell'interfaccia, «Esci».
+- **Copia a scuola**: «La copia nella tua cartella della scuola è aggiornata a ieri sera» (§14 bis).
+- **Chi vede il mio lavoro**: una riga chiara: «Lo vedono solo i tuoi docenti». Più avanti, qui si sceglierà anche se e che cosa rendere visibile con un link pubblico (§7).
+
+Senza accesso la pagina iniziale resta quella di oggi, con le tre card e il lavoro salvato solo sul dispositivo.
+
 ## 10. Docenti
 
 Un pannello semplice, da PC:
@@ -278,7 +292,7 @@ Ogni fase si chiude con test automatici, prova nel browser su telefono e PC e do
 | Fase | Cosa | Pronto quando | Dipende da | Dim. |
 |---|---|---|---|---|
 | **F0 Fondamenta** | Node e cartelle sul server; script di pubblicazione dei siti; configurazione di Apache e servizio systemd (preparati, li applica il collega); backup; scheda per il DPO | i siti di oggi girano dal vostro server in HTTPS; il programma risponde a «sono vivo»; il backup è provato | collega | S |
-| **F1 Accesso e salvataggio** | programma con database; classi, studenti, cartellini con QR; accesso; `archivio.js` nei tre siti esistenti; conflitti; pannello docente minimo (classi, cartellini, avanzamento) | una classe di prova lavora da telefono e PC sugli stessi dati; senza rete non si perde niente | F0; dati veri solo dopo il DPO | L |
+| **F1 Accesso e salvataggio** | programma con database; classi, studenti, cartellini con QR; accesso; `archivio.js` nei tre siti esistenti; conflitti; **la mia area** (prima versione: percorsi, documenti da scaricare, cestino); pannello docente minimo (classi, cartellini, avanzamento) | una classe di prova lavora da telefono e PC sugli stessi dati; senza rete non si perde niente | F0; dati veri solo dopo il DPO | L |
 | **F2 Portfolio** | sito nuovo; foto ridotte; importazioni portfolio → bilancio e curriculum, diario → portfolio; PDF del portfolio | uno studente crea un'attività con foto in meno di un minuto, la ritrova nel bilancio e la scarica in PDF | F1 | L |
 | **F3 Competenze** | catalogo dagli allegati regionali; frasi semplici riviste dai docenti; uso in portfolio, bilancio e curriculum | ogni indirizzo e anno ha il suo elenco, approvato da un docente dell'indirizzo | allegati B2; docenti | M |
 | **F4 Lingue** | testi in file per lingua; inglese e arabo (con RTL); curriculum anche in inglese | un'intera sessione si fa in arabo e in inglese; il test delle frasi mancanti è verde | (meglio prima di F2) | M |

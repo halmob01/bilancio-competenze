@@ -62,20 +62,21 @@ function richiestaFidata(req, origine) {
   return req.headers.origin === origine;
 }
 
-const NOME_COOKIE = 'portale';
+const NOME_COOKIE = 'portale';            // la sessione
+const NOME_DISPOSITIVO = 'portale_disp';  // cookie tecnico del dispositivo, per il limite dei tentativi
 
-function leggiCookie(req) {
+function leggiCookie(req, nome) {
   const h = req.headers.cookie || '';
   for (const parte of h.split(';')) {
     const i = parte.indexOf('=');
-    if (i > 0 && parte.slice(0, i).trim() === NOME_COOKIE) return parte.slice(i + 1).trim();
+    if (i > 0 && parte.slice(0, i).trim() === nome) return parte.slice(i + 1).trim();
   }
   return '';
 }
 
 // L'IP del visitatore: dietro Apache arriva in X-Forwarded-For (Apache aggiunge l'ultimo valore).
 // Da un programma locale (per esempio una pagina PHP sul server) questa intestazione può essere falsa:
-// per questo il limite dei tentativi ha anche un tetto complessivo (vedi api.js).
+// per questo il limite dei tentativi conta per dispositivo e non si fida dell'IP (vedi api.js).
 function ipDi(req) {
   const diretto = req.socket.remoteAddress || '';
   const locale = diretto === '127.0.0.1' || diretto === '::1' || diretto === '::ffff:127.0.0.1';
@@ -90,6 +91,13 @@ function creaServer(opzioni) {
   const percorsoCookie = (o.percorso || '/').replace(/\/?$/, '/') + 'api/';
   const cookieSicuro = o.cookieSicuro !== false;
   const avvio = new Date().toISOString();
+  const cookie = function (nome, valore, secondi) {
+    let v = nome + '=' + valore + '; Path=' + percorsoCookie + '; HttpOnly; SameSite=Strict';
+    if (cookieSicuro) v += '; Secure';
+    if (secondi > 0) v += '; Max-Age=' + secondi;
+    if (secondi < 0) v += '; Max-Age=0';
+    return v;
+  };
   const api = API.creaApi(db);
   api.pulisci();
   const pulizia = setInterval(function () { try { api.pulisci(); } catch (e) { /* riprova alla prossima */ } }, 3600 * 1000);
@@ -99,7 +107,7 @@ function creaServer(opzioni) {
     const url = new URL(req.url, 'http://locale');
     const via = url.pathname;
     const metodo = req.method;
-    const intestazioniExtra = {};
+    const cookieDaImpostare = [];
 
     Promise.resolve().then(async function () {
       if (!via.startsWith('/api/')) return rispondi(res, 404, { ok: false, errore: 'percorso' });
@@ -126,18 +134,14 @@ function creaServer(opzioni) {
       }
 
       const c = {
-        req: req, via: via, metodo: metodo, corpo: corpo, ip: ipDi(req), cookie: leggiCookie(req),
-        impostaCookie: function (valore, secondi) {
-          let v = NOME_COOKIE + '=' + valore + '; Path=' + percorsoCookie + '; HttpOnly; SameSite=Strict';
-          if (cookieSicuro) v += '; Secure';
-          if (secondi > 0) v += '; Max-Age=' + secondi;
-          if (secondi < 0) v += '; Max-Age=0';
-          intestazioniExtra['Set-Cookie'] = v;
-        }
+        req: req, via: via, metodo: metodo, corpo: corpo, ip: ipDi(req),
+        cookie: leggiCookie(req, NOME_COOKIE), cookieDispositivo: leggiCookie(req, NOME_DISPOSITIVO),
+        impostaCookie: function (valore, secondi) { cookieDaImpostare.push(cookie(NOME_COOKIE, valore, secondi)); },
+        impostaCookieDispositivo: function (valore) { cookieDaImpostare.push(cookie(NOME_DISPOSITIVO, valore, 365 * 24 * 3600)); }
       };
       const r = await api.gestisci(c);
       if (!r) return rispondi(res, 404, { ok: false, errore: 'percorso' });
-      Object.keys(intestazioniExtra).forEach(function (k) { res.setHeader(k, intestazioniExtra[k]); });
+      if (cookieDaImpostare.length) res.setHeader('Set-Cookie', cookieDaImpostare);
       return rispondi(res, r[0], r[1]);
     }).catch(function (e) {
       if (e && e.stato === 413) { res.setHeader('Connection', 'close'); return rispondi(res, 413, { ok: false, errore: 'dimensione' }); }

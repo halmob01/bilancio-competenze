@@ -91,7 +91,13 @@ const MIGRAZIONI = [
      azione TEXT NOT NULL,                     -- lettura, modifica, rigenera, ...
      quando TEXT NOT NULL
    );
-   CREATE INDEX letture_studente ON letture(studente_id, quando);`
+   CREATE INDEX letture_studente ON letture(studente_id, quando);`,
+
+  // 3. Impostazioni del programma (per esempio la chiave segreta che firma i cookie dei dispositivi).
+  `CREATE TABLE impostazioni (
+     chiave TEXT PRIMARY KEY,
+     valore TEXT NOT NULL
+   );`
 ];
 
 function apri(percorso) {
@@ -137,4 +143,13 @@ async function copia(db, destinazione) {
   return destinazione;
 }
 
-module.exports = { apri, versione, annota, copia, MIGRAZIONI };
+// Legge un'impostazione; se non c'è, la crea con il valore dato dalla funzione (una volta sola).
+function impostazione(db, chiave, crea) {
+  const r = db.prepare('SELECT valore FROM impostazioni WHERE chiave = ?').get(chiave);
+  if (r) return r.valore;
+  const v = crea();
+  db.prepare('INSERT OR IGNORE INTO impostazioni (chiave, valore) VALUES (?, ?)').run(chiave, v);
+  return db.prepare('SELECT valore FROM impostazioni WHERE chiave = ?').get(chiave).valore;
+}
+
+module.exports = { apri, versione, annota, copia, impostazione, MIGRAZIONI };

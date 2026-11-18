@@ -10,6 +10,7 @@
 'use strict';
 
 const S = require('./sicurezza.js');
+const DB = require('./db.js');
 const BILANCIO = require('../js/bilancio.js');
 const CV = require('../js/cv.js');
 const DIARIO = require('../diario/js/diario.js');
@@ -44,8 +45,41 @@ function intero(v) { const n = Number(v); return Number.isInteger(n) && n > 0 ? 
 
 function creaApi(db, opzioni) {
   const o = opzioni || {};
-  const limiteStudenti = S.creaLimite({ finestraMs: 10 * 60 * 1000, perChiave: 20, totale: 200 });
-  const limiteDocenti = S.creaLimite({ finestraMs: 15 * 60 * 1000, perChiave: 5, totale: 100 });
+  // Limite dei tentativi. A scuola tutti escono con lo stesso indirizzo IP: un limite per IP bloccherebbe
+  // l'intera scuola per gli errori di pochi. Per questo si conta per DISPOSITIVO (cookie tecnico firmato):
+  // chi sbaglia troppe volte blocca solo il proprio browser per 10 minuti, i compagni continuano.
+  // Chi vuole aggirarlo cancellando i cookie deve chiedere ogni volta un dispositivo nuovo, e il server ne dà
+  // al massimo 300 ogni 10 minuti per IP e 1000 in tutto: abbastanza per una scuola che entra la mattina.
+  // Con 300 studenti, per indovinare un codice di 8 caratteri servono in media 5 × 10^8 tentativi:
+  // circa 3 anni da un IP vero, circa 1 anno al ritmo massimo complessivo (IP falsi da una pagina PHP
+  // sul server stesso). Dopo 300 errori in 10 minuti il registro segna un «allarme».
+  // Il QR non ha limiti: il suo codice è lungo 32 caratteri e non si può indovinare.
+  const DIECI_MINUTI = 10 * 60 * 1000;
+  const segreto = DB.impostazione(db, 'segreto-dispositivi', function () { return S.nuovoToken(); });
+  const nuoviDispositivi = S.creaLimite({ finestraMs: DIECI_MINUTI, perChiave: 300, totale: 1000 });
+  const erroriStudente = S.creaLimite({ finestraMs: DIECI_MINUTI, perChiave: 10 });          // per dispositivo
+  const erroriDocente = S.creaLimite({ finestraMs: 15 * 60 * 1000, perChiave: 5 });         // per dispositivo
+  const erroriEmail = S.creaLimite({ finestraMs: 60 * 60 * 1000, perChiave: 30 });          // per account docente
+  const allarme = S.creaLimite({ finestraMs: DIECI_MINUTI, perChiave: 300 });               // solo per il registro
+  let ultimoAllarme = 0;
+
+  // Il dispositivo che fa la richiesta; se non ne ha uno valido, gliene dà uno nuovo (se il limite lo permette).
+  function dispositivo(c) {
+    const v = S.dispositivoValido(c.cookieDispositivo, segreto);
+    if (v) return v;
+    if (nuoviDispositivi.bloccato(c.ip)) return '';
+    nuoviDispositivi.errore(c.ip);
+    const nuovo = S.nuovoDispositivo(segreto);
+    c.impostaCookieDispositivo(nuovo);
+    return S.dispositivoValido(nuovo, segreto);
+  }
+  function tentativoSbagliato() {
+    allarme.errore('tutti');
+    if (allarme.bloccato('tutti') && Date.now() - ultimoAllarme > DIECI_MINUTI) {
+      ultimoAllarme = Date.now();
+      DB.annota(db, 'allarme', 'più di 300 accessi sbagliati in 10 minuti');
+    }
+  }
 
   const q = {
     sessione: db.prepare('SELECT * FROM sessioni WHERE impronta = ?'),
@@ -202,26 +236,37 @@ function creaApi(db, opzioni) {
 
   // Accesso
   rotta('POST', '/api/accesso/studente', null, function (c) {
-    if (limiteStudenti.bloccato(c.ip)) return [429, { ok: false, errore: 'tentativi' }];
+    const disp = dispositivo(c);
+    if (!disp) return [429, { ok: false, errore: 'dispositivi' }];
     const b = c.corpo || {};
-    let s = null; let metodo = '';
-    if (typeof b.qr === 'string' && b.qr.length >= 20 && b.qr.length <= 64) { s = q.studenteDaQr.get(b.qr); metodo = 'qr'; }
-    else { const cod = S.codiceDaTesto(b.codice); if (cod) s = q.studenteDaCodice.get(cod); metodo = 'codice'; }
-    if (!s) { limiteStudenti.errore(c.ip); return [401, { ok: false, errore: 'codice' }]; }
-    limiteStudenti.riuscito(c.ip);
-    apriSessione(c, 'studente', s.id, metodo, s.versione_codice);
+    if (typeof b.qr === 'string') {
+      const s = b.qr.length >= 20 && b.qr.length <= 64 ? q.studenteDaQr.get(b.qr) : null;
+      if (!s) { tentativoSbagliato(); return [401, { ok: false, errore: 'codice' }]; }
+      apriSessione(c, 'studente', s.id, 'qr', s.versione_codice);
+      return [200, { ok: true, profilo: profiloStudente(q.studente.get(s.id)) }];
+    }
+    if (erroriStudente.bloccato(disp)) return [429, { ok: false, errore: 'tentativi' }];
+    const cod = S.codiceDaTesto(b.codice);
+    const s = cod ? q.studenteDaCodice.get(cod) : null;
+    if (!s) { erroriStudente.errore(disp); tentativoSbagliato(); return [401, { ok: false, errore: 'codice' }]; }
+    erroriStudente.riuscito(disp);
+    apriSessione(c, 'studente', s.id, 'codice', s.versione_codice);
     return [200, { ok: true, profilo: profiloStudente(q.studente.get(s.id)) }];
   });
 
   rotta('POST', '/api/accesso/docente', null, async function (c) {
+    const disp = dispositivo(c);
+    if (!disp) return [429, { ok: false, errore: 'dispositivi' }];
     const b = c.corpo || {};
     const email = testo(b.email, 200).toLowerCase();
-    const chiave = 'email:' + email;
-    if (limiteDocenti.bloccato(c.ip) || limiteDocenti.bloccato(chiave)) return [429, { ok: false, errore: 'tentativi' }];
+    if (erroriDocente.bloccato(disp) || erroriEmail.bloccato(email)) return [429, { ok: false, errore: 'tentativi' }];
     const d = email ? q.docenteDaEmail.get(email) : null;
     const giusta = await S.verificaPassword(typeof b.password === 'string' ? b.password : '', d && d.attivo ? d.password : '');
-    if (!d || !d.attivo || !giusta) { limiteDocenti.errore(c.ip); limiteDocenti.errore(chiave); return [401, { ok: false, errore: 'credenziali' }]; }
-    limiteDocenti.riuscito(c.ip); limiteDocenti.riuscito(chiave);
+    if (!d || !d.attivo || !giusta) {
+      erroriDocente.errore(disp); erroriEmail.errore(email); tentativoSbagliato();
+      return [401, { ok: false, errore: 'credenziali' }];
+    }
+    erroriDocente.riuscito(disp);
     apriSessione(c, 'docente', d.id, 'password', 0);
     return [200, { ok: true, profilo: profiloDocente(d) }];
   });

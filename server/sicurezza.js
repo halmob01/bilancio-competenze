@@ -43,6 +43,21 @@ function nuovoCodiceQr() { return crypto.randomBytes(24).toString('base64url'); 
 function nuovoToken() { return crypto.randomBytes(32).toString('base64url'); }
 function impronta(t) { return crypto.createHash('sha256').update(String(t)).digest('hex'); }
 
+// Cookie del dispositivo: un identificativo casuale firmato dal server, così nessuno può inventarne di nuovi
+// senza chiederli al server (che ne dà un numero limitato).
+function firma(id, segreto) {
+  return id + '.' + crypto.createHmac('sha256', segreto).update(id).digest('base64url').slice(0, 22);
+}
+function nuovoDispositivo(segreto) { return firma(crypto.randomBytes(12).toString('base64url'), segreto); }
+function dispositivoValido(valore, segreto) {
+  const v = String(valore || '');
+  const i = v.indexOf('.');
+  if (i < 10 || v.length > 80) return '';
+  const atteso = Buffer.from(firma(v.slice(0, i), segreto));
+  const dato = Buffer.from(v);
+  return atteso.length === dato.length && crypto.timingSafeEqual(atteso, dato) ? v.slice(0, i) : '';
+}
+
 // Password dei docenti: scrypt con sale casuale.
 const SCRYPT = { N: 16384, r: 8, p: 1, maxmem: 64 * 1024 * 1024 };
 function hashPassword(pw) {
@@ -70,13 +85,12 @@ function verificaPassword(pw, salvato) {
 }
 function passwordValida(pw) { return typeof pw === 'string' && pw.length >= 10 && pw.length <= 200; }
 
-// Limite dei tentativi sbagliati, in memoria (il programma è uno solo).
-// Conta per una chiave (un IP, un'email) e anche nel complesso: sul server girano pagine PHP di altri,
-// che possono chiamare il programma direttamente e fingere qualsiasi IP.
+// Contatore con finestra mobile, in memoria (il programma è uno solo): blocca una chiave
+// (un dispositivo, un'email, un IP) dopo «perChiave» eventi, e tutte dopo «totale» eventi.
 function creaLimite(opz) {
   const finestra = opz.finestraMs;
   const perChiave = opz.perChiave;
-  const totale = opz.totale;
+  const totale = opz.totale || Infinity;
   const errori = new Map(); // chiave -> [istanti]
   let tutti = [];
   const pulisci = function (arr, ora) { while (arr.length && arr[0] <= ora - finestra) arr.shift(); return arr; };
@@ -100,5 +114,5 @@ function creaLimite(opz) {
 
 module.exports = {
   ALFABETO, LUNGHEZZA_CODICE, casuale, nuovoCodice, codiceStampato, codiceDaTesto, nuovoCodiceQr,
-  nuovoToken, impronta, hashPassword, verificaPassword, passwordValida, creaLimite
+  nuovoToken, impronta, nuovoDispositivo, dispositivoValido, hashPassword, verificaPassword, passwordValida, creaLimite
 };

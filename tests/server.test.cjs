@@ -27,16 +27,23 @@ async function avvia() {
       const testo = corpo === undefined ? '' : (typeof corpo === 'string' ? corpo : JSON.stringify(corpo));
       const h = Object.assign({}, o.intestazioni || {});
       if (metodo !== 'GET' && o.fidata !== false) { h.Origin = ORIGINE; h['X-Portale'] = '1'; }
-      if (o.cookie) h.Cookie = 'portale=' + o.cookie;
+      const biscotti = [];
+      if (o.cookie) biscotti.push('portale=' + o.cookie);
+      if (o.dispositivo) biscotti.push('portale_disp=' + o.dispositivo);
+      if (biscotti.length) h.Cookie = biscotti.join('; ');
       if (testo) { h['Content-Type'] = 'application/json'; h['Content-Length'] = Buffer.byteLength(testo); }
       const req = http.request({ host: '127.0.0.1', port: porta, path: via, method: metodo, headers: h }, function (res) {
         let b = '';
         res.on('data', function (d) { b += d; });
         res.on('end', function () {
           let j = null; try { j = JSON.parse(b); } catch (e) { /* non JSON */ }
-          const sc = res.headers['set-cookie'] ? res.headers['set-cookie'][0] : '';
+          const tutti = res.headers['set-cookie'] || [];
+          const sc = tutti.find(function (x) { return x.startsWith('portale='); }) || '';
+          const sd = tutti.find(function (x) { return x.startsWith('portale_disp='); }) || '';
           const m = /portale=([^;]*)/.exec(sc);
-          ok({ stato: res.statusCode, json: j, intestazioni: res.headers, setCookie: sc, cookie: m ? m[1] : '' });
+          const md = /portale_disp=([^;]*)/.exec(sd);
+          ok({ stato: res.statusCode, json: j, intestazioni: res.headers, setCookie: sc, cookie: m ? m[1] : '',
+            setDispositivo: sd, dispositivo: md ? md[1] : '' });
         });
       });
       req.on('error', ko);
@@ -154,16 +161,58 @@ test('studente: entra con il codice scritto in qualsiasi modo o con il QR; un co
   } finally { await p.chiudi(); }
 });
 
-test('troppi codici sbagliati dallo stesso IP: blocco temporaneo, gli altri IP continuano', async () => {
+test('a scuola tutti hanno lo stesso IP: chi sbaglia troppo blocca solo il proprio dispositivo', async () => {
   const p = await avvia();
   try {
     const k = await preparaClasse(p);
-    const ip = { 'X-Forwarded-For': '10.0.0.9' };
-    for (let i = 0; i < 20; i++) await p.chiedi('POST', '/api/accesso/studente', { codice: 'AAAA-AAA' + 'ACDEFGHJKMNPQRTUVWXY'[i] }, { intestazioni: ip });
-    const bloccato = await p.chiedi('POST', '/api/accesso/studente', { codice: k.studenti[0].codice }, { intestazioni: ip });
-    assert.equal(bloccato.stato, 429, 'anche con il codice giusto, finché dura il blocco');
-    const altro = await p.chiedi('POST', '/api/accesso/studente', { codice: k.studenti[0].codice }, { intestazioni: { 'X-Forwarded-For': '10.0.0.10' } });
-    assert.equal(altro.stato, 200);
+    const scuola = { 'X-Forwarded-For': '93.40.1.1' };
+    // Il primo tentativo dà al browser il suo cookie di dispositivo, firmato e valido un anno.
+    const primo = await p.chiedi('POST', '/api/accesso/studente', { codice: 'AAAA-AAAA' }, { intestazioni: scuola });
+    assert.equal(primo.stato, 401);
+    assert.match(primo.setDispositivo, /HttpOnly/);
+    assert.match(primo.setDispositivo, /Max-Age=31536000/);
+    const pasticcione = primo.dispositivo;
+    for (let i = 0; i < 9; i++) await p.chiedi('POST', '/api/accesso/studente', { codice: 'AAAA-AAA' + 'CDEFGHJKM'[i] }, { intestazioni: scuola, dispositivo: pasticcione });
+    const bloccato = await p.chiedi('POST', '/api/accesso/studente', { codice: k.studenti[0].codice }, { intestazioni: scuola, dispositivo: pasticcione });
+    assert.equal(bloccato.stato, 429, 'il suo browser aspetta, anche con il codice giusto');
+    assert.equal(bloccato.json.errore, 'tentativi');
+    // Il resto della classe, dallo stesso IP, entra senza problemi.
+    for (let i = 0; i < 25; i++) {
+      const r = await p.chiedi('POST', '/api/accesso/studente', { codice: k.studenti[i % 2].codice }, { intestazioni: scuola });
+      assert.equal(r.stato, 200, 'compagno ' + i);
+    }
+    // Con il QR si entra anche dal dispositivo bloccato.
+    assert.equal((await p.chiedi('POST', '/api/accesso/studente', { qr: k.studenti[0].qr }, { intestazioni: scuola, dispositivo: pasticcione })).stato, 200);
+    // Un cookie di dispositivo inventato non vale: il server ne dà uno nuovo.
+    const falso = await p.chiedi('POST', '/api/accesso/studente', { codice: 'AAAA-AAAA' }, { intestazioni: scuola, dispositivo: 'inventato1234.abc' });
+    assert.ok(falso.dispositivo && falso.dispositivo !== 'inventato1234.abc');
+  } finally { await p.chiudi(); }
+});
+
+test('chi cancella i cookie per riprovare all\'infinito trova un tetto ai dispositivi nuovi per IP', async () => {
+  const p = await avvia();
+  try {
+    const ip = { 'X-Forwarded-For': '10.9.9.9' };
+    let ultimo;
+    for (let i = 0; i < 301; i++) ultimo = await p.chiedi('POST', '/api/accesso/studente', { codice: 'AAAA-AAAA' }, { intestazioni: ip });
+    assert.equal(ultimo.stato, 429);
+    assert.equal(ultimo.json.errore, 'dispositivi');
+    assert.equal((await p.chiedi('POST', '/api/accesso/studente', { codice: 'AAAA-AAAA' }, { intestazioni: { 'X-Forwarded-For': '10.9.9.10' } })).stato, 401, 'un altro IP no');
+  } finally { await p.chiudi(); }
+});
+
+test('docenti: 5 password sbagliate bloccano quel dispositivo, non gli altri docenti della scuola', async () => {
+  const p = await avvia();
+  try {
+    const k = await preparaClasse(p);
+    const t = await AMM.esegui(['crea-docente', 'altro@scuola.it', 'Marco Neri'], p.server.db);
+    const pw2 = /Password provvisoria: (\S+)/.exec(t)[1];
+    const scuola = { 'X-Forwarded-For': '93.40.1.1' };
+    const primo = await p.chiedi('POST', '/api/accesso/docente', { email: 'prof@scuola.it', password: 'sbagliata 0' }, { intestazioni: scuola });
+    for (let i = 1; i < 5; i++) await p.chiedi('POST', '/api/accesso/docente', { email: 'prof@scuola.it', password: 'sbagliata ' + i }, { intestazioni: scuola, dispositivo: primo.dispositivo });
+    assert.equal((await p.chiedi('POST', '/api/accesso/docente', { email: 'prof@scuola.it', password: k.pw }, { intestazioni: scuola, dispositivo: primo.dispositivo })).stato, 429);
+    assert.equal((await p.chiedi('POST', '/api/accesso/docente', { email: 'altro@scuola.it', password: pw2 }, { intestazioni: scuola })).stato, 200, 'il collega entra');
+    assert.equal((await p.chiedi('POST', '/api/accesso/docente', { email: 'prof@scuola.it', password: k.pw }, { intestazioni: scuola })).stato, 200, 'da un altro PC sì');
   } finally { await p.chiudi(); }
 });
 

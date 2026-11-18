@@ -95,6 +95,7 @@ La CI controlla la sintassi ed esegue i test (contenuti, regola dell'esempio obb
 
 - [Guida breve con screenshot](docs/GUIDA.md)
 - [Diario di bordo del tirocinio e collegamento con bilancio e curriculum](docs/DIARIO.md)
+- [Piano integrato del portale](docs/PIANO-PORTALE.md): server, accesso con QR, portfolio, competenze, lingue, docenti, fasi
 - [Aggiornamenti futuri](docs/FUTURO.md): dettatura vocale, backend di rete, script del foglio
 - [Identità visiva V1](design.md)
 - [Raccogliere le risposte in un Foglio Google](docs/FOGLIO-GOOGLE.md)

@@ -27,6 +27,8 @@ Compilare i testi parlando, come un vocale di WhatsApp, **conservando solo il te
 
 ## 2. Backend sulla rete interna della scuola
 
+> Superato dal piano del 12 novembre 2026: [PIANO-PORTALE.md](PIANO-PORTALE.md) (server della scuola, Node.js e SQLite dietro Apache). Il testo qui sotto resta come storia della discussione.
+
 Salvare cv e diari di tutti gli studenti nelle cartelle di rete: serve un piccolo servizio, un sito statico non può scrivere su una cartella di rete. Si decide in un secondo momento, insieme a privacy e direzione. Le due strade discusse:
 - **Cloudflare Workers** come porta con accesso tramite account scolastico (Cloudflare Access) e **Tunnel** verso un servizio nella rete della scuola: i dati restano in casa.
 - **Dati su Cloudflare** con un programma sul server della scuola che li ritira ogni notte nelle cartelle.

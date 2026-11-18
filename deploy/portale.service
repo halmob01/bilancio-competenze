@@ -1,0 +1,51 @@
+# Portale dello studente — servizio systemd.
+# Va copiato in /etc/systemd/system/portale.service (vedi deploy/LEGGIMI.md, passo 3).
+# Il programma gira come utente «portale», senza privilegi, con memoria e processore limitati
+# perché non tolga risorse alle altre applicazioni del server.
+
+[Unit]
+Description=Portale dello studente (programma Node.js dietro Apache)
+After=network.target
+
+[Service]
+Type=simple
+User=portale
+Group=portale
+EnvironmentFile=/etc/portale/portale.env
+WorkingDirectory=/opt/portale/app
+ExecStart=/opt/portale/node/bin/node --disable-warning=ExperimentalWarning /opt/portale/app/server/portale.js
+Restart=on-failure
+RestartSec=5
+
+# Limiti: il server ha 3,8 GB in tutto.
+MemoryHigh=300M
+MemoryMax=400M
+CPUQuota=50%
+TasksMax=64
+LimitNOFILE=1024
+
+# Protezioni: il programma può scrivere solo nella cartella dei dati.
+NoNewPrivileges=yes
+ProtectSystem=strict
+ReadWritePaths=/var/lib/portale
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+RestrictSUIDSGID=yes
+RestrictRealtime=yes
+RestrictNamespaces=yes
+LockPersonality=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+CapabilityBoundingSet=
+AmbientCapabilities=
+SystemCallArchitectures=native
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

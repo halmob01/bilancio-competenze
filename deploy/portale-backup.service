@@ -1,0 +1,21 @@
+# Portale dello studente — copia notturna del database (la avvia portale-backup.timer).
+# Va copiato in /etc/systemd/system/ insieme al timer (deploy/LEGGIMI.md, passo 4).
+
+[Unit]
+Description=Portale dello studente: copia del database
+
+[Service]
+Type=oneshot
+User=portale
+Group=portale
+EnvironmentFile=/etc/portale/portale.env
+ExecStart=/opt/portale/node/bin/node --disable-warning=ExperimentalWarning /opt/portale/app/server/backup.js
+Nice=10
+IOSchedulingClass=idle
+MemoryMax=300M
+NoNewPrivileges=yes
+ProtectSystem=strict
+ReadWritePaths=/var/lib/portale
+ProtectHome=yes
+PrivateTmp=yes
+UMask=0077

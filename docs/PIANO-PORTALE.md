@@ -57,7 +57,7 @@ Da `diagnosi.txt` e dalla verifica fatta dal PC della scuola (11 novembre 2026):
 | Node.js | non presente; script `installa-portale.sh` pronto (versione LTS v26.13.0, provato contro nodejs.org) |
 | Vincolo | sul server ci sono altre cose che **non vanno toccate** |
 
-Da chiarire ancora: la prova **da fuori scuola** (cosa è esposto a Internet), chi aggiorna il **DNS dinamico** (`sytes.net` di solito chiede una conferma ogni 30 giorni), il **percorso esatto** della cartella `catalfamo` dove mettere i siti.
+Da chiarire ancora: la prova **da fuori scuola** (cosa è esposto a Internet), chi aggiorna il **DNS dinamico** (`sytes.net` di solito chiede una conferma ogni 30 giorni). Il percorso dei siti è deciso (18 novembre 2026): **`/var/www/html/gcatalfamo/`**, cioè `https://afolmet-rozzano.sytes.net/gcatalfamo/`.
 
 ## 3. Architettura
 
@@ -73,7 +73,7 @@ telefono / PC  ──HTTPS──►  Apache (c'è già)
 - **Node.js** in `/opt/portale` (cartella sua, nessun pacchetto di sistema toccato), avviato da un servizio systemd con un **utente di sistema dedicato**, limiti di memoria e processore perché non rubi risorse agli altri, riavvio automatico.
 - **SQLite** con il modulo integrato di Node (`node:sqlite`, provato funzionante con v26.13.0). Un solo file, nessun server di database da proteggere, backup = copiare un file. Se il modulo integrato desse problemi si passa a `better-sqlite3` senza cambiare il resto (il database sta dietro un solo modulo del programma).
 - **Niente framework pesanti.** Node con il server HTTP standard e pochissime dipendenze, come il resto del progetto (che oggi ha zero dipendenze). Più facile da mantenere e da far controllare.
-- **Pubblicazione**: uno script crea la cartella pulita dei siti (solo i file necessari) e il pacchetto del programma; si caricano con SFTP/FileZilla o `rsync`; il programma tiene le versioni precedenti per tornare indietro in un minuto.
+- **Pubblicazione**: con git sul server e un comando di aggiornamento, vedi §3 bis.
 
 **Cosa deve fare il collega, una volta sola** (tutto reversibile, da approvare lui):
 1. eseguire `installa-portale.sh` (Node, cartelle; eventualmente l'account `gcatalfamo`);
@@ -82,6 +82,38 @@ telefono / PC  ──HTTPS──►  Apache (c'è già)
 4. attivare il **backup** (§14).
 
 **Se attivare `mod_proxy` non fosse accettabile**: il programma si scrive comunque in Node, ma si può esporre con un piccolo adattatore PHP (che c'è già) al posto del proxy. È peggiore (più lento, più codice), lo terrei solo come ripiego.
+
+## 3 bis. Sviluppo e pubblicazione: GitHub e server insieme
+
+Deciso il 18 novembre 2026. **Si sviluppa su GitHub, si pubblica sul server della scuola.** Sono due cose separate: il codice resta nel repository e si lavora sui rami come oggi; il server riceve una **copia** della versione pronta, solo quando lo decide il docente.
+
+**Come funziona**
+
+```
+GitHub (repository)                         sviluppo: rami, pull request, test automatici
+   │  git pull del ramo scelto (normalmente main)
+   ▼
+/opt/portale/sorgente/                      il repository clonato sul server (NON pubblico)
+   │  aggiorna.sh copia solo quello che serve
+   ├─► /var/www/html/gcatalfamo/            i siti, quello che vedono gli studenti
+   └─► /opt/portale/app/                    il programma Node (NON pubblico)
+```
+
+- **git sul server**: pacchetto standard di Debian (`apt install git`), da concordare con il collega perché è un pacchetto di sistema.
+- **Mai clonare il repository dentro `/var/www/html/`**: tutto quello che sta lì è pubblico e su questo server i `.htaccess` sono ignorati (`AllowOverride None`), quindi da Internet si scaricherebbero la cartella `.git` con tutta la storia, `docs/`, `tests/`, lo script del foglio e il codice del server.
+- **Un comando per aggiornare**: `sudo /opt/portale/aggiorna.sh`. Lo script:
+  1. scarica le novità del ramo scelto (`git pull`);
+  2. esegue i test (`node --test`): se non passano, si ferma e non pubblica niente;
+  3. mette da parte la versione pubblicata, per **tornare indietro in un minuto** (`aggiorna.sh --indietro`);
+  4. copia i soli file dei siti in `gcatalfamo/` (la stessa scelta di `deploy/prepara-siti.sh`, con `urlInvio` vuoto) e il programma in `/opt/portale/app/` (`server/` più `js/dati.js`, `js/bilancio.js`, `js/cv.js`, `diario/js/diario.js`, che servono per ricontrollare i documenti);
+  5. riavvia il programma solo se è cambiato, e controlla che risponda «sono vivo»;
+  6. scrive in un registro che cosa ha pubblicato (data, ramo, commit).
+- **Cartella di prova**: lo stesso script può pubblicare un altro ramo in `/var/www/html/gcatalfamo-prova/` (`aggiorna.sh --prova NOME-RAMO`), per vedere una modifica prima di darla agli studenti. Solo i siti, con dati finti: il programma vero resta uno.
+- **Repository pubblico o privato**: se è pubblico il server lo scarica senza password; se è privato serve una **deploy key** di sola lettura, che dà accesso solo a quel repository e non all'account.
+
+**Il ciclo di lavoro**: sviluppo su un ramo → il docente controlla e unisce a `main` con una pull request → sul server `aggiorna.sh` → gli studenti vedono la nuova versione.
+
+**GitHub Pages** può restare acceso come anteprima per il docente, ma gli studenti usano **un solo indirizzo**: il salvataggio nel browser è legato all'indirizzo, e chi lavora un po' su GitHub e un po' sul server non ritrova le sue cose. Quando gli studenti passano al server, su GitHub Pages resta solo un avviso con il nuovo indirizzo (dopo che ognuno ha fatto «Scarica una copia» e «Carica una copia»).
 
 ## 4. Accesso: QR e codice personale
 
@@ -291,7 +323,7 @@ Ogni fase si chiude con test automatici, prova nel browser su telefono e PC e do
 
 | Fase | Cosa | Pronto quando | Dipende da | Dim. |
 |---|---|---|---|---|
-| **F0 Fondamenta** | Node e cartelle sul server; script di pubblicazione dei siti; configurazione di Apache e servizio systemd (preparati, li applica il collega); backup; scheda per il DPO | i siti di oggi girano dal vostro server in HTTPS; il programma risponde a «sono vivo»; il backup è provato | collega | S |
+| **F0 Fondamenta** | Node e cartelle sul server; git sul server e `aggiorna.sh` con cartella di prova e ritorno alla versione precedente (§3 bis); configurazione di Apache e servizio systemd (preparati, li applica il collega); backup; scheda per il DPO | i siti di oggi girano dal vostro server in HTTPS; il programma risponde a «sono vivo»; il backup è provato | collega | S |
 | **F1 Accesso e salvataggio** | programma con database; classi, studenti, cartellini con QR; accesso; `archivio.js` nei tre siti esistenti; conflitti; **la mia area** (prima versione: percorsi, documenti da scaricare, cestino); pannello docente minimo (classi, cartellini, avanzamento) | una classe di prova lavora da telefono e PC sugli stessi dati; senza rete non si perde niente | F0; dati veri solo dopo il DPO | L |
 | **F2 Portfolio** | sito nuovo; foto ridotte; importazioni portfolio → bilancio e curriculum, diario → portfolio; PDF del portfolio | uno studente crea un'attività con foto in meno di un minuto, la ritrova nel bilancio e la scarica in PDF | F1 | L |
 | **F3 Competenze** | catalogo dagli allegati regionali; frasi semplici riviste dai docenti; uso in portfolio, bilancio e curriculum | ogni indirizzo e anno ha il suo elenco, approvato da un docente dell'indirizzo | allegati B2; docenti | M |
@@ -319,10 +351,10 @@ Ogni fase si chiude con test automatici, prova nel browser su telefono e PC e do
 
 ## 17. Decisioni da prendere
 
-Già prese: accesso con il solo codice del cartellino, senza PIN (§4); accesso anche dai PC della scuola con il codice identificativo del cartellino, senza PIN (§4); copia notturna del lavoro di ogni studente nella sua cartella di rete (§14 bis).
+Già prese: accesso con il solo codice del cartellino, senza PIN (§4); accesso anche dai PC della scuola con il codice identificativo del cartellino, senza PIN (§4); copia notturna del lavoro di ogni studente nella sua cartella di rete (§14 bis); siti in `/var/www/html/gcatalfamo/` (§2); sviluppo su GitHub e pubblicazione sul server con git e `aggiorna.sh` (§3 bis).
 
 
-1. **Percorso dei siti** sul server (la cartella `catalfamo`: percorso esatto) e indirizzo pubblico (resta `sytes.net` o un sottodominio di AFOL?).
+1. **Indirizzo pubblico**: resta `sytes.net` o un sottodominio di AFOL? (il percorso è deciso: `/var/www/html/gcatalfamo/`).
 2. **`mod_proxy`**: il collega accetta di attivarlo?
 3. **Dove vanno i backup** e chi li controlla.
 4. **Curriculum sul server**: solo se lo studente lo sceglie (proposta) o mai?

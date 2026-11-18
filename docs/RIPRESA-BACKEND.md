@@ -9,7 +9,7 @@ Stato al **18 novembre 2026**. Questo file serve a chi riprende il lavoro in una
 | Cosa | Dove |
 |---|---|
 | Codice del backend, script e test | ramo **`claude/ecstatic-hopper-lm1vdf`** (partito da `main` al commit `373e97c`) |
-| Piano generale del portale (`docs/PIANO-PORTALE.md`) | ramo **`claude/affectionate-ptolemy-k0gtgx`**: **non è in `main` e non è in questo ramo** |
+| Piano generale del portale (`docs/PIANO-PORTALE.md`) | **in questo ramo** (unito il 18/11/2026 dal ramo `claude/affectionate-ptolemy-k0gtgx`); non ancora in `main` |
 | Sito pubblico attuale | GitHub Pages da `main` (`https://halmob01.github.io/bilancio-competenze/`), non toccato |
 | Server della scuola | **niente installato**; c'è solo un vecchio `installa-portale.sh` in `/var/www/html/` (da spostare: è scaricabile da chiunque) |
 
@@ -36,6 +36,7 @@ Dal piano e dalla discussione con il docente (12-18 novembre 2026):
 - **Foto da togliere subito**: decidono i docenti. Alle **aziende** serve una frase nella convenzione di tirocinio sulle foto.
 - **Foglio Google**: era solo una prova su un account personale, **tolto**. Nel pacchetto per il server `urlInvio` è vuoto; in `main` `js/config.js` ha ancora l'indirizzo vecchio.
 - **Ordine di lavoro scelto dal docente**: prima il backend (sviluppato e provato qui), **lo spostamento sul server della scuola per ultimo**.
+- **Sviluppo su GitHub, pubblicazione sul server con git** (piano §3 bis): il repository clonato in `/opt/portale/sorgente/` (mai dentro `/var/www/html/`), un comando `sudo /opt/portale/aggiorna.sh` che scarica `main`, esegue i test, mette da parte la versione pubblicata, copia siti e programma, riavvia e controlla; `--indietro` per tornare alla versione precedente, `--prova RAMO` per pubblicare un ramo in `/var/www/html/gcatalfamo-prova/`. GitHub Pages resta solo come anteprima: gli studenti usano un solo indirizzo.
 - **Limite dei tentativi per dispositivo, non per IP**: a scuola tutti escono con lo stesso IP (problema già avuto nel sito del laboratorio, dove 20 errori bloccavano tutti).
 
 ---
@@ -148,8 +149,9 @@ La CI (`.github/workflows/test.yml`) controlla anche la sintassi di `server/*.js
 4. **Portfolio** con foto (ridotte sul telefono, JPEG ~1280 px; sul server controllo dei primi byte, nomi casuali, fuori dal sito; foto e coda locale in IndexedDB, non in `localStorage`).
 5. **Sicurezza da completare**: secondo fattore (TOTP) per i docenti o pannello solo dalla rete della scuola; service worker per l'uso senza rete; correzioni sul foglio del curriculum salvate nel documento.
 6. **`deploy/LEGGIMI.md`**, la guida passo per passo per il server (già citata dagli script ma non ancora scritta), e la configurazione Apache per il **nome di dominio dedicato** (`deploy/apache-portale-vhost.conf`, citata ma non scritta).
-7. **Spostamento sul server** (ultimo, per decisione del docente): installa-portale → caricare `server/`, `js/{dati,bilancio,cv}.js` e `diario/js/diario.js` in `/opt/portale/app` (il programma li usa per ricontrollare i documenti) → servizio → backup → Apache → siti.
-8. Copia notturna nelle cartelle di rete degli studenti (piano §14 bis), dopo tutto il resto.
+7. **`deploy/aggiorna.sh`** (piano §3 bis, da scrivere e provare): pubblicazione dal repository clonato sul server, con test prima di pubblicare, versione precedente da ripristinare, cartella di prova, registro delle pubblicazioni. Sostituisce il pacchetto caricato a mano con FileZilla (`deploy/prepara-siti.sh` resta come alternativa senza git).
+8. **Spostamento sul server** (ultimo, per decisione del docente): `apt install git` (con il collega) → installa-portale → clonare il repository in `/opt/portale/sorgente/` → `aggiorna.sh` (copia `server/`, `js/{dati,bilancio,cv}.js` e `diario/js/diario.js` in `/opt/portale/app`, i siti in `gcatalfamo/`) → servizio → backup → Apache.
+9. Copia notturna nelle cartelle di rete degli studenti (piano §14 bis), dopo tutto il resto.
 
 ## 6. Decisioni ancora aperte
 
@@ -160,6 +162,7 @@ La CI (`.github/workflows/test.yml`) controlla anche la sintassi di `server/*.js
 5. **Dove vanno i backup** fuori dal server e chi li controlla.
 6. Titolare del trattamento, chi gestisce il server e chi aggiorna Node; ore disponibili per sviluppo e manutenzione.
 7. Studenti che lasciano il CFP: possono ancora entrare per scaricare il lavoro, e fino a quando?
+8. **Repository pubblico o privato?** Se privato, il server ha bisogno di una deploy key di sola lettura per `git pull`. E `apt install git` va concordato con il collega.
 
 ## 7. Prima dei dati veri (condizioni)
 
@@ -176,4 +179,4 @@ PORTALE_DATI=/tmp/portale node server/amministra.js crea-docente prof@scuola.it 
 bash deploy/prepara-siti.sh         # pacchetto dei siti
 ```
 
-Il docente scrive in italiano semplice e non vuole emoji. Per il piano completo leggere `docs/PIANO-PORTALE.md` dal ramo `claude/affectionate-ptolemy-k0gtgx`.
+Il docente scrive in italiano semplice e non vuole emoji. Il piano completo è `docs/PIANO-PORTALE.md`, in questo ramo.

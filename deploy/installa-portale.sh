@@ -148,6 +148,8 @@ installa() {
 # Configurazione del portale dello studente (letta dal servizio systemd).
 PORTALE_PORTA=$PORTA
 PORTALE_DATI=$DATI
+# Cartella dei siti nell'indirizzo: il cookie dell'accesso vale solo per questa cartella + api/.
+PORTALE_PERCORSO=/gcatalfamo/
 # Indirizzo pubblico dei siti, senza la barra finale. DA COMPLETARE prima dei dati veri,
 # per esempio: PORTALE_ORIGINE=https://portale.esempio.it
 PORTALE_ORIGINE=

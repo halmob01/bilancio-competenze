@@ -24,5 +24,8 @@ jobs:
           node --check cv/js/app.js
           node --check diario/js/diario.js
           node --check diario/js/app.js
+          for f in server/*.js; do node --check "$f"; done
+          bash -n deploy/installa-portale.sh
+          bash -n deploy/prepara-siti.sh
       - name: Test logica e contenuti
         run: node --test tests/*.test.cjs

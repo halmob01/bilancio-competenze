@@ -16,7 +16,82 @@ const MIGRAZIONI = [
      quando TEXT NOT NULL,
      evento TEXT NOT NULL,
      dettaglio TEXT NOT NULL DEFAULT ''
-   );`
+   );`,
+
+  // 2. Accesso e documenti (fase F1).
+  `CREATE TABLE classi (
+     id INTEGER PRIMARY KEY,
+     nome TEXT NOT NULL,                       -- per esempio 3ELA
+     indirizzo TEXT NOT NULL DEFAULT '',       -- elettrico, estetica, informatica
+     anno INTEGER NOT NULL DEFAULT 0,          -- 1..4
+     anno_scolastico TEXT NOT NULL DEFAULT '', -- per esempio 2026/27
+     creata TEXT NOT NULL
+   );
+   CREATE TABLE studenti (
+     id INTEGER PRIMARY KEY,
+     classe_id INTEGER REFERENCES classi(id),
+     nome TEXT NOT NULL,
+     cognome TEXT NOT NULL,
+     codice TEXT NOT NULL UNIQUE,              -- in chiaro: serve per ristampare i cartellini
+     codice_qr TEXT NOT NULL UNIQUE,
+     versione_codice INTEGER NOT NULL DEFAULT 1,
+     attivo INTEGER NOT NULL DEFAULT 1,
+     cartella_rete TEXT NOT NULL DEFAULT '',
+     creato TEXT NOT NULL
+   );
+   CREATE INDEX studenti_classe ON studenti(classe_id);
+   CREATE TABLE docenti (
+     id INTEGER PRIMARY KEY,
+     email TEXT NOT NULL UNIQUE COLLATE NOCASE,
+     nome TEXT NOT NULL,
+     password TEXT NOT NULL,
+     admin INTEGER NOT NULL DEFAULT 0,
+     attivo INTEGER NOT NULL DEFAULT 1,
+     creato TEXT NOT NULL
+   );
+   CREATE TABLE sessioni (
+     impronta TEXT PRIMARY KEY,
+     tipo TEXT NOT NULL CHECK (tipo IN ('studente', 'docente')),
+     utente_id INTEGER NOT NULL,
+     metodo TEXT NOT NULL,                     -- qr, codice, password
+     versione_codice INTEGER NOT NULL DEFAULT 0,
+     dispositivo TEXT NOT NULL DEFAULT '',
+     creata TEXT NOT NULL,
+     ultimo_uso TEXT NOT NULL,
+     scade TEXT NOT NULL,
+     inattivita_s INTEGER NOT NULL             -- dopo quanti secondi senza richieste si chiude
+   );
+   CREATE INDEX sessioni_utente ON sessioni(tipo, utente_id);
+   CREATE TABLE documenti (
+     studente_id INTEGER NOT NULL REFERENCES studenti(id),
+     tipo TEXT NOT NULL,
+     rev INTEGER NOT NULL,
+     dati TEXT NOT NULL,
+     aggiornato TEXT NOT NULL,
+     autore_tipo TEXT NOT NULL,
+     autore_id INTEGER NOT NULL,
+     PRIMARY KEY (studente_id, tipo)
+   );
+   CREATE TABLE revisioni (
+     id INTEGER PRIMARY KEY,
+     studente_id INTEGER NOT NULL REFERENCES studenti(id),
+     tipo TEXT NOT NULL,
+     rev INTEGER NOT NULL,
+     dati TEXT NOT NULL,
+     quando TEXT NOT NULL,
+     autore_tipo TEXT NOT NULL,
+     autore_id INTEGER NOT NULL
+   );
+   CREATE INDEX revisioni_documento ON revisioni(studente_id, tipo, rev);
+   CREATE TABLE letture (
+     id INTEGER PRIMARY KEY,
+     docente_id INTEGER NOT NULL REFERENCES docenti(id),
+     studente_id INTEGER NOT NULL REFERENCES studenti(id),
+     tipo TEXT NOT NULL,
+     azione TEXT NOT NULL,                     -- lettura, modifica, rigenera, ...
+     quando TEXT NOT NULL
+   );
+   CREATE INDEX letture_studente ON letture(studente_id, quando);`
 ];
 
 function apri(percorso) {

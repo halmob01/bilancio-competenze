@@ -66,7 +66,7 @@ Raccolta con un comando di sola lettura lanciato dal docente via SSH:
 - Shell normale, home `/home/gcatalfamo`, non chiuso nella cartella.
 - Gruppi: `gcatalfamo`, **`sudo`**, `users`. `sudo -n -l` risponde «a password is required»: **ha sudo, con la password dell'account** (da cambiare con `passwd` prima di usarlo). Quindi si può seguire tutto il piano (siti, backend, `aggiorna.sh`), avvisando il collega.
 - **Non** è nel gruppo `webdev`. `gcatalfamo/` (di `aeberlin:webdev`, `drwxrwsr-x+`) ha una ACL che gli permette di scrivere: contiene solo un file vuoto `ciao` creato da `gcatalfamo` il 18/11.
-- Programmi: `node` (quello di sistema, v20), `tar`, `rsync`; **`git` non c'è** (`apt install git` da concordare). Disco: 92 GB liberi su 122.
+- Programmi: `node` (quello di sistema, v20), `tar`, `rsync`; `git` non c'era: **installato il 25/11/2026** dal docente (`apt-get install git`, versione 2.47.3 di Debian). Disco: 92 GB liberi su 122.
 
 Ancora da sapere: se gli studenti sono nel gruppo `webdev` (comando di controllo già dato, risposta non ricevuta); `PermitRootLogin` di SSH.
 

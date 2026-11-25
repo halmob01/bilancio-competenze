@@ -4,6 +4,10 @@ Scritto il **25 novembre 2026** per una nuova sessione di Claude Code aperta **s
 
 Prima di cominciare leggi anche `docs/RIPRESA-BACKEND.md` (stato del backend e decisioni prese) e `docs/PIANO-PORTALE.md` §2, §3 e §3 bis (dove stanno le cose sul server e come si pubblica). In questo file trovi solo quello che è cambiato e i passi da fare.
 
+> **Stato al 25/11/2026, fine giornata.** Fatti: §2 (PC pronto, Node 26.13.1, test verdi, `ssh scuola`), §3 (password cambiata; FileZilla su SFTP con la chiave), §4 (account con shell e sudo con password). Installato anche `git` sul server. Non fatti: §5 (pubblicazione dei siti, rimandata per decisione) e §6 (backend). Dettagli in [`RIPRESA-BACKEND.md`](RIPRESA-BACKEND.md) §3.1.
+>
+> Attenzione: la chiave giusta è quella con impronta `SHA256:uuydYBCq…pcI` ed è **protetta da passphrase**; una coppia diversa con lo stesso nome era finita in `.ssh` e il server la rifiutava.
+
 > **Nessuna credenziale in questo repository.** La password dell'account e la chiave privata non si scrivono mai in file, commit, messaggi o comandi salvati. La password la conosce il docente; la chiave sta solo in `%USERPROFILE%\.ssh` sul PC.
 
 ---

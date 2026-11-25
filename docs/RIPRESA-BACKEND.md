@@ -1,6 +1,6 @@
 # Ripresa del lavoro: backend del portale dello studente
 
-Stato al **18 novembre 2026** (aggiornato il 25/11: il codice del backend è in `main`; per lavorare sul server dal PC vedi [`SESSIONE-PC.md`](SESSIONE-PC.md)). Questo file serve a chi riprende il lavoro in una nuova sessione: dice che cosa è stato deciso, che cosa è stato fatto, che cosa manca e da dove ripartire.
+Stato al **18 novembre 2026** (aggiornato il 25/11: il codice del backend è in `main`; PC del docente pronto e account `gcatalfamo` verificato, vedi §3.1; per lavorare sul server dal PC vedi [`SESSIONE-PC.md`](SESSIONE-PC.md)). Questo file serve a chi riprende il lavoro in una nuova sessione: dice che cosa è stato deciso, che cosa è stato fatto, che cosa manca e da dove ripartire.
 
 ---
 
@@ -67,6 +67,28 @@ Raccolta con un comando di sola lettura lanciato dal docente via SSH:
 - Gruppi: `gcatalfamo`, **`sudo`**, `users`. `sudo -n -l` risponde «a password is required»: **ha sudo, con la password dell'account** (da cambiare con `passwd` prima di usarlo). Quindi si può seguire tutto il piano (siti, backend, `aggiorna.sh`), avvisando il collega.
 - **Non** è nel gruppo `webdev`. `gcatalfamo/` (di `aeberlin:webdev`, `drwxrwsr-x+`) ha una ACL che gli permette di scrivere: contiene solo un file vuoto `ciao` creato da `gcatalfamo` il 18/11.
 - Programmi: `node` (quello di sistema, v20), `tar`, `rsync`; `git` non c'era: **installato il 25/11/2026** dal docente (`apt-get install git`, versione 2.47.3 di Debian). Disco: 92 GB liberi su 122.
+
+### 3.1 Registro della sessione dal PC (25/11/2026)
+
+Lavoro fatto dal PC del docente (Windows 11, rete della scuola), seguendo [`SESSIONE-PC.md`](SESSIONE-PC.md). Nessuna credenziale è scritta qui.
+
+**Sul PC**
+- Repository clonato e portato sul ramo `claude/wizardly-volta-n6bra0`. Nella cartella di lavoro di Claude il clone riesce solo con `core.longpaths=true` (percorso troppo lungo per Windows).
+- Git per Windows 2.54 e OpenSSH 9.5 c'erano già. **Node.js 26.13.1** installato con winget (serve l'amministratore): `node --test tests/*.test.cjs` → **103 test, tutti verdi**.
+- **Chiavi**: quelle che erano in `%USERPROFILE%\.ssh` erano una coppia diversa (impronta `SHA256:NhcH4Yq6…iV+Y`) e il server le rifiutava. Quelle giuste, mandate dal collega, hanno impronta `SHA256:uuydYBCq…pcI` e sono protette da passphrase. Ora sono in `.ssh` al posto delle altre; le vecchie sono rimaste come `*.vecchia`. La chiave privata è leggibile solo dall'utente del docente.
+- `%USERPROFILE%\.ssh\config` con il nome breve **`scuola`** (§2.5 di SESSIONE-PC): basta `ssh scuola` (chiede la passphrase).
+- **FileZilla**: sito «Scuola (SFTP)» nel Gestore siti, SFTP porta 22, accesso con file chiave, cartella iniziale `/var/www/html/gcatalfamo`. Provato: si collega. Non usare più l'FTP sulla 21.
+
+**Sul server**
+- Diagnosi di sola lettura (§4 di SESSIONE-PC), risultato sopra.
+- **`git` 2.47.3 installato** (`sudo apt-get install git`, pacchetto Debian), su richiesta del docente. Da comunicare al collega.
+- **Password di `gcatalfamo` cambiata** dal docente con `passwd` (quella provvisoria era passata in chat). Serve anche per `sudo`.
+- Nient'altro toccato: `gcatalfamo/` contiene ancora solo il file vuoto `ciao`.
+
+**Da fare dopo questa sessione**
+- Cancellare le chiavi dalla cartella Download del PC.
+- Dire al collega che è stato installato git; chiedergli una **chiave nuova** (la privata attuale è passata in una chat, anche se protetta da passphrase).
+- Chiedere ancora: studenti nel gruppo `webdev`? chi rinnova il DNS `sytes.net`? nome di dominio dedicato al portale?
 
 Ancora da sapere: se gli studenti sono nel gruppo `webdev` (comando di controllo già dato, risposta non ricevuta); `PermitRootLogin` di SSH.
 

@@ -1,6 +1,6 @@
 # Ripresa del lavoro: backend del portale dello studente
 
-Stato al **18 novembre 2026**. Questo file serve a chi riprende il lavoro in una nuova sessione: dice che cosa è stato deciso, che cosa è stato fatto, che cosa manca e da dove ripartire.
+Stato al **18 novembre 2026** (aggiornato il 25/11: il codice del backend è in `main`; per lavorare sul server dal PC vedi [`SESSIONE-PC.md`](SESSIONE-PC.md)). Questo file serve a chi riprende il lavoro in una nuova sessione: dice che cosa è stato deciso, che cosa è stato fatto, che cosa manca e da dove ripartire.
 
 ---
 
@@ -59,7 +59,9 @@ Raccolta con un comando di sola lettura lanciato dal docente via SSH:
 
 **Conseguenza principale**: con gli studenti che pubblicano PHP e JavaScript sullo stesso nome di dominio, una loro pagina può leggere il `localStorage` dei siti e chiamare l'API a nome di chi la apre; un loro PHP può chiamare direttamente `127.0.0.1:3100` e fingere qualsiasi IP. **Prima dei dati veri serve un nome di dominio solo per il portale** (sottodominio AFOL o altro), con un VirtualHost senza PHP.
 
-Ancora da sapere: con quale account il docente usa FileZilla (`aeberlin`?); se gli studenti sono nel gruppo `webdev` (comando di controllo già dato, risposta non ricevuta); `PermitRootLogin` di SSH.
+**Aggiornamento 25/11/2026**: il collega ha creato l'account **`gcatalfamo`** (SSH con chiave, FileZilla con password); da verificare se ha sudo o è chiuso nella cartella. Istruzioni per la sessione dal PC in [`SESSIONE-PC.md`](SESSIONE-PC.md).
+
+Ancora da sapere: se gli studenti sono nel gruppo `webdev` (comando di controllo già dato, risposta non ricevuta); `PermitRootLogin` di SSH.
 
 ---
 

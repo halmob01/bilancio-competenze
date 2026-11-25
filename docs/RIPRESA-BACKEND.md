@@ -61,6 +61,13 @@ Raccolta con un comando di sola lettura lanciato dal docente via SSH:
 
 **Aggiornamento 25/11/2026**: il collega ha creato l'account **`gcatalfamo`** (SSH con chiave, FileZilla con password); da verificare se ha sudo o è chiuso nella cartella. Istruzioni per la sessione dal PC in [`SESSIONE-PC.md`](SESSIONE-PC.md).
 
+**Diagnosi dell'account `gcatalfamo` (25/11/2026, dal PC, sola lettura)**:
+- SSH accetta **solo la chiave** (nessuna password via SSH/SFTP). La chiave giusta è quella con impronta `SHA256:uuydYBCq…pcI`, **protetta da passphrase**. La password di FileZilla quindi vale solo per l'FTP sulla porta 21 (in chiaro): meglio SFTP con la chiave.
+- Shell normale, home `/home/gcatalfamo`, non chiuso nella cartella.
+- Gruppi: `gcatalfamo`, **`sudo`**, `users`. `sudo -n -l` risponde «a password is required»: **ha sudo, con la password dell'account** (da cambiare con `passwd` prima di usarlo). Quindi si può seguire tutto il piano (siti, backend, `aggiorna.sh`), avvisando il collega.
+- **Non** è nel gruppo `webdev`. `gcatalfamo/` (di `aeberlin:webdev`, `drwxrwsr-x+`) ha una ACL che gli permette di scrivere: contiene solo un file vuoto `ciao` creato da `gcatalfamo` il 18/11.
+- Programmi: `node` (quello di sistema, v20), `tar`, `rsync`; **`git` non c'è** (`apt install git` da concordare). Disco: 92 GB liberi su 122.
+
 Ancora da sapere: se gli studenti sono nel gruppo `webdev` (comando di controllo già dato, risposta non ricevuta); `PermitRootLogin` di SSH.
 
 ---

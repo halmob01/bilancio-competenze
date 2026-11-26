@@ -21,7 +21,7 @@ const MIGRAZIONI = [
   // 2. Accesso e documenti (fase F1).
   `CREATE TABLE classi (
      id INTEGER PRIMARY KEY,
-     nome TEXT NOT NULL,                       -- per esempio 3ELA
+     nome TEXT NOT NULL,                       -- per esempio 3ELE
      indirizzo TEXT NOT NULL DEFAULT '',       -- elettrico, estetica, informatica
      anno INTEGER NOT NULL DEFAULT 0,          -- 1..4
      anno_scolastico TEXT NOT NULL DEFAULT '', -- per esempio 2026/27

@@ -120,7 +120,7 @@ Non tocca Apache, systemd, pacchetti o porte. Si può rieseguire (non rifà quel
 | `GET/POST /api/docenti`, `GET /api/studenti/:id/registro` | amministratore | docenti; chi ha letto o modificato il lavoro di uno studente |
 
 **Regole implementate**
-- **Codice del cartellino**: 8 caratteri dall'alfabeto `ACDEFGHJKMNPQRTUVWXY34679` (niente caratteri ambigui), stampato come `3ELA-XXXX-XXXX`. La sigla della classe è solo un aiuto: non conta per l'accesso, così il cartellino resta valido negli anni. Si accetta scritto in minuscolo, con spazi o trattini. Il **QR** porta un codice diverso di 32 caratteri.
+- **Codice del cartellino**: 8 caratteri dall'alfabeto `ACDEFGHJKMNPQRTUVWXY34679` (niente caratteri ambigui), stampato come `3ELE-XXXX-XXXX`. La sigla della classe è solo un aiuto: non conta per l'accesso, così il cartellino resta valido negli anni. Si accetta scritto in minuscolo, con spazi o trattini. Il **QR** porta un codice diverso di 32 caratteri.
 - **Durata delle sessioni**: dal QR (telefono) fino al 31 agosto, cookie persistente; con il codice scritto (PC) cookie di sessione, chiusura dopo **30 minuti** senza richieste e comunque dopo 8 ore; docenti 2 ore di inattività, 12 ore al massimo.
 - **Documenti** gestiti: `diario`, `bilancio`, `cv`. Il server li ricontrolla con le **stesse funzioni dei siti** (`diario/js/diario.js`, `js/bilancio.js`, `js/cv.js` → `normalizza`), quindi i campi sconosciuti spariscono.
 - **Niente sovrascritture in silenzio**: ogni salvataggio dichiara `base` (la revisione da cui parte); se nel frattempo un altro ha salvato, risposta **409** con la versione attuale. Gli stessi dati non creano una revisione nuova.

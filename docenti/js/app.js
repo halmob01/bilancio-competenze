@@ -205,7 +205,7 @@
   // Nuova classe (c = null) o modifica.
   function moduloClasse(c) {
     const opz = function (valori, scelto) { return Object.keys(valori).map(function (k) { return h('option', { value: k, text: valori[k], selected: String(scelto) === k ? 'selected' : null }); }); };
-    const nome = h('input', { id: 'c-nome', type: 'text', maxlength: '20', placeholder: 'Per esempio 3ELA', value: c ? c.nome : '' });
+    const nome = h('input', { id: 'c-nome', type: 'text', maxlength: '20', placeholder: 'Per esempio 3ELE', value: c ? c.nome : '' });
     const ind = h('select', { id: 'c-ind' }, opz(INDIRIZZI, c ? c.indirizzo : ''));
     const anno = h('select', { id: 'c-anno' }, opz(ANNI, c ? c.anno : 1));
     const sco = h('input', { id: 'c-sco', type: 'text', maxlength: '9', value: c ? c.anno_scolastico : D.annoScolastico() });

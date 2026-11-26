@@ -66,7 +66,7 @@ async function preparaClasse(p) {
   const acc = await p.chiedi('POST', '/api/accesso/docente', { email: 'PROF@scuola.it', password: pw });
   assert.equal(acc.stato, 200, JSON.stringify(acc.json));
   const docente = acc.cookie;
-  const cl = await p.chiedi('POST', '/api/classi', { nome: '3ELA', indirizzo: 'elettrico', anno: 3, annoScolastico: '2026/27' }, { cookie: docente });
+  const cl = await p.chiedi('POST', '/api/classi', { nome: '3ELE', indirizzo: 'elettrico', anno: 3, annoScolastico: '2026/27' }, { cookie: docente });
   assert.equal(cl.stato, 200);
   const ag = await p.chiedi('POST', '/api/classi/' + cl.json.id + '/studenti', { studenti: [{ nome: 'Sara', cognome: 'Bianchi' }, { nome: 'Luca', cognome: 'Verdi' }, { nome: '', cognome: 'Senza nome' }] }, { cookie: docente });
   assert.equal(ag.json.creati.length, 2, 'la riga senza nome è scartata');
@@ -141,11 +141,11 @@ test('studente: entra con il codice scritto in qualsiasi modo o con il QR; un co
   try {
     const k = await preparaClasse(p);
     const sara = k.studenti.find(function (s) { return s.nome === 'Sara'; });
-    assert.match(sara.codice, /^3ELA-[A-Z0-9]{4}-[A-Z0-9]{4}$/);
+    assert.match(sara.codice, /^3ELE-[A-Z0-9]{4}-[A-Z0-9]{4}$/);
     const scritto = sara.codice.toLowerCase().replace(/-/g, ' ');
     const r1 = await p.chiedi('POST', '/api/accesso/studente', { codice: scritto });
     assert.equal(r1.stato, 200);
-    assert.equal(r1.json.profilo.classe, '3ELA');
+    assert.equal(r1.json.profilo.classe, '3ELE');
     assert.equal(r1.json.profilo.indirizzo, 'elettrico');
     assert.doesNotMatch(r1.setCookie, /Max-Age/, 'dal PC: cookie che si chiude con il browser');
     const senzaSigla = sara.codice.slice(5);
@@ -413,7 +413,7 @@ test('pannello docenti: riepilogo della classe, scheda dello studente, modifica 
     assert.equal((await p.chiedi('GET', '/api/classi/' + k.classeId + '/riepilogo', undefined, { cookie: sara })).stato, 403, 'uno studente no');
     // La scheda dello studente
     const sc = await p.chiedi('GET', '/api/studenti/' + rs.id, undefined, { cookie: k.docente });
-    assert.deepEqual([sc.json.studente.classe, sc.json.studente.indirizzo, sc.json.studente.anno, sc.json.studente.foto], ['3ELA', 'elettrico', 3, 1]);
+    assert.deepEqual([sc.json.studente.classe, sc.json.studente.indirizzo, sc.json.studente.anno, sc.json.studente.foto], ['3ELE', 'elettrico', 3, 1]);
     assert.equal(sc.json.percorsi.portfolio.dettaglio, '2 attività');
     assert.ok(!('codice' in sc.json.studente));
     // Modifica della classe
@@ -534,8 +534,8 @@ test('il docente cambia la password provvisoria; studente disattivato non entra'
 
 test('codici: alfabeto senza caratteri ambigui, lettura tollerante, password con scrypt', async () => {
   for (let i = 0; i < 50; i++) assert.match(S.nuovoCodice(), /^[ACDEFGHJKMNPQRTUVWXY34679]{8}$/);
-  assert.equal(S.codiceStampato('3ela', 'ACDE4679'), '3ELA-ACDE-4679');
-  assert.equal(S.codiceDaTesto(' 3ela-acde 4679 '), 'ACDE4679');
+  assert.equal(S.codiceStampato('3ele', 'ACDE4679'), '3ELE-ACDE-4679');
+  assert.equal(S.codiceDaTesto(' 3ele-acde 4679 '), 'ACDE4679');
   assert.equal(S.codiceDaTesto('ACD'), '');
   assert.equal(S.codiceDaTesto('OOOO0000'), '', 'lettere ambigue escluse');
   assert.ok(S.nuovoCodiceQr().length >= 30);

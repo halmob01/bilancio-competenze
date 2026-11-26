@@ -133,7 +133,7 @@ L'idea viene dal laboratorio, che funziona già con studenti veri; il codice è 
 
 **Studenti** (niente email, niente password da ricordare):
 - Il docente prepara la classe (nome e cognome, classe, indirizzo, anno) e stampa i **cartellini**: nome, classe, codice personale scritto e **QR**. *Fatto lato server; la pagina dei cartellini è da fare.*
-- **Il codice scritto** ha 8 caratteri presi da un alfabeto senza caratteri che si confondono (niente 0/O, 1/I/L, 2/Z, 5/S, 8/B) e si stampa come `3ELA-K7QH-M4XT`. La **sigla della classe è solo un aiuto**: non conta per entrare, così il cartellino resta valido quando lo studente cambia classe. Si accetta scritto in minuscolo, con spazi o trattini. *Fatto.*
+- **Il codice scritto** ha 8 caratteri presi da un alfabeto senza caratteri che si confondono (niente 0/O, 1/I/L, 2/Z, 5/S, 8/B) e si stampa come `3ELE-K7QH-M4XT`. La **sigla della classe è solo un aiuto**: non conta per entrare, così il cartellino resta valido quando lo studente cambia classe. Si accetta scritto in minuscolo, con spazi o trattini. *Fatto.*
 - **Il QR** porta un codice diverso e lungo (32 caratteri), che nessuno deve digitare: lo studente lo inquadra con la fotocamera e si apre il portale già dentro. Il codice viaggia nella parte dell'indirizzo dopo `#`, che non finisce nei registri del server; la pagina lo toglie subito dall'indirizzo. *Fatto lato server; la pagina è da fare.*
 - Dal telefono (QR) si resta collegati fino al 31 agosto. *Fatto.*
 - **Dai PC della scuola**, per chi preferisce lavorare con tastiera e schermo grande, si entra con il **codice identificativo del cartellino**, scritto nel campo di accesso. In più, per comodità, il PC può mostrare un **QR sullo schermo** da inquadrare con il telefono su cui lo studente è già entrato (come WhatsApp Web): niente da digitare. Nessun PIN.
@@ -286,7 +286,7 @@ Senza accesso la pagina iniziale resta quella di oggi, con le tre card e il lavo
 Un pannello semplice, da PC (*le funzioni ci sono sul server, le pagine sono da fare*):
 - **Classi e studenti**: crea, importa un elenco incollato, stampa i cartellini con QR, rigenera i codici, sposta da una classe all'altra a inizio anno.
 - **Avanzamento**: per ogni studente, a che punto è con diario, bilancio, portfolio e curriculum (completo, in corso, da iniziare). Niente punteggi né classifiche.
-- **Lettura e correzione**: il docente apre il documento dello studente **negli stessi siti** (bilancio, curriculum, diario, portfolio), con una fascia fissa in alto «Stai modificando il curriculum di Mario Rossi, 3ELA»; in questa modalità non si salva niente nel browser del docente. Restano da decidere i limiti per il bilancio e il diario (§17).
+- **Lettura e correzione**: il docente apre il documento dello studente **negli stessi siti** (bilancio, curriculum, diario, portfolio), con una fascia fissa in alto «Stai modificando il curriculum di Mario Rossi, 3ELE»; in questa modalità non si salva niente nel browser del docente. Restano da decidere i limiti per il bilancio e il diario (§17).
 - **Cestino**: le cose cancellate dagli studenti della classe negli ultimi 30 giorni, con chi le ha cancellate e quando; il docente le ripristina con un clic.
 - **Conferma delle attività del portfolio**: «ho visto questo lavoro». È la conferma di un fatto, non un voto: resta coerente con il bilancio non valutativo.
 - **Esportazione** della classe (riepilogo in foglio di calcolo): sostituisce il Foglio Google, che è già stato tolto; conviene farla presto (in F1), perché i docenti non restino senza strumento.

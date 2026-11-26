@@ -44,7 +44,7 @@ test('stato, ultimo accesso e dimensioni si leggono in italiano', () => {
 });
 
 test('CSV: punto e virgola, BOM, virgolette, e nessun nome può diventare una formula', () => {
-  const r = { classe: { nome: '3ELA', indirizzo: 'elettrico', anno: 3 }, studenti: [
+  const r = { classe: { nome: '3ELE', indirizzo: 'elettrico', anno: 3 }, studenti: [
     { cognome: 'Bianchi', nome: 'Sara', attivo: true, ultimoAccesso: '2026-11-26T10:00:00Z', foto: 3, file: 1,
       percorsi: { portfolio: { stato: 'in_corso', dettaglio: '2 attività' }, diario: { stato: 'in_corso', dettaglio: '1 tirocinio, 4 settimane' },
         bilancio: { stato: 'completa', dettaglio: '6 di 6 sezioni' }, curriculum: { stato: 'vuota', dettaglio: '' } } },
@@ -54,9 +54,9 @@ test('CSV: punto e virgola, BOM, virgolette, e nessun nome può diventare una fo
   assert.ok(c.startsWith('﻿Cognome;Nome;Classe'), 'BOM e intestazione');
   const righe = c.trim().split('\r\n');
   assert.equal(righe.length, 3);
-  assert.equal(righe[1], 'Bianchi;Sara;3ELA;elettrico;III anno;2 attività;3;1;In corso (1 tirocinio, 4 settimane);Completo (6 di 6 sezioni);Da iniziare;2026-11-26;sì');
+  assert.equal(righe[1], 'Bianchi;Sara;3ELE;elettrico;III anno;2 attività;3;1;In corso (1 tirocinio, 4 settimane);Completo (6 di 6 sezioni);Da iniziare;2026-11-26;sì');
   assert.ok(righe[2].startsWith('\'=CMD();"Luca; ""il Rosso"""'), righe[2]);
-  assert.equal(D.nomeFileCsv({ nome: '3ELA' }, '2026-11-26'), 'riepilogo-3ela-2026-11-26.csv');
+  assert.equal(D.nomeFileCsv({ nome: '3ELE' }, '2026-11-26'), 'riepilogo-3ele-2026-11-26.csv');
   assert.equal(D.nomeFileCsv(null, '2026-11-26'), 'riepilogo-classe-2026-11-26.csv');
 });
 

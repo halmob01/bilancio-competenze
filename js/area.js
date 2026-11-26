@@ -36,7 +36,7 @@
     lab.setAttribute('for', id);
     const riga = el('div', 'accesso__riga');
     const inp = el('input', 'accesso__codice');
-    Object.assign(inp, { id: id, type: 'text', autocomplete: 'off', spellcheck: false, maxLength: 24, placeholder: '3ELA-XXXX-XXXX' });
+    Object.assign(inp, { id: id, type: 'text', autocomplete: 'off', spellcheck: false, maxLength: 24, placeholder: '3ELE-XXXX-XXXX' });
     inp.setAttribute('autocapitalize', 'characters');
     inp.setAttribute('aria-describedby', 'accesso-nota accesso-errore');
     const btn = el('button', 'pulsante', 'Entra');

@@ -4,7 +4,9 @@ Data: 28 ottobre 2026.
 
 ## Che cosa c'è
 
-Il percorso completo in sei sezioni, utilizzabile da smartphone e da computer, con salvataggio locale, copia scaricabile e ricaricabile, stampa del dossier. L'identità visiva segue `design.md`:
+Il percorso completo in sei sezioni, utilizzabile da smartphone e da computer, con salvataggio locale, copia scaricabile e ricaricabile, stampa del dossier.
+
+**Aggiornamento del 26 novembre 2026:** l'interfaccia è stata rifatta con il brand kit di AFOL Metropolitana (rosso `#CC0000`, Fira Sans, sistema dei cerchi); vedi `design.md` V2. L'elenco che segue descrive l'identità della V1, ormai sostituita:
 
 - palette Babel (`--bc-paper`, `--bc-ink`, `--bc-red` solo come segnale, `--bc-mist` per i blocchi d'aiuto, `--bc-blush` per gli avvisi);
 - Anton per apertura e nome nel dossier, Fira Sans per tutta l'interfaccia, EB Garamond solo per le citazioni del dossier e il testo per l'open day, Fira Mono per i metadati;

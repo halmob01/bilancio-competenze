@@ -219,7 +219,7 @@
     const iniziato = !!stato.aggiornato;
     return h('div', { class: 'home' },
       h('a', { class: 'home__tutti', href: '../', text: 'Tutti i percorsi' }),
-      h('h1', { text: 'Diario di bordo' }),
+      h('h1', null, 'Diario di ', h('span', { class: 'chiave', text: 'bordo' })),
       h('p', { class: 'home__sottotitolo', text: 'Che cosa hai fatto e imparato questa settimana?' }),
       h('p', { class: 'home__testo misura', text: 'Durante il tirocinio scrivi una scheda a settimana: che cosa hai fatto, che cosa hai imparato, che cosa è stato difficile e chi ti ha aiutato. Bastano poche righe con le tue parole.' }),
       h('div', { class: 'home__azioni' },

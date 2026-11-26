@@ -1,202 +1,92 @@
-# Bilancio di competenze — Brand identity & UI design system
+# Percorsi per gli studenti — Identità visiva
 
-**Stato:** proposta V1 da sottoporre a revisione; non è ancora un'interfaccia implementata.  
-**Progetto:** bilancio riflessivo delle competenze per studenti IeFP di tutti gli anni (Elettrico, Informatica, Estetica), con doppio esito: autovalutazione e racconto per orientamento/open day.  
-**Scelta di fondo:** **colori da Babel** + **font, struttura editoriale, proporzioni e spazio da sito-filosofia**. Nessuna nuova palette inventata.
+**Stato:** V2, 26 novembre 2026. Sostituisce la V1 (palette Babel e tipografia di sito-filosofia).
+**Fonte del brand:** skill `afol-brand`, copiata dalla repo `halmob01/cfp-news` in [`.claude/skills/afol-brand/`](.claude/skills/afol-brand/SKILL.md). Ogni valore lì è marcato come **Ufficiale** (linee guida AFOL), **Osservato** (misurato su sito e social) o **Proposta**. Qui non si inventano valori: si applicano quelli.
+**Vale per:** pagina iniziale, bilancio (`/bilancio/`), curriculum (`/cv/`), diario (`/diario/`) e la pagina Apps Script (`apps-script/Index.html`).
 
-## 1. Fonti reali e provenienza
+## 1. Architettura di marca
 
-Repository consultati (branch `main`):
-- Babel: `halmob01/babel-sito`, file `styles/base.css`, `styles/editorial.css`, `styles/home.css`, `styles/pages.css`.
-- Filosofia: `halmob01/sito-filosofia`, file `css/tokens.css`, `css/base.css`, `css/layout.css`, `css/components.css`.
+Modello **con garante** (`reference/identita.md`): gli strumenti hanno nome proprio (Diario di bordo, Bilancio di competenze, Curriculum) ed ereditano da AFOL Metropolitana rosso, Fira Sans e sistema dei cerchi.
 
-Distinzione fondamentale: **Babel fornisce SOLO la palette** in questa identità. **Sito-filosofia fornisce tipografia, layout, ritmi, componenti editoriali e logica di leggibilità**. Non copiare da Babel il font Neue Haas o gli effetti dello storytelling; non copiare da filosofia i colori lilla.
+- Pagina iniziale: logo AFOL a colori in testata (almeno 120 px di larghezza), piè di pagina rosso con il logo negativo.
+- Testate dei tre siti: icona quadrata AFOL (bianco su rosso) da 40 px, perché il logo intero sotto i 120 px non si legge (`reference/logo.md`).
+- Favicon: l'icona quadrata (`img/favicon-32.png`, `img/favicon-180.png`).
+- I loghi sono la **ricostruzione vettoriale non ufficiale** della skill (`img/afol_logo_colore.svg`, `img/afol_logo_negativo.svg`). Se AFOL fornisce i file originali, vanno sostituiti.
 
-## 2. Posizionamento e tono visivo
+Tono verbale invariato rispetto alla V1: diretto, rispettoso, non enfatico, domande concrete («Che cosa hai imparato finora?»), niente slogan motivazionali. È coerente con la voce AFOL (diretta, concreta, «tu» e «noi», senza gergo).
 
-Un *quaderno di lavoro editoriale interattivo*, non un gestionale HR, non un portfolio pubblicitario, non un quiz infantile.  
-Attributi: **adulto, rigoroso, contemporaneo, leggibile, misurato, personale**.
+## 2. Colori
 
-Il design deve aiutare a ricordare esperienze, fornire prove di competenza e formulare giudizi anche critici su scuola e tirocinio. Evitare di trasformare l'autovalutazione in un voto o un premio.
-
-### Identità verbale
-
-Nome progetto: **Bilancio di competenze**.  
-Sottotitolo operativo suggerito: **Che cosa hai imparato finora?**  
-Testo d'avvio: «Ricostruisci le esperienze del tuo percorso, riconosci ciò che sai fare e individua quello che devi ancora imparare.»  
-Tono: diretto, rispettoso, non enfatico; domande concrete e non slogan motivazionali.
-
-Esempi:
-- Sì: «Racconta un problema che hai risolto durante un tirocinio.»
-- Sì: «Che cosa non sapevi fare prima? Quale aiuto ti è servito?»
-- No: «Scopri i tuoi superpoteri!», «Diventa la versione migliore di te!», «Sblocca il prossimo livello!»
-
-## 3. Sistema cromatico — estratto da Babel
-
-I valori seguenti sono **originali**, dal `:root` di `babel-sito/styles/base.css`:
-
-| Ruolo | Token | HEX | Impiego |
+| Ruolo | Token | Valore | Fonte |
 |---|---|---|---|
-| Sfondo principale | `--bc-paper` | `#FAF8F6` | tele della pagina |
-| Testo e pulsanti principali | `--bc-ink` | `#000000` | testo, tratti, azioni primarie |
-| Accento | `--bc-red` | `#FF3B30` | progresso, stato attivo, segni, numeri selezionati |
-| Secondario caldo | `--bc-blush` | `#FFC9C2` | note visive, blocchi occasionali |
-| Fondo evidenza | `--bc-mist` | `#FFF0ED` | spiegazioni, casi professionali, esempi |
+| Rosso (unico) | `--afol-rosso` | `#CC0000` | Ufficiale |
+| Rosso al passaggio del mouse | `--afol-rosso-scuro` | `#A30000` | Proposta |
+| Titoli | `--afol-nero` | `#1A1A1A` | Proposta |
+| Testo | `--afol-grigio-scuro` | `#333333` | Ufficiale |
+| Note, metadati | `--afol-grigio-medio` | `#666666` | Ufficiale |
+| Fondo della pagina | `--afol-grigio-chiaro` | `#F5F5F5` | Ufficiale |
+| Filetti e bordi delle schede | `--afol-grigio-bordo` | `#CCCCCC` | Ufficiale |
+| Bordo dei campi e delle scelte | `--c-bordo-campo` | `#8A8A8A` | Proposta (3,4:1, WCAG 1.4.11) |
+| Fondo dei blocchi di aiuto | `--afol-fondo-rosato` | `#FCF3F4` | Osservato |
+| Superfici | `--afol-bianco` | `#FFFFFF` | Ufficiale |
 
-Da Babel anche `--ink-60`, `--ink-30`, `--ink-10` come neri con opacità 60%, 30%, 8%. Il bianco `#FFFFFF` è una superficie funzionale neutra già presente nelle UI.
+Regole: **un solo rosso** e molti neutri; il rosso per pulsanti, occhielli, parola chiave dei titoli, linee e anelli; mai rosso su rosso; nessun secondo colore saturo, nemmeno per distinguere Elettrico, Informatica ed Estetica. Uno stato non dipende mai dal solo colore (la scelta attiva è anche in grassetto, il passo corrente ha anche il testo «Passo 2 di 6»).
 
-**Regola di contrasto:** non usare il rosso Babel come colore di testo piccolo sul fondo chiaro e non usare bianco su rosso per testo normale senza adeguata verifica del contrasto; il rosso è un *segnale*, non il colore del corpo testuale. Preferire nero su rosso o nero su rosa; gli stati non devono dipendere dal solo colore.
+## 3. Carattere
 
-Distribuzione visiva indicativa: 75–85% carta chiara; 10–20% testo/linee nero; rosso in accenti piccoli e focalizzati; rosa e mist solo dove servono. Non introdurre altri colori per i tre indirizzi: la stessa identità vale per tutti.
+**Fira Sans**, una sola famiglia, self-hosted in `fonts/` (400, 600, 800, 900). Nessuna richiesta a Google Fonts: il sito non fa richieste di rete esterne. La gerarchia nasce dal peso:
 
-## 4. Tipografia — da sito-filosofia
+| Elemento | Peso | Misura |
+|---|---|---|
+| H1 delle pagine iniziali, titolo del dossier | 900 | `clamp(36px … 60px)` |
+| Titolo di schermata, sottotitolo | 800 | `clamp(24px … 34px)` |
+| Titoli di schede e blocchi | 800 | 18–26 px |
+| Occhiello (`01 / 06`, gruppi, «SEI SEZIONI») | 600, maiuscolo, spaziatura 0,12 em, rosso | 14 px |
+| Testo | 400, interlinea 1,55 | 16–17 px |
+| Note | 400, `#666` | 14–15 px |
 
-Font effettivamente dichiarati in `sito-filosofia/css/tokens.css` e caricati da `css/base.css`:
+Titoli in minuscolo con **una** parola chiave in rosso («Bilancio di *competenze*», «Diario di *bordo*», «Il tuo *curriculum*»). Le citazioni dello studente nel dossier restano in Fira Sans, con un filetto rosso a sinistra.
 
-- **Anton** (display): titoli principali, numeri di sezione e grandi parole isolabili. Mai per lunghi paragrafi. Font condensato, senza bisogno di fingere pesi che non possiede.
-- **Fira Sans** (interfaccia): domande, spiegazioni brevi, pulsanti, selettori, risposta scritta, microtesti.
-- **EB Garamond** (narrativa, con misura): brevi estratti del racconto personale, testo conclusivo destinato all'open day, blocchi di lettura; **non** per etichette o form.
-- **Fira Sans** (metadati): `01 / 06`, «TIROCINIO», «SALVATO», indicatori e piccoli dettagli editoriali.
+**Eccezione: il foglio del curriculum.** È il documento dello studente, non un materiale AFOL: conserva i suoi modelli (Contemporaneo con Anton, Classico con EB Garamond, Europass) perché l'anteprima deve coincidere con il Word e il PDF generati in `js/docx.js` e `js/pdf.js`. Anton ed EB Garamond restano caricati solo per quello (`--f-cv-display`, `--f-cv-libro`).
 
-Corrispondenza con fonti: `--f-display: Anton`, `--f-sans: Fira Sans`, `--f-libro: EB Garamond`, `--f-mono: Fira Sans`.
+## 4. Il sistema dei cerchi
 
-Scala proposta **adattata alla funzione**, mantenendo le proporzioni del sito-filosofia:
-- H1 apertura Anton uppercase: `clamp(56px, 10vw, 120px)`, line-height `0.90`.
-- Titolo di sezione Fira Sans 600: `clamp(30px, 5vw, 48px)`, line-height `1.08`.
-- Domanda principale Fira Sans 600: `clamp(24px, 3.2vw, 36px)`, line-height `1.15`.
-- Corpo istruzioni Fira Sans 400: `clamp(17px, 1.5vw, 19px)`, line-height `1.55–1.62`.
-- Racconto conclusivo EB Garamond: `clamp(20px, 2vw, 23px)`, line-height `1.48`.
-- Metadati Fira Sans: `12–14px` con spaziatura misurata.
+Le sei regole di `reference/cerchi.md`: tratto uniforme (la parete dell'anello è spessa quanto la linea), rosso su chiaro e bianco su rosso, solo orizzontale e verticale, la linea entra dal bordo e finisce in un anello. Usi nell'interfaccia:
 
-Non impiegare EB Garamond per un lungo questionario su smartphone: il centro dell'esperienza deve rimanere Fira Sans.
+- **Firma**: la catena dei quattro cerchi (`img/catena.svg`, proporzioni misurate: fori 0,40 D, passo 1,3 D e 2,9 D) sotto l'H1 delle pagine iniziali e sotto il titolo del dossier. Solo lì, non a ogni titolo.
+- **Percorso**: la barra di avanzamento è una linea con un anello per sezione; anello grigio da fare, anello rosso vuoto completato, anello rosso pieno corrente.
+- **Tappe**: nella pagina iniziale una linea entra dal bordo sinistro dello schermo e attraversa le tre schede, ciascuna con il suo anello; sul telefono la linea diventa verticale.
+- **Segni piccoli**: l'anello prima del numero di sezione, l'anello sulle voci che mancano di qualcosa, i «+» degli esempi apribili.
 
-## 5. Layout — da sito-filosofia
+## 5. Componenti
 
-- **Griglia responsive:** 4 colonne mobile, 8 tablet (da 768px), 12 desktop (da 1200px).
-- **Gap:** 14px mobile, 20px tablet, 24px desktop.
-- **Margini:** 20px mobile (16px su schermi sotto 360px), da 28 a 72px su tablet/desktop.
-- **Massimo contenitore:** 1720px (ereditato), ma la colonna di testo resta stretta.
-- **Misura del testo:** circa 54ch per Fira Sans; niente istruzioni a tutta larghezza.
-- **Ritmo verticale:** sezioni ampie, riferimento `clamp(64px, 12vw, 100px)`; fino a `clamp(96px, 9vw, 140px)` su desktop.
-- **Distribuzione desktop:** nella fase di lavoro usare 4–5 colonne per introduzione/promemoria e 7–8 per la risposta, con filetto divisorio; su mobile una sola colonna.
+- **Pulsante principale**: fondo rosso, testo bianco 600, angoli 6 px, altezza 48 px; hover `#A30000`.
+- **Pulsante secondario**: bordo 2 px rosso, testo rosso, fondo trasparente; hover fondo rosato.
+- **Fuoco da tastiera**: contorno 3 px `#1A1A1A` staccato di 2 px, su tutto.
+- **Testata**: bianca, filetto rosso di 4 px in alto, icona AFOL, «← Tutti i percorsi», nome del sito in 800.
+- **Schede**: bianche su fondo grigio chiaro, bordo 1 px `#CCCCCC`, angoli 6 px; quella aperta o l'indice della home hanno il filetto rosso in alto di 6 px.
+- **Aiuto e suggerimenti**: fondo rosato con filetto rosso di 4 px a sinistra.
+- **Scelte**: righe bianche con bordo grigio; scelta attiva con bordo rosso, testo in grassetto, radio come anello rosso pieno.
+- **Dialoghi**: bianchi con filetto rosso in alto, fondo scurito dietro.
+- **Piè di pagina** (pagina iniziale): rosso pieno, logo negativo bianco, testo bianco.
 
-**Adattamento necessario:** il sito-filosofia permette sezioni narrative immersive; qui però c'è un compito di 3 ore. Niente scroll obbligati da molte viewport, niente transizioni che ostacolino la compilazione. Spazio sì, dispersione no.
+Restano esclusi: badge, punteggi, confetti, mascotte, foto stock, sfumature, ombre pesanti, colori per indirizzo.
 
-## 6. Grammatica grafica
+## 6. Layout e movimento
 
-Metafore visive: **indice editoriale**, **timeline del percorso**, **nota a margine**, **filetto**, **numero grande**, **documento annotato**, **traccia di avanzamento**.
+Invariati rispetto alla V1: contenitore di lavoro di 1240 px, margini 20 px sul telefono (16 sotto i 360) e da 28 a 72 px oltre; colonna di testo fino a circa 66 caratteri; da 1000 px home a due colonne e schermate con introduzione e risposta affiancate; da 1200 px indice delle sezioni come striscia orizzontale. Movimento sobrio (200 ms), `prefers-reduced-motion` rispettato.
 
-Componenti:
-1. **Apertura** — Anton su fondo carta; un sommario breve in Fira Sans; piccolo segno rosso. No hero fotografico.
-2. **Indice di percorso** — 6 sezioni, numerazione Fira Sans `01—06`; sul desktop rail laterale discreto; sul mobile barra sottile con nome tappa e stato.
-3. **Domanda** — titolo Fira Sans, una consegna alla volta, esempio concreto apribile e non imposto.
-4. **Scheda esperienza** — superficie carta o bianca, bordo sottile, angoli lievemente arrotondati (raggio 8px); contesto, azione, prova, difficoltà, autonomia.
-5. **Scala di autonomia** — selettore a opzioni testuali esplicite; mai sola scala numerica o emoji.
-6. **Campo racconto** — textarea larga, leggibile, con spazio sufficiente; pulsante «Detta la risposta» solo se una soluzione privacy-compatibile è disponibile; trascrizione sempre rivedibile.
-7. **Blocco di aiuto** — superficie `--bc-mist`, filetto verticale, testo Fira Sans; pochi casi reali adattati agli indirizzi.
-8. **Bilancio finale** — impaginazione tipo dossier, con sezioni chiare, citazioni in EB Garamond e margini ampi; possibilità di stampa e salvataggio.
-9. **Pulsanti** — pill come in sito-filosofia: primaria nera con testo bianco; secondaria trasparente con bordo nero. Altezze almeno 44–48px.
-10. **Progresso** — sottile linea nera con indicatore rosso; testo sempre presente («Sezione 2 di 6»).
+## 7. Accessibilità (verificata sui contrasti della skill)
 
-### Componenti da NON introdurre
-- badge di gamification, XP, confetti, mascotte;
-- colori diversi per Elettrico / Informatica / Estetica;
-- icone grandi ornamentali, carte con grandi ombre, dashboard aziendale standard;
-- foto stock di studenti o professionisti, illustrazioni 3D, gradienti decorativi;
-- progressi mostrati come giudizi di valore sulla persona.
+- `#CC0000` su bianco 5,89:1 e su `#F5F5F5` circa 5,4:1: va bene anche per testo normale (occhielli, link).
+- Bianco su `#CC0000` 5,89:1: pulsanti e piè di pagina.
+- `#333333` su bianco 12,6:1; `#666666` su bianco 5,7:1.
+- Bordi dei campi a 3,4:1; target di almeno 44 px; percorso completo da tastiera.
+- Gli SVG decorativi dei cerchi sono sfondi CSS, quindi ignorati dagli screen reader.
 
-## 7. Sequenza UI di riferimento
+## 8. File
 
-### Home
-Titolo `BILANCIO DI COMPETENZE` (Anton)  
-Sottotitolo `Che cosa hai imparato finora?` (Fira Sans)  
-Spiegazione sobria in 2 frasi. Pulsante nero `Inizia`. Piccola indicazione «Puoi tornare sulle risposte per correggerle».
-
-### Sezione «Le esperienze»
-`01 / 06` (Fira Sans); titolo «Le esperienze che ricordi» (Fira Sans).  
-Timeline I–IV anno e tirocinio non rigidamente legati a una sola annualità. Possibilità di aggiungere esperienze multiple. Nei casi suggeriti distinguere tra *esempio* e *cosa ho fatto davvero*.
-
-### Sezione «Che cosa so fare»
-Domande organizzate per situazioni, non per elenchi ministeriali. Esempi filtrati per indirizzo ma categorie comuni: capire / fare / collaborare / verificare / spiegare / migliorare. Le competenze professionali e di base si intrecciano.
-
-### Sezione «Bilancio»
-Pagina tipo documento: **So fare / Ho imparato così / Posso dimostrarlo / Devo ancora imparare**. Dossier non valutativo, con rimandi alle risposte originali.
-
-### Sezione «Orientamento»
-Testo per presentarsi agli open day. Possibilità di rivedere la trascrizione prima di salvare. Nessuna riscrittura automatica che falsifichi o edulcori le difficoltà dichiarate.
-
-## 8. Comportamento e movimento
-
-Motion sobrio come principio, non imitazione degli effetti più scenografici:
-- cambi tappa fluidi 180–260ms;
-- apparizione leggera di blocchi, senza animazioni complesse;
-- microfeedback su salvataggio, con testo («Salvato» e, se disponibile, orario);
-- nessun audio automatico, parallax, effetto glitch o movimento continuo;
-- `prefers-reduced-motion` rispettato.
-
-Il comportamento non deve distrarre mentre si leggono e si scrivono risposte personali.
-
-## 9. Requisiti accessibilità e didattica
-
-- Contrasto WCAG AA per testo normale; contrasto del focus visibile; target minimo 44px.
-- Percorso utilizzabile completamente da tastiera, screen reader e smartphone.
-- Risposte aperte editabili; salvataggio esplicito o autosalvataggio trasparente; ripresa senza perdita di dati.
-- Nessuna competenza dichiarata «acquisita» sulla sola base di un click: richiedere almeno un esempio.
-- Opzione `Non l'ho mai affrontato`, distinta da `Non lo so fare`.
-- La possibilità di dettare/trascrivere è **funzione futura condizionata a una verifica tecnica della privacy**. Non introdurre trascrizione browser remota sotto l'etichetta «dati solo nel Drive».
-- Raccolta dati: destinazione esclusiva Google Drive controllato dal docente; definire autenticazione e permessi prima dello sviluppo. Nessuna telemetria di terzi aggiunta implicitamente.
-
-## 10. Token CSS iniziali (solo riferimento, non ancora implementazione)
-
-```css
-:root {
-  /* Babel — valori originali */
-  --bc-paper: #FAF8F6;
-  --bc-ink: #000000;
-  --bc-red: #FF3B30;
-  --bc-blush: #FFC9C2;
-  --bc-mist: #FFF0ED;
-  --bc-white: #FFFFFF;
-  --bc-ink-60: rgba(0, 0, 0, .6);
-  --bc-ink-30: rgba(0, 0, 0, .3);
-  --bc-ink-10: rgba(0, 0, 0, .08);
-
-  /* sito-filosofia — famiglie tipografiche */
-  --f-display: "Anton", Impact, "Arial Narrow", sans-serif;
-  --f-sans: "Fira Sans", system-ui, sans-serif;
-  --f-libro: "EB Garamond", Garamond, serif;
-  --f-mono: "Fira Sans", ui-monospace, monospace;
-
-  /* sito-filosofia — griglia e ritmo */
-  --cols: 4;
-  --gap: 14px;
-  --m: 20px;
-  --max: 1720px;
-  --measure: 54ch;
-  --space-section: clamp(64px, 12vw, 100px);
-  --radius-card: 8px;
-  --radius-control: 999px;
-}
-@media (max-width: 359px) { :root { --m: 16px; } }
-@media (min-width: 768px) {
-  :root { --cols: 8; --gap: 20px; --m: clamp(28px, 4vw, 72px); }
-}
-@media (min-width: 1200px) {
-  :root { --cols: 12; --gap: 24px; --space-section: clamp(96px, 9vw, 140px); }
-}
-```
-
-I font dovranno essere self-hosted, come in sito-filosofia, senza copiare file binari non necessari nella fase di specifica.
-
-## 11. Verifiche prima di approvare la V1
-
-- Provare home, una domanda e bilancio finale a 390px e a 1440px.
-- Verificare che il rosso sia un accento e non invada la pagina.
-- Verificare la leggibilità di Anton sui titoli lunghi e l'uso sobrio di EB Garamond.
-- Una sola domanda principale per schermata; né home chilometrica né microstep inutili.
-- Verificare contrasto, navigazione e completamento senza audio.
-- Separare sempre **identità visiva** da **standard IeFP e logica dei dati**.
-
----
-
-**Decisione da portare avanti:** Babel = tavolozza; sito-filosofia = sistema editoriale. Il risultato è autonomo, destinato a studenti di tutti gli anni IeFP e non infantile. Questa identità è una proposta V1, pronta per essere criticata prima dell'implementazione.
+- `css/tokens.css`: token AFOL e ruoli (`--c-*`) usati dall'interfaccia, `@font-face`.
+- `css/stile.css`: componenti, stampa del dossier e del curriculum.
+- `img/`: loghi, icona, catena dei cerchi.
+- `.claude/skills/afol-brand/`: il brand kit completo, da consultare per qualsiasi nuovo materiale (anche social, video, slide).

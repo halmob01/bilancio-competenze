@@ -5,24 +5,28 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Percorsi per gli studenti</title>
   <meta name="description" content="Diario di bordo del tirocinio, bilancio di competenze e curriculum: scegli da dove partire.">
-  <meta name="theme-color" content="#FAF8F6">
+  <meta name="theme-color" content="#CC0000">
+  <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png">
+  <link rel="apple-touch-icon" href="img/favicon-180.png">
   <link rel="preload" href="fonts/fira-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="preload" href="fonts/anton-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="css/tokens.css">
-  <link rel="stylesheet" href="css/stile.css?v=20261110-2">
+  <link rel="preload" href="fonts/fira-sans-latin-900-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="css/tokens.css?v=20261126-afol">
+  <link rel="stylesheet" href="css/stile.css?v=20261126-afol">
 </head>
 <body>
   <a class="salta" href="#principale">Vai al contenuto</a>
 
   <header class="testata">
-    <div class="testata__riga">
+    <div class="testata__riga testata__riga--ente">
+      <img class="testata__marchio" src="img/afol_logo_colore.svg" alt="AFOL Metropolitana" width="140" height="106">
       <span class="testata__nome testata__nome--fermo">Percorsi per gli studenti</span>
     </div>
   </header>
 
   <main id="principale" tabindex="-1">
     <div class="home home--percorsi">
-      <h1>Cosa vuoi fare oggi?</h1>
+      <p class="occhiello">Diario · Bilancio · Curriculum</p>
+      <h1>Cosa vuoi fare <span class="chiave">oggi?</span></h1>
       <p class="home__sottotitolo">Scegli da dove partire.</p>
       <p class="home__testo misura">Tre strumenti per raccontare quello che impari, durante gli anni di formazione. Ognuno salva il tuo lavoro su questo dispositivo e puoi riprenderlo quando vuoi. Il curriculum può prendere i dati dal bilancio e dal diario.</p>
 
@@ -56,6 +60,13 @@
       <p class="nota">Se usi un computer condiviso, al termine scarica una copia del tuo lavoro e cancellalo da questo browser.</p>
     </div>
   </main>
+
+  <footer class="piede">
+    <div class="piede__riga">
+      <img class="piede__logo" src="img/afol_logo_negativo.svg" alt="AFOL Metropolitana" width="122" height="92">
+      <p>Strumenti per gli studenti dei percorsi di istruzione e formazione professionale. Il tuo lavoro resta su questo dispositivo finché non decidi tu di scaricarlo o di inviarlo.</p>
+    </div>
+  </footer>
 
   <noscript><p style="padding:20px">Questa pagina funziona anche senza JavaScript, ma i tre percorsi ne hanno bisogno per essere compilati.</p></noscript>
 </body>

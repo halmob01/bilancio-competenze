@@ -296,7 +296,7 @@
     const iniziato = !!stato.aggiornato;
     return h('div', { class: 'home' },
       h('a', { class: 'home__tutti', href: '../', text: 'Tutti i percorsi' }),
-      h('h1', { text: 'Il tuo curriculum' }),
+      h('h1', null, 'Il tuo ', h('span', { class: 'chiave', text: 'curriculum' })),
       h('p', { class: 'home__sottotitolo', text: 'Il foglio da consegnare a un\'azienda.' }),
       h('p', { class: 'home__testo misura', text: 'Scrivi i tuoi dati, la formazione, i tirocini e le competenze con parole tue. Alla fine scarichi il curriculum in Word o in PDF, oppure lo stampi. Se hai già compilato il bilancio di competenze o il diario di bordo su questo dispositivo, puoi prenderne nome, esperienze e competenze senza riscriverli.' }),
       h('div', { class: 'home__azioni' },

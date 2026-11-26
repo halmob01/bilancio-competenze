@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 260" width="400" height="260">
+<title>AFOL - tappa con etichetta (rosso)</title>
+<rect x="0" y="81.0" width="127.0" height="38" fill="#CC0000"/><rect x="273.0" y="81.0" width="127.0" height="38" fill="#CC0000"/><path d="M125.0,100 a75.0,75.0 0 1,0 150.0,0 a75.0,75.0 0 1,0 -150.0,0 Z M161.5,100 a38.5,38.5 0 1,0 77.0,0 a38.5,38.5 0 1,0 -77.0,0 Z" fill="#CC0000" fill-rule="evenodd"/><text text-anchor="middle" x="200" y="230" font-family="'Fira Sans', Arial, sans-serif" font-weight="800" font-size="40" fill="#CC0000">Tappa</text>
+</svg>

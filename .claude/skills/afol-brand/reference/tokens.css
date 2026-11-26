@@ -1,0 +1,90 @@
+/* Brand kit AFOL Metropolitana: token CSS.
+   Fonte dei valori: vedi SKILL.md (Ufficiale / Osservato / Proposta). */
+
+@import url("https://fonts.googleapis.com/css2?family=Fira+Sans:wght@300;400;600;800;900&display=swap");
+
+:root {
+  /* Colori ufficiali (linee guida documenti AFOL) */
+  --afol-rosso: #CC0000;
+  --afol-grigio-scuro: #333333;
+  --afol-grigio-medio: #666666;
+  --afol-grigio-chiaro: #F5F5F5;
+  --afol-grigio-bordo: #CCCCCC;
+  --afol-bianco: #FFFFFF;
+
+  /* Derivati (Proposta) */
+  --afol-rosso-scuro: #A30000;   /* hover dei pulsanti; bianco sopra: 8,21:1 */
+  --afol-nero: #1A1A1A;          /* titoli dei post, fasce video */
+  --afol-fondo-rosato: #FCF3F4;  /* fondo dei post (Osservato) */
+
+  /* Ruoli */
+  --afol-testo: var(--afol-grigio-scuro);
+  --afol-testo-secondario: var(--afol-grigio-medio);
+  --afol-accento: var(--afol-rosso);
+  --afol-fondo: var(--afol-bianco);
+  --afol-fondo-alt: var(--afol-grigio-chiaro);
+
+  /* Carattere */
+  --afol-font: "Fira Sans", Arial, Helvetica, sans-serif;
+  --afol-peso-light: 300;
+  --afol-peso-regular: 400;
+  --afol-peso-semibold: 600;
+  --afol-peso-extrabold: 800;
+  --afol-peso-black: 900;      /* titoli dei post (Osservato) */
+
+  /* Scala web (Proposta) */
+  --afol-h1: clamp(2.125rem, 1.5rem + 2.5vw, 3.5rem);
+  --afol-h2: clamp(1.625rem, 1.25rem + 1.5vw, 2.5rem);
+  --afol-h3: clamp(1.25rem, 1.1rem + 0.5vw, 1.625rem);
+  --afol-testo-size: 1.0625rem;
+  --afol-nota-size: 0.875rem;
+  --afol-interlinea: 1.55;
+  --afol-occhiello-spaziatura: 0.12em;
+
+  /* Sistema dei cerchi (Osservato), in frazioni del diametro D */
+  --afol-cerchio-foro: 0.40;       /* diametro del foro / D */
+  --afol-cerchio-collo: 0.50;      /* spessore della linea / D */
+  --afol-cerchio-passo-coppia: 1.3;
+  --afol-cerchio-passo-lungo: 2.9;
+
+  /* Forme */
+  --afol-raggio: 6px;
+  --afol-filetto: 6px;
+}
+
+body {
+  font-family: var(--afol-font);
+  font-weight: var(--afol-peso-regular);
+  color: var(--afol-testo);
+  background: var(--afol-fondo);
+  line-height: var(--afol-interlinea);
+}
+
+h1, h2 { font-weight: var(--afol-peso-extrabold); line-height: 1.1; color: var(--afol-nero); }
+h3 { font-weight: var(--afol-peso-semibold); }
+h1 { font-size: var(--afol-h1); }
+h2 { font-size: var(--afol-h2); }
+h3 { font-size: var(--afol-h3); }
+
+.afol-occhiello {
+  font-weight: var(--afol-peso-semibold);
+  text-transform: uppercase;
+  letter-spacing: var(--afol-occhiello-spaziatura);
+  color: var(--afol-rosso);
+}
+
+.afol-chiave { color: var(--afol-rosso); }
+
+a { color: var(--afol-rosso); }
+
+.afol-pulsante {
+  display: inline-block;
+  padding: 12px 24px;
+  border-radius: var(--afol-raggio);
+  background: var(--afol-rosso);
+  color: var(--afol-bianco);
+  font-weight: var(--afol-peso-semibold);
+  text-decoration: none;
+}
+.afol-pulsante:hover { background: var(--afol-rosso-scuro); }
+.afol-pulsante:focus-visible { outline: 3px solid var(--afol-nero); outline-offset: 2px; }

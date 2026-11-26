@@ -1,59 +1,82 @@
-/* Token da design.md §10.
-   Colori: valori originali di babel-sito/styles/base.css.
-   Font, griglia e ritmo: sito-filosofia/css/tokens.css. */
+/* Token dell'interfaccia: brand kit AFOL Metropolitana.
+   Fonte: .claude/skills/afol-brand (SKILL.md, reference/web.md, reference/tokens.css, reference/cerchi.md),
+   copiata dalla repo cfp-news. Ogni valore è marcato come in quella skill:
+   Ufficiale (linee guida AFOL), Osservato (misurato su sito e social), Proposta (applicazione coerente).
+   Caratteri self-hosted: nessuna richiesta a Google Fonts. */
 
-@font-face { font-family: "Anton"; src: url("../fonts/anton-latin-400-normal.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: swap; }
+/* Fira Sans: unica famiglia dell'interfaccia (Ufficiale). La gerarchia nasce dal peso. */
 @font-face { font-family: "Fira Sans"; src: url("../fonts/fira-sans-latin-400-normal.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: swap; }
 @font-face { font-family: "Fira Sans"; src: url("../fonts/fira-sans-latin-600-normal.woff2") format("woff2"); font-weight: 600; font-style: normal; font-display: swap; }
+@font-face { font-family: "Fira Sans"; src: url("../fonts/fira-sans-latin-800-normal.woff2") format("woff2"); font-weight: 800; font-style: normal; font-display: swap; }
+@font-face { font-family: "Fira Sans"; src: url("../fonts/fira-sans-latin-900-normal.woff2") format("woff2"); font-weight: 900; font-style: normal; font-display: swap; }
+/* Anton ed EB Garamond restano solo per i modelli del curriculum scelti dallo studente
+   (anteprima a schermo identica al Word e al PDF), non per l'interfaccia. */
+@font-face { font-family: "Anton"; src: url("../fonts/anton-latin-400-normal.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: swap; }
 @font-face { font-family: "EB Garamond"; src: url("../fonts/eb-garamond-latin-400-normal.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: swap; }
 @font-face { font-family: "EB Garamond"; src: url("../fonts/eb-garamond-latin-400-italic.woff2") format("woff2"); font-weight: 400; font-style: italic; font-display: swap; }
 
 :root {
-  /* Babel — valori originali */
-  --bc-paper: #FAF8F6;
-  --bc-ink: #000000;
-  --bc-red: #FF3B30;
-  --bc-blush: #FFC9C2;
-  --bc-mist: #FFF0ED;
-  --bc-white: #FFFFFF;
-  --bc-ink-60: rgba(0, 0, 0, .6);
-  --bc-ink-30: rgba(0, 0, 0, .3);
-  --bc-ink-10: rgba(0, 0, 0, .08);
+  /* Colori AFOL (Ufficiali, linee guida documenti) */
+  --afol-rosso: #CC0000;          /* unico rosso del lavoro: 5,89:1 su bianco */
+  --afol-grigio-scuro: #333333;   /* testi */
+  --afol-grigio-medio: #666666;   /* note: 5,74:1 su bianco */
+  --afol-grigio-chiaro: #F5F5F5;  /* fondi */
+  --afol-grigio-bordo: #CCCCCC;   /* bordi e filetti */
+  --afol-bianco: #FFFFFF;
+  /* Derivati (Proposta / Osservato) */
+  --afol-rosso-scuro: #A30000;    /* hover dei pulsanti */
+  --afol-nero: #1A1A1A;           /* titoli, fuoco da tastiera */
+  --afol-fondo-rosato: #FCF3F4;   /* fondo dei post (Osservato): blocchi di aiuto */
 
-  /* sito-filosofia — famiglie tipografiche */
-  --f-display: "Anton", Impact, "Arial Narrow", sans-serif;
-  --f-sans: "Fira Sans", system-ui, sans-serif;
-  --f-libro: "EB Garamond", Garamond, serif;
-  --f-mono: var(--f-sans); /* metadati: stessa famiglia dell'interfaccia, cifre tabulari */
+  /* Ruoli usati da stile.css */
+  --c-fondo: var(--afol-grigio-chiaro);
+  --c-superficie: var(--afol-bianco);
+  --c-testo: var(--afol-grigio-scuro);
+  --c-titolo: var(--afol-nero);
+  --c-testo-2: var(--afol-grigio-medio);
+  --c-rosso: var(--afol-rosso);
+  --c-rosso-scuro: var(--afol-rosso-scuro);
+  --c-rosato: var(--afol-fondo-rosato);
+  --c-filetto: var(--afol-grigio-bordo);
+  --c-bordo-campo: #8A8A8A;       /* Proposta: bordo dei campi a 3,4:1 su bianco (WCAG 1.4.11) */
+  --c-bianco: var(--afol-bianco);
+  --c-nero: var(--afol-nero);
 
-  /* sito-filosofia — griglia e ritmo */
-  --cols: 4;
+  /* Caratteri */
+  --f-sans: "Fira Sans", Arial, Helvetica, sans-serif;
+  --f-cv-display: "Anton", Impact, "Arial Narrow", sans-serif;   /* solo curriculum, modello moderno */
+  --f-cv-libro: "EB Garamond", Garamond, serif;                  /* solo curriculum, carattere elegante */
+
+  /* Scala web (reference/web.md) */
+  --t-h1: clamp(2.25rem, 1.4rem + 3.4vw, 3.75rem);   /* 36 → 60 px, Fira Sans 900 */
+  --t-sezione: clamp(1.625rem, 1.25rem + 1.5vw, 2.5rem); /* H2, 800 */
+  --t-domanda: clamp(1.5rem, 1.2rem + 1.2vw, 2.125rem);  /* titolo di schermata, 800 */
+  --t-corpo: clamp(1rem, .95rem + .25vw, 1.0625rem);    /* 16 → 17 px */
+  --t-meta: .875rem;                                     /* 14 px */
+  --occhiello-spaziatura: .12em;
+
+  /* Griglia e ritmo */
   --gap: 14px;
   --m: 20px;
-  --max: 1720px;
-  --max-lavoro: 1240px; /* contenitore centrato per testata, home e lavoro */
-  --measure: 54ch;
-  --space-section: clamp(64px, 12vw, 100px);
-  --radius-card: 8px;
-  --radius-control: 999px;
+  --max-lavoro: 1240px;
+  --measure: 66ch;             /* 60–75 caratteri */
+  --space-section: clamp(56px, 9vw, 96px);
+  --radius-card: 6px;          /* --afol-raggio */
+  --radius-control: 6px;       /* pulsanti: angoli 4–6 px */
+  --filetto: 6px;              /* filetto rosso in alto delle schede */
 
-  /* Scala tipografica (design.md §4) */
-  --t-h1: clamp(56px, 10vw, 120px);
-  --t-sezione: clamp(30px, 5vw, 48px);
-  --t-domanda: clamp(24px, 3.2vw, 36px);
-  --t-corpo: clamp(17px, 1.5vw, 19px);
-  --t-racconto: clamp(20px, 2vw, 23px);
-  --t-meta: 14px;
+  /* Sistema dei cerchi (Osservato): linea spessa t, anello di diametro ≈ 3,9 t con parete t */
+  --cerchio-t: 5px;
+  --cerchio-d: 20px;
 
-  --durata: 220ms;
-  --rail: 232px;
+  --durata: 200ms;
 }
 @media (max-width: 359px) { :root { --m: 16px; } }
 @media (min-width: 768px) {
-  :root { --cols: 8; --gap: 20px; --m: clamp(28px, 4vw, 72px); }
+  :root { --gap: 20px; --m: clamp(28px, 4vw, 72px); }
 }
 @media (min-width: 1200px) {
-  :root { --cols: 12; --gap: 24px; --space-section: clamp(96px, 9vw, 140px); }
+  :root { --gap: 24px; }
 }
 @media (prefers-reduced-motion: reduce) {
   :root { --durata: 0ms; }

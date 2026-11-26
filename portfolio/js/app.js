@@ -487,7 +487,7 @@
       h('span', { class: 'meta', text: 'Passo ' + (k + 1) + ' di ' + PASSI.length }),
       k < PASSI.length - 1
         ? h('button', { type: 'button', class: 'pulsante navigazione__avanti', onclick: function () { vai({ modo: 'passo', id: vista.id, k: k + 1 }); } }, 'Avanti')
-        : h('button', { type: 'button', class: 'pulsante', onclick: function () {
+        : h('button', { type: 'button', class: 'pulsante navigazione__avanti navigazione__avanti--fine', onclick: function () {
           const id = vista.id;
           clearTimeout(timerSalva); scriviArchivio();
           vai({ modo: 'vedi', id: id });

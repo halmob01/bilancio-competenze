@@ -756,21 +756,28 @@
   function rigaLivello(sit) {
     const r = stato.sofare[sit.id];
     const p = 'f-sf-' + sit.id + '-';
-    const scegli = function (id, idFocus) { r.livello = id; modificato(); ridisegna(idFocus); };
+    // Scelta fatta: se era la prima risposta per questa situazione, si scorre alla prossima ancora senza risposta.
+    const scegli = function (id, idFocus) {
+      const prima = !r.livello;
+      r.livello = id; modificato(); ridisegna(idFocus);
+      if (!prima) return;
+      const prossima = D.SITUAZIONI.find(function (s) { return !stato.sofare[s.id].livello; });
+      const el = prossima ? $('blocco-' + prossima.id) : null;
+      if (el) {
+        const piano = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        el.scrollIntoView({ behavior: piano ? 'auto' : 'smooth', block: 'start' });
+      }
+    };
     const radio = h('div', { class: 'livelli__scelte' }, D.AUTONOMIA.map(function (a) {
       const id = p + 'livello-' + a.id;
       return h('label', { class: 'livello', for: id },
         h('input', { type: 'radio', name: p + 'livello', id: id, value: a.id, checked: r.livello === a.id, onchange: function () { scegli(a.id, id); } }),
         h('span', { text: a.testo }));
     }));
-    // Sul telefono un selettore: una riga per situazione invece di cinque.
-    const select = h('select', { class: 'livelli__select', id: p + 'livello-select', 'aria-label': sit.domanda, onchange: function (ev) { scegli(ev.target.value, p + 'livello-select'); } },
-      h('option', { value: '', text: 'Scegli la frase più vicina…' }),
-      D.AUTONOMIA.map(function (a) { return h('option', { value: a.id, text: a.testo, selected: r.livello === a.id }); }));
     return h('div', { class: 'livelli__riga', role: 'group', 'aria-labelledby': 'blocco-' + sit.id },
       h('h3', { id: 'blocco-' + sit.id, tabindex: '-1', text: sit.domanda }),
       esempio('Che cosa conta · un esempio', [h('p', { text: sit.anche })].concat(esempiPerIndirizzo(sit.esempi))),
-      radio, select);
+      radio);
   }
 
   function schermataLivelli() {

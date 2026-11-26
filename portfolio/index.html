@@ -10,8 +10,8 @@
   <link rel="apple-touch-icon" href="../img/favicon-180.png">
   <link rel="preload" href="../fonts/fira-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="../fonts/fira-sans-latin-900-normal.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="../css/tokens.css?v=20261126-e">
-  <link rel="stylesheet" href="../css/stile.css?v=20261126-e">
+  <link rel="stylesheet" href="../css/tokens.css?v=20261126-f">
+  <link rel="stylesheet" href="../css/stile.css?v=20261126-f">
   <script src="../js/config.js" defer></script>
   <script src="../js/unione.js" defer></script>
   <script src="../js/archivio.js" defer></script>
@@ -30,13 +30,9 @@
     <div class="testata__riga">
       <a class="testata__tutti" href="../">Tutti i percorsi</a>
       <button type="button" class="testata__nome" id="vai-home">Le mie attività</button>
+      <span class="testata__tappa" id="tappa-mobile" hidden><button type="button" class="testata__tappa-btn" id="apri-indice" aria-haspopup="dialog"><span class="testata__tappa-nome" id="tappa-nome"></span><span class="meta testata__tappa-stato" id="tappa-stato"></span></button></span>
       <span class="meta testata__salvato" id="salvato" role="status" aria-live="polite"></span>
-      <button type="button" class="pulsante pulsante--secondario pulsante--piccolo" id="apri-salva">Salva e scarica</button>
-    </div>
-    <div class="tappa-mobile" id="tappa-mobile" hidden>
-      <button type="button" class="pulsante pulsante--secondario pulsante--piccolo" id="apri-indice">Indice</button>
-      <span class="meta" id="tappa-nome"></span>
-      <span class="meta" id="tappa-stato"></span>
+      <button type="button" class="pulsante pulsante--secondario pulsante--piccolo testata__salva" id="apri-salva"><span class="testata__salva-testo">Salva e scarica</span></button>
     </div>
   </header>
   <div class="avanzamento" id="avanzamento" hidden aria-label="Avanzamento dell'attività"><div class="avanzamento__barra" id="barra"></div></div>

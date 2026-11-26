@@ -111,8 +111,6 @@ a { color: var(--c-rosso); text-underline-offset: 3px; }
 .avanzamento__nodo--completato { border-color: var(--c-rosso); background: var(--c-bianco); }
 .avanzamento__nodo--attivo { border-color: var(--c-rosso); background: var(--c-rosso); box-shadow: 0 0 0 4px var(--c-bianco); }
 body:has(.home) .avanzamento { display: none; }
-.tappa-mobile { display: flex; align-items: center; gap: 10px; max-width: var(--max-lavoro); margin: 0 auto; padding: 0 var(--m) 10px; }
-.tappa-mobile .meta:last-child { margin-left: auto; }
 #tappa-nome { font-weight: 600; color: var(--c-titolo); }
 
 /* ---------- Pulsanti (web.md) ---------- */
@@ -277,7 +275,7 @@ body:has(.home) .avanzamento { display: none; }
   .rail .rail__voce:hover .rail__nome { color: var(--c-rosso); }
   .rail .rail__num { display: none; }
   .rail .rail__nome { font-size: 16px; line-height: 1.25; }
-  .tappa-mobile, .avanzamento { display: none; }
+  .testata__tappa, .avanzamento { display: none !important; }
 }
 .rail__voce, .indice-dialogo__voce {
   display: grid; grid-template-columns: 4.5ch 1fr; gap: 4px 10px; width: 100%;
@@ -358,8 +356,9 @@ body:has(.home) .avanzamento { display: none; }
   font-size: 17px; line-height: 1.5; color: var(--c-titolo);
 }
 .campo input:not([type="checkbox"]):not([type="radio"]), .campo select { min-height: 48px; }
-.campo textarea { min-height: 140px; resize: vertical; }
-.campo textarea.lungo { min-height: 220px; }
+/* Le caselle partono basse (circa tre righe) e crescono mentre si scrive (adattaAltezza nei siti). */
+.campo textarea { min-height: 104px; resize: vertical; }
+.campo textarea.lungo { min-height: 160px; }
 .campo input:hover, .campo textarea:hover, .campo select:hover { border-color: var(--c-testo); }
 .campo input:focus-visible, .campo textarea:focus-visible, .campo select:focus-visible { outline: 3px solid var(--c-nero); outline-offset: 1px; border-color: var(--c-nero); }
 .campo textarea.libro { font-size: 18px; line-height: 1.55; }
@@ -679,12 +678,13 @@ dialog > * + * { margin-top: 14px; }
 .livelli__riga h3 { font-size: clamp(18px, 2vw, 22px); font-weight: 800; line-height: 1.25; }
 .livelli__riga h3:focus { outline: none; }
 .livelli__nota { color: var(--c-testo-2); font-size: 15px; }
-.livelli__scelte { display: none; }
-.livelli__select { width: 100%; min-height: 48px; padding: 0 12px; border: 1px solid var(--c-bordo-campo); border-radius: var(--radius-card); background: var(--c-bianco); }
+/* Le cinque risposte sempre visibili: una sotto l'altra sul telefono, affiancate su schermi larghi. */
+.livelli__scelte { display: grid; grid-template-columns: 1fr; gap: 6px; }
+.livelli__riga h3 { scroll-margin-top: 96px; }
 .livello { position: relative; display: block; }
 .livello input { position: absolute; opacity: 0; width: 1px; height: 1px; }
 .livello span {
-  display: flex; align-items: center; justify-content: center; text-align: center; height: 100%; min-height: 64px;
+  display: flex; align-items: center; justify-content: flex-start; text-align: left; height: 100%; min-height: 48px;
   padding: 8px 10px; font-size: 15px; line-height: 1.3; background: var(--c-pannello); color: var(--c-titolo);
   border: 1px solid transparent; border-radius: var(--radius-card); cursor: pointer;
 }
@@ -693,8 +693,8 @@ dialog > * + * { margin-top: 14px; }
 .livello input:focus-visible + span { outline: 3px solid var(--c-nero); outline-offset: 2px; }
 .livelli__conta { font-size: 15px; }
 @media (min-width: 900px) {
-  .livelli__scelte { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
-  .livelli__select { display: none; }
+  .livelli__scelte { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+  .livello span { justify-content: center; text-align: center; min-height: 72px; }
   .livelli__riga { grid-template-columns: minmax(220px, 3fr) 9fr; gap: 12px 28px; align-items: start; }
   .livelli__riga h3, .livelli__riga .esempio { grid-column: 1; }
   .livelli__riga .livelli__scelte { grid-column: 2; grid-row: 1 / span 2; }
@@ -806,3 +806,61 @@ dialog > * + * { margin-top: 14px; }
 }
 .percorso__stato { color: var(--c-titolo); font-weight: 600; }
 @media (max-width: 639px) { .testata__utente { display: none; } }
+
+
+/* ---------- Testata compatta e barra in basso (impaginazione del 26/11/2026) ----------
+   Sotto i 1100 px, nelle schermate di lavoro, la testata è una riga sola:
+   «‹» (home del sito) · il passo corrente, che apre l'indice · stato del salvataggio · «Salva» (solo icona sul telefono). */
+.testata__tappa { display: none; }
+@media (max-width: 1099px) {
+  .testata__tappa:not([hidden]) { display: flex; flex: 1 1 auto; min-width: 0; }
+  .testata__tappa-btn {
+    display: flex; flex-direction: column; justify-content: center; align-items: flex-start; gap: 0;
+    width: 100%; min-width: 0; min-height: 44px; padding: 4px 8px; border: 0; border-radius: var(--radius-control);
+    background: none; cursor: pointer; text-align: left;
+  }
+  .testata__tappa-btn:hover { background: var(--c-pannello); }
+  .testata__tappa-nome {
+    display: block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    font-weight: 800; font-size: 16px; color: var(--c-titolo);
+  }
+  .testata__tappa-nome::after { content: " ▾"; color: var(--c-rosso); font-size: 13px; }
+  .testata__tappa-stato { font-size: 12px; line-height: 1.2; }
+  /* Con il passo in vista, il nome del sito diventa solo «‹» (il nome resta per i lettori di schermo). */
+  .testata__riga:has(.testata__tappa:not([hidden])) .testata__nome {
+    font-size: 0; width: 44px; min-width: 44px; justify-content: center; padding: 0; flex: none;
+  }
+  .testata__riga:has(.testata__tappa:not([hidden])) .testata__nome::before {
+    width: 12px; height: 12px; background: none; border-left: 3px solid var(--c-rosso); border-bottom: 3px solid var(--c-rosso);
+    transform: rotate(45deg); margin-left: 6px; display: block;
+  }
+  .testata + .avanzamento { margin-top: 10px; }
+  .testata__riga { gap: 6px; min-height: 56px; }
+  .testata__riga:has(.testata__tappa:not([hidden])) .testata__tutti { display: none; }
+  .testata__salvato { font-size: 12px; line-height: 1.25; max-width: 84px; }
+  /* Avanzamento sottile: la linea c'è, gli anelli sono piccoli. */
+  .avanzamento { height: 3px; margin: 0 var(--m) 10px; }
+  .avanzamento__nodo { width: 11px; height: 11px; border-width: 3px; }
+  .avanzamento__nodo--attivo { box-shadow: 0 0 0 3px var(--c-bianco); }
+}
+@media (max-width: 639px) {
+  /* «Salvato alle…» resta in vista: seconda riga sotto il nome del passo. */
+  .testata__riga:has(.testata__tappa:not([hidden])) { position: relative; }
+  .testata__riga:has(.testata__tappa:not([hidden])) .testata__salvato {
+    position: absolute; left: calc(var(--m) + 58px); bottom: 7px; max-width: calc(100% - 2 * var(--m) - 120px);
+    margin: 0; text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none;
+  }
+  .testata__riga:has(.testata__tappa:not([hidden])) .testata__tappa-btn { justify-content: flex-start; padding-top: 6px; padding-bottom: 18px; }
+  .testata__riga:has(.testata__tappa:not([hidden])) .testata__salva { width: 44px; min-width: 44px; padding: 0; }
+  .testata__riga:has(.testata__tappa:not([hidden])) .testata__salva-testo {
+    position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
+  }
+  .testata__riga:has(.testata__tappa:not([hidden])) .testata__salva::before { content: "⋯"; font-size: 22px; line-height: 1; }
+  .testata__tappa-stato { display: none !important; }
+  /* Barra in basso su una riga: «Indietro» stretto, «Avanti» largo; il numero del passo è già in testata. */
+  .navigazione .meta { display: none; }
+  .navigazione { flex-wrap: nowrap; gap: 10px; }
+  .navigazione > .pulsante--secondario { flex: none; padding: 0 16px; }
+  .navigazione__avanti { flex: 1 1 auto; }
+}
+.navigazione__avanti--fine::after { content: none; }

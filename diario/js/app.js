@@ -309,20 +309,6 @@
     };
     return h('div', { class: 'scheda__modulo' },
       campo({ id: p + 'dal', etichetta: 'Settimana dal (il lunedì)', tipo: 'date', valore: w.dal, aggiorna: function (v) { w.dal = v; } }),
-      // La domanda sulle assenze: si scelgono i giorni e si scrive quando e perché.
-      h('fieldset', { class: 'campo' },
-        h('legend', { text: 'Hai fatto assenze o ritardi?' }),
-        h('p', { class: 'campo__suggerimento', text: 'Se sì, scrivi quando e perché. Se no, lascia vuoto.' }),
-        h('div', { class: 'scelte scelte--riga', role: 'group', 'aria-label': 'In quali giorni' }, D.GIORNI.map(function (g) {
-          const id = p + 'assenzagiorno-' + g.id;
-          return h('label', { class: 'scelta', for: id },
-            h('input', { type: 'checkbox', id: id, value: g.id, checked: w.assenzeGiorni.indexOf(g.id) !== -1,
-              onchange: function (e) { w.assenzeGiorni = w.assenzeGiorni.filter(function (x) { return x !== g.id; }); if (e.target.checked) w.assenzeGiorni.push(g.id); modificato(); } }),
-            h('span', { text: g.testo }));
-        })),
-        campo({ id: p + 'assenze', etichetta: 'Quando e perché', nascosta: true, area: true, valore: w.assenze, aggiorna: function (v) { w.assenze = v; } })),
-      casella({ id: p + 'comunicato', testo: 'Hai comunicato assenze o ritardi prima ai tutor della scuola e dell\'azienda?', valore: w.comunicato,
-        aggiorna: function (v) { w.comunicato = v; modificato(); } }),
       h('p', { class: 'nota', text: 'Puoi dettare i testi: tocca il microfono sulla tastiera del telefono e controlla quello che ha scritto.' }),
       t2('fatto', 'Che cosa hai fatto, concretamente?', 'Racconta le tue azioni: che lavoro hai svolto e con quali strumenti.'),
       t2('imparato', 'Che cosa hai imparato di nuovo?', 'Una cosa che non sapevi fare o non avevi mai visto.'),
@@ -333,7 +319,25 @@
         aggiorna: function (id, attiva) { w.obiettivi = w.obiettivi.filter(function (x) { return x !== id; }); if (attiva) w.obiettivi.push(id); modificato(); } }) : null,
       gruppoScelte({ legenda: 'Com\'è andata la settimana?', nome: p + 'umore', opzioni: D.UMORI, valore: w.umore,
         aggiorna: function (id) { w.umore = id; modificato(); } }),
-      t2('note', 'Altre note', 'Per esempio un\'idea, una domanda per il docente, qualcosa da ricordare.'),
+      // Assenze e note: in fondo, da aprire quando servono (restano aperte se sono già compilate).
+      h('details', { class: 'dettagli', open: w.assenzeGiorni.length || pieno(w.assenze) || pieno(w.note) ? 'open' : null },
+        h('summary', { text: 'Assenze, ritardi e altre note' }),
+        h('div', { class: 'dettagli__corpo' },
+          // La domanda sulle assenze: si scelgono i giorni e si scrive quando e perché.
+          h('fieldset', { class: 'campo' },
+            h('legend', { text: 'Hai fatto assenze o ritardi?' }),
+            h('p', { class: 'campo__suggerimento', text: 'Se sì, scrivi quando e perché. Se no, lascia vuoto.' }),
+            h('div', { class: 'scelte scelte--riga', role: 'group', 'aria-label': 'In quali giorni' }, D.GIORNI.map(function (g) {
+              const id = p + 'assenzagiorno-' + g.id;
+              return h('label', { class: 'scelta', for: id },
+                h('input', { type: 'checkbox', id: id, value: g.id, checked: w.assenzeGiorni.indexOf(g.id) !== -1,
+                  onchange: function (e) { w.assenzeGiorni = w.assenzeGiorni.filter(function (x) { return x !== g.id; }); if (e.target.checked) w.assenzeGiorni.push(g.id); modificato(); } }),
+                h('span', { text: g.testo }));
+            })),
+            campo({ id: p + 'assenze', etichetta: 'Quando e perché', nascosta: true, area: true, valore: w.assenze, aggiorna: function (v) { w.assenze = v; } })),
+          casella({ id: p + 'comunicato', testo: 'Hai comunicato assenze o ritardi prima ai tutor della scuola e dell\'azienda?', valore: w.comunicato,
+            aggiorna: function (v) { w.comunicato = v; modificato(); } }),
+          t2('note', 'Altre note', 'Per esempio un\'idea, una domanda per il docente, qualcosa da ricordare.'))),
       h('div', null, h('button', { type: 'button', class: 'pulsante pulsante--secondario pulsante--piccolo', onclick: function () { settimanaAperta = null; ridisegna(); } }, 'Chiudi la scheda')));
   }
 

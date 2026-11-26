@@ -94,9 +94,74 @@
     const esci = el('button', 'pulsante pulsante--secondario', 'Esci');
     esci.type = 'button';
     esci.addEventListener('click', function () { ARCH.esci(location.href.split('#')[0]); });
+    const cest = el('button', 'pulsante pulsante--secondario', 'Cestino');
+    cest.type = 'button';
+    cest.addEventListener('click', apriCestino);
+    az.appendChild(cest);
     az.appendChild(esci);
     [occhiello, h1, sotto, az].forEach(function (n) { fascia.appendChild(n); });
     statoPercorsi();
+  }
+
+  // ---------- Cestino: quello che hai cancellato negli ultimi 30 giorni ----------
+  const DOVE = { portfolio: 'Le mie attività', diario: 'Diario', bilancio: 'Bilancio', cv: 'Curriculum' };
+  const COSA = { attivita: 'Attività', tirocini: 'Tirocinio', settimane: 'Settimana', esperienze: 'Esperienza', lingueElenco: 'Lingua', formazione: 'Formazione', lavoro: 'Lavoro' };
+  function giorniFa(iso) {
+    const g = Math.floor((Date.now() - Date.parse(iso)) / 86400000);
+    return g <= 0 ? 'oggi' : g === 1 ? 'ieri' : g + ' giorni fa';
+  }
+  function giorniRimasti(iso) {
+    const g = Math.max(0, Math.ceil((Date.parse(iso) - Date.now()) / 86400000));
+    return g === 1 ? 'resta ancora 1 giorno' : 'restano ' + g + ' giorni';
+  }
+  function apriCestino() {
+    const d = document.createElement('dialog');
+    d.className = 'cestino';
+    d.setAttribute('aria-labelledby', 'cestino-titolo');
+    const h = el('h2', '', 'Cestino'); h.id = 'cestino-titolo';
+    const sotto = el('p', '', 'Qui trovi quello che hai cancellato negli ultimi 30 giorni.');
+    const esito = el('p', 'cestino__esito'); esito.setAttribute('role', 'status');
+    const ul = el('ul', 'cestino__elenco');
+    const az = el('div', 'dialogo__azioni');
+    const chiudi = el('button', 'pulsante', 'Chiudi'); chiudi.type = 'button'; chiudi.onclick = function () { d.close(); };
+    az.appendChild(chiudi);
+    [h, sotto, ul, esito, az].forEach(function (n) { d.appendChild(n); });
+    d.addEventListener('close', function () { d.remove(); });
+    document.body.appendChild(d);
+    d.showModal();
+
+    function vuoto() { if (!ul.children.length) { sotto.textContent = 'Il cestino è vuoto.'; } }
+    function riga(v) {
+      const li = el('li', 'cestino__voce');
+      const testa = el('p', 'cestino__titolo', (COSA[v.genere] || 'Voce') + (v.titolo ? ': ' + v.titolo : ''));
+      const meta = el('p', 'meta', (DOVE[v.tipo] || '') + ' · cancellato ' + giorniFa(v.quando) + ' · ' + giorniRimasti(v.scade));
+      const bt = el('div', 'cestino__azioni');
+      const rimetti = el('button', 'pulsante', 'Rimetti a posto'); rimetti.type = 'button';
+      const via = el('button', 'pulsante pulsante--testo', 'Elimina per sempre'); via.type = 'button';
+      rimetti.onclick = function () {
+        rimetti.disabled = true; esito.textContent = '';
+        ARCH.richiesta('POST', 'cestino/' + v.id + '/ripristina').then(function (r) {
+          if (r.stato === 200) { li.remove(); esito.textContent = 'Fatto. Lo trovi in «' + (DOVE[v.tipo] || 'Le mie attività') + '».'; vuoto(); }
+          else { rimetti.disabled = false; esito.textContent = r.stato === 409 ? 'Non si può rimettere qui. Prima rimetti il tirocinio.' : 'Non è andata. Riprova tra poco.'; }
+        });
+      };
+      via.onclick = function () {
+        ARCH.domanda('Eliminare per sempre? Non si può tornare indietro.', 'Elimina', 'Annulla').then(function (si) {
+          if (!si) return;
+          ARCH.richiesta('DELETE', 'cestino/' + v.id).then(function (r) {
+            if (r.stato === 200) { li.remove(); esito.textContent = 'Eliminato.'; vuoto(); } else esito.textContent = 'Non è andata. Riprova tra poco.';
+          });
+        });
+      };
+      bt.appendChild(rimetti); bt.appendChild(via);
+      [testa, meta, bt].forEach(function (n) { li.appendChild(n); });
+      return li;
+    }
+    ARCH.richiesta('GET', 'cestino').then(function (r) {
+      if (r.stato !== 200) { sotto.textContent = 'Non riesco a aprire il cestino. Riprova tra poco.'; return; }
+      r.json.voci.forEach(function (v) { ul.appendChild(riga(v)); });
+      vuoto();
+    });
   }
 
   function statoPercorsi() {

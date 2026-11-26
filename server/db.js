@@ -125,7 +125,24 @@ const MIGRAZIONI = [
    );`,
 
   // 6. Un docente appena creato (o con la password reimpostata) deve sceglierne una sua al primo accesso.
-  `ALTER TABLE docenti ADD COLUMN deve_cambiare INTEGER NOT NULL DEFAULT 0;`
+  `ALTER TABLE docenti ADD COLUMN deve_cambiare INTEGER NOT NULL DEFAULT 0;`,
+
+  // 7. Cestino di 30 giorni: le voci tolte dai documenti (con il loro contenuto) e le foto e i file «tolti» ma ancora sul disco.
+  `ALTER TABLE foto ADD COLUMN eliminata TEXT;
+   ALTER TABLE allegati ADD COLUMN eliminata TEXT;
+   CREATE TABLE cestino (
+     id INTEGER PRIMARY KEY,
+     studente_id INTEGER NOT NULL REFERENCES studenti(id),
+     tipo TEXT NOT NULL,                       -- il documento: diario, bilancio, cv, portfolio
+     percorso TEXT NOT NULL,                   -- dove stava, come elenco JSON (vedi server/cestino.js)
+     voce_id TEXT NOT NULL,
+     titolo TEXT NOT NULL,
+     dati TEXT NOT NULL,                       -- la voce, intera
+     quando TEXT NOT NULL,
+     autore_tipo TEXT NOT NULL,
+     autore_id INTEGER NOT NULL
+   );
+   CREATE INDEX cestino_studente ON cestino(studente_id, quando);`
 ];
 
 function apri(percorso) {

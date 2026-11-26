@@ -352,7 +352,8 @@
       'Lo vedete solo tu e i docenti del CFP.',
       'Lo ritrovi su ogni telefono o computer in cui entri con il cartellino.',
       'Su un computer della scuola, alla fine premi «Esci».',
-      'Anche le foto e i file delle attività sono sul server.'
+      'Anche le foto e i file delle attività sono sul server.',
+      'Quello che cancelli resta nel cestino per 30 giorni.'
     ] : [
       'Il tuo lavoro resta su questo telefono o computer.',
       'Non lo vede nessun altro.',

@@ -13,6 +13,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const S = require('./sicurezza.js');
 const DB = require('./db.js');
+const CESTINO = require('./cestino.js');
 const BILANCIO = require('../js/bilancio.js');
 const CV = require('../js/cv.js');
 const DIARIO = require('../diario/js/diario.js');
@@ -179,13 +180,28 @@ function creaApi(db, opzioni) {
     nuovoDocente: db.prepare('INSERT INTO docenti (email, nome, password, admin, creato, deve_cambiare) VALUES (?, ?, ?, ?, ?, 1)'),
     cambiaPassword: db.prepare('UPDATE docenti SET password = ?, deve_cambiare = 0 WHERE id = ?'),
     foto: db.prepare('SELECT * FROM foto WHERE studente_id = ? AND id = ?'),
-    fotoElenco: db.prepare('SELECT id, byte, byte_mini, w, h, creata FROM foto WHERE studente_id = ? ORDER BY creata'),
-    fotoTotali: db.prepare('SELECT COUNT(*) AS n, COALESCE(SUM(byte + byte_mini), 0) AS byte FROM foto WHERE studente_id = ?'),
+    fotoElenco: db.prepare('SELECT id, byte, byte_mini, w, h, creata FROM foto WHERE studente_id = ? AND eliminata IS NULL ORDER BY creata'),
+    fotoTotali: db.prepare('SELECT COUNT(*) AS n, COALESCE(SUM(byte + byte_mini), 0) AS byte FROM foto WHERE studente_id = ? AND eliminata IS NULL'),
+    fotoTutte: db.prepare('SELECT COALESCE(SUM(byte + byte_mini), 0) AS byte FROM foto WHERE studente_id = ?'),
+    fotoInCestino: db.prepare('UPDATE foto SET eliminata = ? WHERE studente_id = ? AND id = ? AND eliminata IS NULL'),
+    fotoRimessa: db.prepare('UPDATE foto SET eliminata = NULL WHERE studente_id = ? AND id = ? AND eliminata IS NOT NULL'),
+    fotoScadute: db.prepare('SELECT studente_id, id, file FROM foto WHERE eliminata IS NOT NULL AND eliminata < ?'),
     nuovaFoto: db.prepare('INSERT INTO foto (studente_id, id, file, byte, byte_mini, w, h, creata) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'),
     togliFoto: db.prepare('DELETE FROM foto WHERE studente_id = ? AND id = ?'),
     allegato: db.prepare('SELECT * FROM allegati WHERE studente_id = ? AND id = ?'),
-    allegatiElenco: db.prepare('SELECT id, nome, byte, creata FROM allegati WHERE studente_id = ? ORDER BY creata'),
-    allegatiTotali: db.prepare('SELECT COUNT(*) AS n, COALESCE(SUM(byte), 0) AS byte FROM allegati WHERE studente_id = ?'),
+    allegatiElenco: db.prepare('SELECT id, nome, byte, creata FROM allegati WHERE studente_id = ? AND eliminata IS NULL ORDER BY creata'),
+    allegatiTotali: db.prepare('SELECT COUNT(*) AS n, COALESCE(SUM(byte), 0) AS byte FROM allegati WHERE studente_id = ? AND eliminata IS NULL'),
+    allegatiTutti: db.prepare('SELECT COALESCE(SUM(byte), 0) AS byte FROM allegati WHERE studente_id = ?'),
+    allegatoInCestino: db.prepare('UPDATE allegati SET eliminata = ? WHERE studente_id = ? AND id = ? AND eliminata IS NULL'),
+    allegatoRimesso: db.prepare('UPDATE allegati SET eliminata = NULL WHERE studente_id = ? AND id = ? AND eliminata IS NOT NULL'),
+    allegatiScaduti: db.prepare('SELECT studente_id, id, file FROM allegati WHERE eliminata IS NOT NULL AND eliminata < ?'),
+    cestinoElenco: db.prepare('SELECT id, tipo, percorso, titolo, quando, autore_tipo, autore_id, dati FROM cestino WHERE studente_id = ? ORDER BY id DESC'),
+    cestinoUna: db.prepare('SELECT * FROM cestino WHERE studente_id = ? AND id = ?'),
+    cestinoNuova: db.prepare('INSERT INTO cestino (studente_id, tipo, percorso, voce_id, titolo, dati, quando, autore_tipo, autore_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'),
+    cestinoTogli: db.prepare('DELETE FROM cestino WHERE studente_id = ? AND id = ?'),
+    cestinoTogliVoce: db.prepare('DELETE FROM cestino WHERE studente_id = ? AND tipo = ? AND percorso = ? AND voce_id = ?'),
+    cestinoPota: db.prepare('DELETE FROM cestino WHERE studente_id = ? AND id NOT IN (SELECT id FROM cestino WHERE studente_id = ? ORDER BY id DESC LIMIT ?)'),
+    cestinoScaduto: db.prepare('DELETE FROM cestino WHERE quando < ?'),
     nuovoAllegato: db.prepare('INSERT INTO allegati (studente_id, id, file, nome, byte, creata) VALUES (?, ?, ?, ?, ?, ?)'),
     togliAllegato: db.prepare('DELETE FROM allegati WHERE studente_id = ? AND id = ?'),
     ultimaLettura: db.prepare('SELECT quando FROM letture WHERE docente_id = ? AND studente_id = ? AND tipo = ? AND azione = ? ORDER BY id DESC LIMIT 1'),
@@ -256,6 +272,8 @@ function creaApi(db, opzioni) {
         return [409, Object.assign({ ok: false, errore: 'conflitto' }, leggiDocumento(studenteId, tipo))];
       }
       if (attuale && attuale.dati === pulito) return [200, { ok: true, rev: rev, invariato: true }];
+      if (attuale) metteNelCestino(studenteId, tipo, JSON.parse(attuale.dati), JSON.parse(pulito), autoreTipo, autoreId, ora);
+      if (tipo === 'portfolio') rimettiFileUsati(studenteId, JSON.parse(pulito));
       const nuova = rev + 1;
       if (attuale) q.aggiornaDocumento.run(nuova, pulito, ora, autoreTipo, autoreId, studenteId, tipo);
       else q.inserisciDocumento.run(studenteId, tipo, nuova, pulito, ora, autoreTipo, autoreId);
@@ -270,6 +288,59 @@ function creaApi(db, opzioni) {
       q.potaRevisioni.run(studenteId, tipo, limite, nuova - 5); // le ultime 5 restano comunque
       return [200, { ok: true, rev: nuova, aggiornato: ora }];
     });
+  }
+
+  // ---------- cestino ----------
+  // Quello che un salvataggio toglie dal documento si conserva per 30 giorni (vedi server/cestino.js).
+  function metteNelCestino(studenteId, tipo, prima, dopo, autoreTipo, autoreId, ora) {
+    const tolte = CESTINO.vociTolte(prima, dopo).slice(0, CESTINO.MAX_PER_SALVATAGGIO);
+    tolte.forEach(function (t) {
+      const perc = JSON.stringify(t.percorso);
+      q.cestinoTogliVoce.run(studenteId, tipo, perc, t.voce.id);
+      q.cestinoNuova.run(studenteId, tipo, perc, t.voce.id, CESTINO.titoloDi(t.voce), JSON.stringify(t.voce), ora, autoreTipo, autoreId);
+    });
+    if (tolte.length) q.cestinoPota.run(studenteId, studenteId, CESTINO.MAX_PER_STUDENTE);
+  }
+  // Una foto o un file scritto in un'attività non può essere «in cestino» da solo: salvare un documento che li usa li rimette a posto
+  // (vale anche per il ripristino di una revisione precedente).
+  function rimettiFileUsati(studenteId, dati) {
+    const r = CESTINO.riferimenti(dati);
+    r.foto.forEach(function (id) { q.fotoRimessa.run(studenteId, id); });
+    r.file.forEach(function (id) { q.allegatoRimesso.run(studenteId, id); });
+  }
+  const GIORNO_MS = 24 * ORA_MS;
+  function elencoCestino(studenteId) {
+    return q.cestinoElenco.all(studenteId).map(function (r) {
+      const perc = JSON.parse(r.percorso);
+      const rif = CESTINO.riferimenti(JSON.parse(r.dati));
+      return { id: r.id, tipo: r.tipo, genere: CESTINO.genereDi(perc), titolo: r.titolo, quando: r.quando,
+        scade: new Date(Date.parse(r.quando) + CESTINO.GIORNI * GIORNO_MS).toISOString(), autore: autore(r.autore_tipo, r.autore_id),
+        foto: rif.foto.length, file: rif.file.length };
+    });
+  }
+  function ripristinaVoce(studenteId, cid, autoreTipo, autoreId) {
+    const r = q.cestinoUna.get(studenteId, cid);
+    if (!r) return [404, { ok: false, errore: 'cestino' }];
+    const doc = leggiDocumento(studenteId, r.tipo);
+    const rim = CESTINO.rimetti(doc.dati || TIPI[r.tipo]({}), JSON.parse(r.percorso), JSON.parse(r.dati));
+    if (rim.errore) return [409, { ok: false, errore: 'contenitore' }]; // per esempio la settimana, ma il tirocinio non c'è più
+    if (rim.gia) { q.cestinoTogli.run(studenteId, cid); return [200, { ok: true, tipo: r.tipo, gia: true }]; }
+    const sal = salvaDocumento(studenteId, r.tipo, { base: doc.rev, dati: rim.dati }, autoreTipo, autoreId);
+    if (sal[0] !== 200) return sal;
+    q.cestinoTogli.run(studenteId, cid);
+    return [200, { ok: true, tipo: r.tipo, titolo: r.titolo }];
+  }
+  // «Elimina per sempre» (solo lo studente): la voce e le sue foto e file, se nessuna attività li usa più.
+  function svuotaVoce(studenteId, cid) {
+    const r = q.cestinoUna.get(studenteId, cid);
+    if (!r) return [404, { ok: false, errore: 'cestino' }];
+    const rif = CESTINO.riferimenti(JSON.parse(r.dati));
+    const doc = q.documento.get(studenteId, 'portfolio');
+    const testoDoc = doc ? doc.dati : '';
+    rif.foto.forEach(function (id) { if (testoDoc.indexOf('"' + id + '"') === -1) toglieFotoDefinitiva(studenteId, id); });
+    rif.file.forEach(function (id) { if (testoDoc.indexOf('"' + id + '"') === -1) toglieAllegatoDefinitivo(studenteId, id); });
+    q.cestinoTogli.run(studenteId, cid);
+    return [200, { ok: true }];
   }
 
   function elencoRevisioni(studenteId, tipo) {
@@ -299,13 +370,14 @@ function creaApi(db, opzioni) {
   function caricaFoto(studenteId, id, corpo) {
     if (!cartellaFoto) return [503, { ok: false, errore: 'foto' }];
     if (!ID_FOTO.test(id)) return [400, { ok: false, errore: 'id' }];
-    if (q.foto.get(studenteId, id)) return [200, { ok: true, invariato: true }];
+    const esiste = q.foto.get(studenteId, id);
+    if (esiste) { if (esiste.eliminata) q.fotoRimessa.run(studenteId, id); return [200, { ok: true, invariato: true }]; }
     const b = corpo || {};
     const grande = decodificaJpeg(b.jpeg, FOTO_MAX_BYTE, FOTO_LATO_MAX);
     const mini = decodificaJpeg(b.mini, FOTO_MINI_MAX_BYTE, FOTO_MINI_LATO_MAX);
     if (!grande || !mini) return [400, { ok: false, errore: 'formato' }];
     const t = q.fotoTotali.get(studenteId);
-    if (t.n >= FOTO_MAX_PER_STUDENTE || occupato(studenteId) + grande.byte.length + mini.byte.length > QUOTA_BYTE) return [413, { ok: false, errore: 'quota' }];
+    if (t.n >= FOTO_MAX_PER_STUDENTE || occupato(studenteId) + grande.byte.length + mini.byte.length > QUOTA_BYTE || occupatoConCestino(studenteId) + grande.byte.length + mini.byte.length > 2 * QUOTA_BYTE) return [413, { ok: false, errore: 'quota' }];
     const file = S.casuale(32, 'abcdef0123456789');
     fs.mkdirSync(path.join(cartellaFoto, String(studenteId)), { recursive: true, mode: 0o700 });
     fs.writeFileSync(fileFoto(studenteId, file, false), grande.byte, { mode: 0o600 });
@@ -322,19 +394,30 @@ function creaApi(db, opzioni) {
   function leggiFoto(studenteId, id, mini) {
     if (!cartellaFoto || !ID_FOTO.test(id)) return [404, { ok: false, errore: 'foto' }];
     const f = q.foto.get(studenteId, id);
-    if (!f) return [404, { ok: false, errore: 'foto' }];
+    if (!f || f.eliminata) return [404, { ok: false, errore: 'foto' }];
     let byte;
     try { byte = fs.readFileSync(fileFoto(studenteId, f.file, mini)); } catch (e) { return [404, { ok: false, errore: 'foto' }]; }
     return [200, { binario: byte, tipo: 'image/jpeg' }];
   }
 
+  // Lo studente «toglie» una foto: finisce nel cestino insieme all'attività, per 30 giorni.
   function eliminaFoto(studenteId, id) {
     if (!cartellaFoto || !ID_FOTO.test(id)) return [404, { ok: false, errore: 'foto' }];
+    if (!q.foto.get(studenteId, id)) return [404, { ok: false, errore: 'foto' }];
+    q.fotoInCestino.run(adesso(), studenteId, id);
+    return [200, { ok: true }];
+  }
+  function toglieFotoDefinitiva(studenteId, id) {
     const f = q.foto.get(studenteId, id);
-    if (!f) return [404, { ok: false, errore: 'foto' }];
+    if (!f) return false;
     q.togliFoto.run(studenteId, id);
     [false, true].forEach(function (m) { try { fs.unlinkSync(fileFoto(studenteId, f.file, m)); } catch (e) { /* già tolto */ } });
-    return [200, { ok: true }];
+    return true;
+  }
+  // «Elimina subito» (decisione dei docenti): senza cestino.
+  function eliminaFotoSubito(studenteId, id) {
+    if (!cartellaFoto || !ID_FOTO.test(id)) return [404, { ok: false, errore: 'foto' }];
+    return toglieFotoDefinitiva(studenteId, id) ? [200, { ok: true }] : [404, { ok: false, errore: 'foto' }];
   }
 
   function elencoFoto(studenteId) {
@@ -343,6 +426,8 @@ function creaApi(db, opzioni) {
 
   // Spazio usato da uno studente: foto e file insieme.
   function occupato(studenteId) { return q.fotoTotali.get(studenteId).byte + q.allegatiTotali.get(studenteId).byte; }
+  // Con il cestino: serve un tetto, altrimenti caricare e togliere ripetutamente riempirebbe il disco per 30 giorni.
+  function occupatoConCestino(studenteId) { return q.fotoTutte.get(studenteId).byte + q.allegatiTutti.get(studenteId).byte; }
 
   // ---------- allegati (file) ----------
   const cartellaAllegati = o.cartellaAllegati || '';
@@ -352,17 +437,18 @@ function creaApi(db, opzioni) {
   async function caricaAllegato(c, studenteId, id) {
     if (!cartellaAllegati) { c.scarta(); return [503, { ok: false, errore: 'allegati' }]; }
     if (!ID_ALLEGATO.test(id)) { c.scarta(); return [400, { ok: false, errore: 'id' }]; }
-    if (q.allegato.get(studenteId, id)) { c.scarta(); return [200, { ok: true, invariato: true }]; }
+    const esiste = q.allegato.get(studenteId, id);
+    if (esiste) { c.scarta(); if (esiste.eliminata) q.allegatoRimesso.run(studenteId, id); return [200, { ok: true, invariato: true }]; }
     let nome = '';
     try { nome = nomePulito(decodeURIComponent(String(c.req.headers['x-nome'] || ''))); } catch (e) { nome = 'file'; }
     const dich = Number(c.req.headers['content-length'] || 0);
     const t = q.allegatiTotali.get(studenteId);
     if (dich > ALLEGATO_MAX_BYTE) { c.scarta(); return [413, { ok: false, errore: 'dimensione' }]; }
-    if (t.n >= ALLEGATI_MAX_PER_STUDENTE || occupato(studenteId) + dich > QUOTA_BYTE) { c.scarta(); return [413, { ok: false, errore: 'quota' }]; }
+    if (t.n >= ALLEGATI_MAX_PER_STUDENTE || occupato(studenteId) + dich > QUOTA_BYTE || occupatoConCestino(studenteId) + dich > 2 * QUOTA_BYTE) { c.scarta(); return [413, { ok: false, errore: 'quota' }]; }
     const byte = await c.leggiGrezzo(ALLEGATO_MAX_BYTE);
     if (!byte.length) return [400, { ok: false, errore: 'vuoto' }];
     if (eProgramma(byte)) return [415, { ok: false, errore: 'programma' }];
-    if (occupato(studenteId) + byte.length > QUOTA_BYTE) return [413, { ok: false, errore: 'quota' }];
+    if (occupato(studenteId) + byte.length > QUOTA_BYTE || occupatoConCestino(studenteId) + byte.length > 2 * QUOTA_BYTE) return [413, { ok: false, errore: 'quota' }];
     const file = S.casuale(32, 'abcdef0123456789');
     fs.mkdirSync(path.join(cartellaAllegati, String(studenteId)), { recursive: true, mode: 0o700 });
     fs.writeFileSync(fileAllegato(studenteId, file), byte, { mode: 0o600 });
@@ -375,7 +461,7 @@ function creaApi(db, opzioni) {
   function leggiAllegato(studenteId, id) {
     if (!cartellaAllegati || !ID_ALLEGATO.test(id)) return [404, { ok: false, errore: 'allegato' }];
     const f = q.allegato.get(studenteId, id);
-    if (!f) return [404, { ok: false, errore: 'allegato' }];
+    if (!f || f.eliminata) return [404, { ok: false, errore: 'allegato' }];
     let byte;
     try { byte = fs.readFileSync(fileAllegato(studenteId, f.file)); } catch (e) { return [404, { ok: false, errore: 'allegato' }]; }
     const ascii = f.nome.replace(/[^\x20-\x7e]/g, '_').replace(/"/g, '_');
@@ -387,11 +473,20 @@ function creaApi(db, opzioni) {
 
   function eliminaAllegato(studenteId, id) {
     if (!cartellaAllegati || !ID_ALLEGATO.test(id)) return [404, { ok: false, errore: 'allegato' }];
+    if (!q.allegato.get(studenteId, id)) return [404, { ok: false, errore: 'allegato' }];
+    q.allegatoInCestino.run(adesso(), studenteId, id);
+    return [200, { ok: true }];
+  }
+  function toglieAllegatoDefinitivo(studenteId, id) {
     const f = q.allegato.get(studenteId, id);
-    if (!f) return [404, { ok: false, errore: 'allegato' }];
+    if (!f) return false;
     q.togliAllegato.run(studenteId, id);
     try { fs.unlinkSync(fileAllegato(studenteId, f.file)); } catch (e) { /* già tolto */ }
-    return [200, { ok: true }];
+    return true;
+  }
+  function eliminaAllegatoSubito(studenteId, id) {
+    if (!cartellaAllegati || !ID_ALLEGATO.test(id)) return [404, { ok: false, errore: 'allegato' }];
+    return toglieAllegatoDefinitivo(studenteId, id) ? [200, { ok: true }] : [404, { ok: false, errore: 'allegato' }];
   }
 
   function elencoAllegati(studenteId) {
@@ -505,6 +600,10 @@ function creaApi(db, opzioni) {
   rotta('GET', '/api/foto/:id', serveStudente, function (c, p) { return leggiFoto(c.sessione.utente.id, p.id, false); });
   rotta('GET', '/api/foto/:id/mini', serveStudente, function (c, p) { return leggiFoto(c.sessione.utente.id, p.id, true); });
   rotta('DELETE', '/api/foto/:id', serveStudente, function (c, p) { return eliminaFoto(c.sessione.utente.id, p.id); });
+  // Il cestino: le cose tolte negli ultimi 30 giorni
+  rotta('GET', '/api/cestino', serveStudente, function (c) { return [200, { ok: true, voci: elencoCestino(c.sessione.utente.id), giorni: CESTINO.GIORNI }]; });
+  rotta('POST', '/api/cestino/:id/ripristina', serveStudente, function (c, p) { return ripristinaVoce(c.sessione.utente.id, intero(p.id), 'studente', c.sessione.utente.id); });
+  rotta('DELETE', '/api/cestino/:id', serveStudente, function (c, p) { return svuotaVoce(c.sessione.utente.id, intero(p.id)); });
   // I file allegati (Word, CAD, codice…)
   rotta('GET', '/api/allegati', serveStudente, function (c) { return elencoAllegati(c.sessione.utente.id); });
   rotta('PUT', '/api/allegati/:id', serveStudente, function (c, p) { return caricaAllegato(c, c.sessione.utente.id, p.id); });
@@ -679,7 +778,7 @@ function creaApi(db, opzioni) {
   });
   rotta('DELETE', '/api/studenti/:id/foto/:fid', serveDocente, function (c, p) {
     const e = studenteEDocumento({ id: p.id, tipo: 'portfolio' }); if (e) return e;
-    const r = eliminaFoto(intero(p.id), p.fid);
+    const r = eliminaFotoSubito(intero(p.id), p.fid);
     if (r[0] === 200) q.registra.run(c.sessione.utente.id, intero(p.id), 'portfolio', 'elimina foto ' + p.fid, adesso());
     return r;
   });
@@ -695,8 +794,21 @@ function creaApi(db, opzioni) {
   });
   rotta('DELETE', '/api/studenti/:id/allegati/:aid', serveDocente, function (c, p) {
     const e = studenteEDocumento({ id: p.id, tipo: 'portfolio' }); if (e) return e;
-    const r = eliminaAllegato(intero(p.id), p.aid);
+    const r = eliminaAllegatoSubito(intero(p.id), p.aid);
     if (r[0] === 200) q.registra.run(c.sessione.utente.id, intero(p.id), 'portfolio', 'elimina file ' + p.aid, adesso());
+    return r;
+  });
+
+  // Il cestino di uno studente, per i docenti: lo vedono e rimettono a posto quello che serve, con una riga nel registro.
+  rotta('GET', '/api/studenti/:id/cestino', serveDocente, function (c, p) {
+    const e = studenteEDocumento({ id: p.id, tipo: 'portfolio' }); if (e) return e;
+    registraLettura(c.sessione.utente.id, intero(p.id), 'cestino', 'lettura');
+    return [200, { ok: true, voci: elencoCestino(intero(p.id)), giorni: CESTINO.GIORNI }];
+  });
+  rotta('POST', '/api/studenti/:id/cestino/:cid/ripristina', serveDocente, function (c, p) {
+    const e = studenteEDocumento({ id: p.id, tipo: 'portfolio' }); if (e) return e;
+    const r = ripristinaVoce(intero(p.id), intero(p.cid), 'docente', c.sessione.utente.id);
+    if (r[0] === 200) q.registra.run(c.sessione.utente.id, intero(p.id), r[1].tipo || 'cestino', 'ripristina dal cestino', adesso());
     return r;
   });
 
@@ -775,7 +887,15 @@ function creaApi(db, opzioni) {
     return trovata ? [405, { ok: false, errore: 'metodo' }] : null;
   }
 
-  function pulisci() { q.scadute.run(adesso()); }
+  // Ogni ora: sessioni scadute, voci del cestino oltre i 30 giorni, foto e file tolti da più di 31 giorni (un giorno in più, così
+  // una voce ancora nel cestino non perde mai le sue foto).
+  function pulisci() {
+    q.scadute.run(adesso());
+    q.cestinoScaduto.run(new Date(Date.now() - CESTINO.GIORNI * GIORNO_MS).toISOString());
+    const limite = new Date(Date.now() - (CESTINO.GIORNI + 1) * GIORNO_MS).toISOString();
+    q.fotoScadute.all(limite).forEach(function (f) { toglieFotoDefinitiva(f.studente_id, f.id); });
+    q.allegatiScaduti.all(limite).forEach(function (f) { toglieAllegatoDefinitivo(f.studente_id, f.id); });
+  }
 
   return { gestisci: gestisci, creaDocente: creaDocente, pulisci: pulisci, TIPI: TIPI };
 }

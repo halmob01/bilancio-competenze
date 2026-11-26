@@ -1011,3 +1011,10 @@ dialog p:empty { display: none; }
   #stampa .cartellino__sito { font-size: 7pt; } #stampa .cartellino__etichetta { font-size: 7pt; }
   #stampa .cartellino__classe { font-size: 9pt; } #stampa .cartellino__piede { font-size: 6.5pt; }
 }
+
+/* ---------- Cestino ---------- */
+.cestino__elenco { list-style: none; padding: 0; display: grid; gap: 14px; max-height: 50vh; overflow-y: auto; }
+.cestino__voce { border-bottom: 1px solid var(--c-filetto); padding-bottom: 14px; display: grid; gap: 6px; }
+.cestino__titolo { font-weight: 700; color: var(--c-titolo); overflow-wrap: anywhere; }
+.cestino__azioni { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 6px; }
+.cestino__esito:empty { display: none; }

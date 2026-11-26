@@ -442,7 +442,9 @@
         indietro(s.classe || 'Le classi', s.classeId ? '#/classe/' + s.classeId : '#/'),
         h('div', { class: 'pannello__testa' }, h('div', null, h('h1', { text: s.nome + ' ' + s.cognome }),
           h('p', { class: 'meta', text: [s.classe, INDIRIZZI[s.indirizzo] || '', s.attivo ? '' : 'Non attivo', 'Ultimo accesso: ' + D.ultimoAccesso(s.ultimoAccesso)].filter(Boolean).join(' · ') })),
-          h('div', { class: 'pannello__azioni' }, io.admin ? h('button', { type: 'button', class: 'pulsante pulsante--testo', onclick: function () { mostraRegistro(s); } }, 'Registro delle letture') : null)),
+          h('div', { class: 'pannello__azioni' },
+            h('button', { type: 'button', class: 'pulsante pulsante--secondario', onclick: function () { mostraCestino(s); } }, 'Cancellato di recente'),
+            io.admin ? h('button', { type: 'button', class: 'pulsante pulsante--testo', onclick: function () { mostraRegistro(s); } }, 'Registro delle letture') : null)),
         h('section', null, h('h2', { class: 'meta occhiello', text: 'Percorsi' }),
           h('ul', { class: 'percorsi-studente' }, PERCORSI.map(function (p) {
             const x = r[0].json.percorsi[p.id];
@@ -521,6 +523,38 @@
         if (finestra2 && finestra2.open) finestra2.close();
         vistaStudente(s.id);
       });
+    });
+  }
+  // Quello che lo studente ha cancellato negli ultimi 30 giorni: il docente lo rimette a posto (la scelta resta nel registro).
+  const DOVE = { portfolio: 'Le mie attività', diario: 'Diario', bilancio: 'Bilancio', cv: 'Curriculum' };
+  const COSA = { attivita: 'Attività', tirocini: 'Tirocinio', settimane: 'Settimana', esperienze: 'Esperienza', lingueElenco: 'Lingua', formazione: 'Formazione', lavoro: 'Lavoro' };
+  function mostraCestino(s) {
+    api('GET', 'studenti/' + s.id + '/cestino').then(function (r) {
+      if (!controlla(r)) return;
+      const voci = r.json.voci || [];
+      const esito = h('p', { class: 'cestino__esito', role: 'status' });
+      const elenco = h('ul', { class: 'cestino__elenco' }, voci.map(function (v) {
+        const li = h('li', { class: 'cestino__voce' });
+        const rimetti = h('button', { type: 'button', class: 'pulsante' }, 'Rimetti a posto');
+        rimetti.addEventListener('click', function () {
+          rimetti.disabled = true;
+          api('POST', 'studenti/' + s.id + '/cestino/' + v.id + '/ripristina').then(function (x) {
+            if (!controlla(x)) return;
+            if (x.stato === 200) { li.remove(); esito.textContent = 'Fatto: rimesso in «' + (DOVE[v.tipo] || 'Le mie attività') + '».'; }
+            else { rimetti.disabled = false; esito.textContent = x.stato === 409 ? 'Non si può rimettere: manca il tirocinio. Rimettilo prima.' : 'Non è andata. Riprova tra poco.'; }
+          });
+        });
+        const giorni = Math.max(0, Math.ceil((Date.parse(v.scade) - Date.now()) / 86400000));
+        li.appendChild(h('p', { class: 'cestino__titolo', text: (COSA[v.genere] || 'Voce') + (v.titolo ? ': ' + v.titolo : '') }));
+        li.appendChild(h('p', { class: 'meta', text: (DOVE[v.tipo] || '') + ' · cancellato il ' + new Date(v.quando).toLocaleDateString('it-IT', { day: 'numeric', month: 'long' }) + ' · ' + (giorni === 1 ? 'resta 1 giorno' : 'restano ' + giorni + ' giorni') + (v.foto || v.file ? ' · ' + [v.foto ? v.foto + ' foto' : '', v.file ? v.file + ' file' : ''].filter(Boolean).join(', ') : '') }));
+        li.appendChild(h('div', { class: 'cestino__azioni' }, rimetti));
+        return li;
+      }));
+      const d = finestra('Cancellato di recente', h('div', null,
+        h('p', { text: voci.length ? 'Cose cancellate da ' + s.nome + ' negli ultimi 30 giorni.' : 'Non c\'è niente da rimettere a posto.' }),
+        elenco, esito,
+        h('div', { class: 'dialogo__azioni' }, h('button', { type: 'button', class: 'pulsante', onclick: function () { d.close(); } }, 'Chiudi'))), 'finestra--larga');
+      d.addEventListener('close', function () { vistaStudente(s.id); });
     });
   }
   function mostraRegistro(s) {

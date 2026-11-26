@@ -34,6 +34,7 @@ jobs:
           node --check portfolio/js/app.js
           node --check docenti/js/docenti.js
           node --check docenti/js/app.js
+          node --check server/cestino.js
           for f in server/*.js; do node --check "$f"; done
           bash -n deploy/installa-portale.sh
           bash -n deploy/prepara-siti.sh

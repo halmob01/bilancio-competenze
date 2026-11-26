@@ -231,3 +231,12 @@ Il docente scrive in italiano semplice e non vuole emoji. Il piano completo è `
 - Solo l'amministratore: crea docenti, reimposta password (mostrata una volta), disattiva. Il primo amministratore resta da terminale.
 - Libreria QR: `js/qrcode.js` (qrcode-generator, MIT, licenza in `js/LICENSE-qrcode-generator.txt`).
 - Prova nel browser: lo script e2e è stato eseguito con il server vero (accesso, cambio password, classe, elenco, cartellini, avanzamento, CSV, studente, docenti).
+
+### 4.10 Cestino di 30 giorni (F1, blocco 4, 26 novembre 2026)
+- **Come funziona.** Il server non conosce «cancella attività»: a ogni salvataggio confronta il documento con la versione precedente (`server/cestino.js`) e le voci con un `id` che non ci sono più (attività, tirocini, settimane, esperienze, lingue, formazione…) vanno nella tabella `cestino`, intere, con chi le ha tolte e quando. Una settimana di un tirocinio che resta si conserva da sola; di un tirocinio tolto si conserva tutto, settimane comprese. Una scheda appena creata e vuota non entra nel cestino.
+- **Foto e file.** Quando lo studente li toglie (il sito lo fa da solo quando l'attività sparisce) il server li segna `eliminata` ma li lascia sul disco. Non si leggono, non contano nella quota (ma c'è un tetto di 2 GB con il cestino, contro chi carica e toglie di continuo). Salvare un documento che li usa li rimette a posto: vale anche per il ripristino di una revisione.
+- **Ripristino.** Studente: `POST /api/cestino/:id/ripristina`; docente: `POST /api/studenti/:id/cestino/:cid/ripristina` (riga nel registro, il documento risulta modificato dal docente). Se il posto non c'è più (la settimana ma non il tirocinio) risponde 409 `contenitore`.
+- **Elimina per sempre** (solo lo studente): `DELETE /api/cestino/:id` toglie la voce e le sue foto e file, se nessuna attività li usa più. «Elimina subito» dei docenti resta senza cestino.
+- **Scadenza.** `pulisci()` (ogni ora): voci oltre 30 giorni; foto e file oltre 31 giorni (un giorno in più, così una voce ancora nel cestino non perde le foto).
+- **Interfaccia.** Pagina iniziale: pulsante «Cestino» (`js/area.js`). Pannello docenti: «Cancellato di recente» nella pagina dello studente. Migrazione 7.
+- Non fatto: vista del cestino di tutta la classe; per i testi cancellati dentro un campo restano le revisioni (§5).

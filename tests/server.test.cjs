@@ -590,3 +590,107 @@ test('backup: copia coerente e rotazione 7 giornaliere, 4 settimanali, 12 mensil
     copia.close();
   } finally { fs.rmSync(cartella, { recursive: true, force: true }); }
 });
+
+test('cestino: le voci tolte si conservano 30 giorni, si rimettono a posto (studente e docente), con le loro foto e file', async () => {
+  const p = await avvia();
+  try {
+    const k = await preparaClasse(p);
+    const sara = (await p.chiedi('POST', '/api/accesso/studente', { codice: k.studenti[0].codice })).cookie;
+    const luca = (await p.chiedi('POST', '/api/accesso/studente', { codice: k.studenti[1].codice })).cookie;
+    const att = (id, fatto, extra) => Object.assign({ id: id, fatto: fatto, luogo: 'scuola', data: '2026-03-10', anno: 'anno3', competenze: [], foto: [], file: [] }, extra || {});
+    const doc = (lista) => ({ versione: 1, profilo: { indirizzo: 'elettrico', anno: 'anno3' }, attivita: lista });
+    const a2 = att('a2xyz', 'Ho cablato un quadro con due differenziali.', { foto: ['fabc12345'], file: [{ id: 'dabc12345', nome: 'Schema.dwg', byte: 9 }] });
+    const a1 = att('a1xyz', 'Primo circuito con una lampadina e un pulsante.');
+    assert.equal((await p.chiedi('PUT', '/api/documenti/portfolio', { base: 0, dati: doc([a1, a2]) }, { cookie: sara })).json.rev, 1);
+    assert.equal((await p.chiedi('PUT', '/api/foto/fabc12345', { jpeg: JPEG_B64, mini: JPEG_B64 }, { cookie: sara })).stato, 200);
+    assert.equal((await p.chiedi('PUT', '/api/allegati/dabc12345', 'AC1027 disegno', { cookie: sara, intestazioni: { 'Content-Type': 'application/octet-stream', 'X-Nome': 'Schema.dwg' } })).stato, 200);
+    assert.deepEqual((await p.chiedi('GET', '/api/cestino', undefined, { cookie: sara })).json.voci, [], 'all\'inizio il cestino è vuoto');
+    // Lo studente toglie l'attività con foto e file: il client toglie anche foto e file, ma restano sul disco per 30 giorni
+    assert.equal((await p.chiedi('PUT', '/api/documenti/portfolio', { base: 1, dati: doc([a1]) }, { cookie: sara })).json.rev, 2);
+    assert.equal((await p.chiedi('DELETE', '/api/foto/fabc12345', undefined, { cookie: sara })).stato, 200);
+    assert.equal((await p.chiedi('DELETE', '/api/allegati/dabc12345', undefined, { cookie: sara })).stato, 200);
+    const cest = (await p.chiedi('GET', '/api/cestino', undefined, { cookie: sara })).json;
+    assert.equal(cest.giorni, 30);
+    assert.equal(cest.voci.length, 1);
+    const v = cest.voci[0];
+    assert.deepEqual([v.tipo, v.genere, v.titolo, v.foto, v.file, v.autore.tipo], ['portfolio', 'attivita', 'Ho cablato un quadro con due differenziali.', 1, 1, 'studente']);
+    assert.ok(Date.parse(v.scade) - Date.parse(v.quando) === 30 * 24 * 3600 * 1000);
+    // Tolte dall'uso: non si leggono, non contano nella quota, ma i file ci sono ancora
+    assert.equal((await p.chiedi('GET', '/api/foto/fabc12345', undefined, { cookie: sara })).stato, 404);
+    assert.equal((await p.chiedi('GET', '/api/allegati/dabc12345', undefined, { cookie: sara })).stato, 404);
+    assert.deepEqual((await p.chiedi('GET', '/api/foto', undefined, { cookie: sara })).json.foto, []);
+    assert.equal((await p.chiedi('GET', '/api/allegati', undefined, { cookie: sara })).json.occupato, 0);
+    assert.equal(fs.readdirSync(path.join(p.cartella, 'foto', '1')).length, 2);
+    // Un altro studente non vede il cestino altrui, né lo tocca
+    assert.deepEqual((await p.chiedi('GET', '/api/cestino', undefined, { cookie: luca })).json.voci, []);
+    assert.equal((await p.chiedi('POST', '/api/cestino/' + v.id + '/ripristina', undefined, { cookie: luca })).stato, 404);
+    assert.equal((await p.chiedi('DELETE', '/api/cestino/' + v.id, undefined, { cookie: luca })).stato, 404);
+    assert.equal((await p.chiedi('GET', '/api/cestino')).stato, 401);
+    // Il docente lo vede (nel registro) e lo rimette a posto
+    const d = await p.chiedi('GET', '/api/studenti/1/cestino', undefined, { cookie: k.docente });
+    assert.equal(d.json.voci.length, 1);
+    const rip = await p.chiedi('POST', '/api/studenti/1/cestino/' + v.id + '/ripristina', undefined, { cookie: k.docente });
+    assert.equal(rip.stato, 200, JSON.stringify(rip.json));
+    const dopo = (await p.chiedi('GET', '/api/documenti/portfolio', undefined, { cookie: sara })).json;
+    assert.deepEqual(dopo.dati.attivita.map((x) => x.id).sort(), ['a1xyz', 'a2xyz']);
+    assert.equal(dopo.autore.tipo, 'docente');
+    assert.deepEqual((await p.chiedi('GET', '/api/cestino', undefined, { cookie: sara })).json.voci, [], 'rimessa: esce dal cestino');
+    // E con l'attività tornano la foto e il file
+    assert.equal((await p.chiedi('GET', '/api/foto/fabc12345', undefined, { cookie: sara })).stato, 200);
+    assert.equal((await p.chiedi('GET', '/api/allegati/dabc12345', undefined, { cookie: sara })).stato, 200);
+    const reg = (await p.chiedi('GET', '/api/studenti/1/registro', undefined, { cookie: k.docente })).json;
+    assert.ok(JSON.stringify(reg).includes('ripristina dal cestino'), 'il registro lo dice');
+    // Lo studente la toglie di nuovo e poi «elimina per sempre»: via voce, foto e file
+    assert.equal((await p.chiedi('PUT', '/api/documenti/portfolio', { base: dopo.rev, dati: doc([a1]) }, { cookie: sara })).stato, 200);
+    await p.chiedi('DELETE', '/api/foto/fabc12345', undefined, { cookie: sara });
+    await p.chiedi('DELETE', '/api/allegati/dabc12345', undefined, { cookie: sara });
+    const v2 = (await p.chiedi('GET', '/api/cestino', undefined, { cookie: sara })).json.voci[0];
+    assert.equal((await p.chiedi('DELETE', '/api/cestino/' + v2.id, undefined, { cookie: sara })).stato, 200);
+    assert.deepEqual((await p.chiedi('GET', '/api/cestino', undefined, { cookie: sara })).json.voci, []);
+    assert.equal(fs.readdirSync(path.join(p.cartella, 'foto', '1')).length, 0, 'foto davvero cancellate');
+    assert.equal(fs.readdirSync(path.join(p.cartella, 'allegati', '1')).length, 0, 'file davvero cancellato');
+  } finally { await p.chiudi(); }
+});
+
+test('cestino: settimana senza tirocinio, scadenza dopo 30 giorni, e «elimina subito» dei docenti non passa dal cestino', async () => {
+  const p = await avvia();
+  try {
+    const k = await preparaClasse(p);
+    const sara = (await p.chiedi('POST', '/api/accesso/studente', { codice: k.studenti[0].codice })).cookie;
+    const sett = { id: 's1abc', dal: '2026-03-02', fatto: 'Ho montato le prese e i frutti.', imparato: 'A usare il tester.' };
+    const tir = (lista) => ({ versione: 1, tirocini: [{ id: 't1abc', azienda: 'Elettro Rossi', settimane: lista }], corrente: 't1abc' });
+    await p.chiedi('PUT', '/api/documenti/diario', { base: 0, dati: tir([sett]) }, { cookie: sara });
+    await p.chiedi('PUT', '/api/documenti/diario', { base: 1, dati: tir([]) }, { cookie: sara });
+    let voci = (await p.chiedi('GET', '/api/cestino', undefined, { cookie: sara })).json.voci;
+    assert.deepEqual(voci.map((x) => [x.tipo, x.genere]), [['diario', 'settimane']]);
+    // Il tirocinio sparisce: la settimana non si può rimettere, e il messaggio è chiaro
+    await p.chiedi('PUT', '/api/documenti/diario', { base: 2, dati: { versione: 1, tirocini: [], corrente: '' } }, { cookie: sara });
+    voci = (await p.chiedi('GET', '/api/cestino', undefined, { cookie: sara })).json.voci;
+    assert.deepEqual(voci.map((x) => x.genere).sort(), ['settimane', 'tirocini'].sort().filter((g) => g === 'tirocini').concat(['settimane']).sort(), 'tirocinio e (prima) settimana');
+    const sSett = voci.find((x) => x.genere === 'settimane'); const sTir = voci.find((x) => x.genere === 'tirocini');
+    assert.equal((await p.chiedi('POST', '/api/cestino/' + sSett.id + '/ripristina', undefined, { cookie: sara })).json.errore, 'contenitore');
+    assert.equal((await p.chiedi('POST', '/api/cestino/' + sTir.id + '/ripristina', undefined, { cookie: sara })).stato, 200);
+    assert.equal((await p.chiedi('POST', '/api/cestino/' + sSett.id + '/ripristina', undefined, { cookie: sara })).stato, 200, 'ora il posto c\'è');
+    const diario = (await p.chiedi('GET', '/api/documenti/diario', undefined, { cookie: sara })).json.dati;
+    assert.equal(diario.tirocini[0].settimane[0].fatto, sett.fatto);
+    // Scadenza: dopo 30 giorni la voce sparisce, le foto tolte dopo 31
+    await p.chiedi('PUT', '/api/foto/fzzz12345', { jpeg: JPEG_B64, mini: JPEG_B64 }, { cookie: sara });
+    await p.chiedi('DELETE', '/api/foto/fzzz12345', undefined, { cookie: sara });
+    await p.chiedi('PUT', '/api/documenti/diario', { base: 5, dati: tir([]) }, { cookie: sara });
+    const db = p.server.db;
+    const vecchio = new Date(Date.now() - 30.5 * 24 * 3600 * 1000).toISOString();
+    db.prepare('UPDATE cestino SET quando = ?').run(vecchio);
+    db.prepare('UPDATE foto SET eliminata = ?').run(vecchio);
+    p.server.api.pulisci();
+    assert.deepEqual((await p.chiedi('GET', '/api/cestino', undefined, { cookie: sara })).json.voci, [], 'oltre 30 giorni la voce non c\'è più');
+    assert.equal(fs.readdirSync(path.join(p.cartella, 'foto', '1')).length, 2, 'la foto aspetta un giorno in più');
+    db.prepare('UPDATE foto SET eliminata = ?').run(new Date(Date.now() - 31.5 * 24 * 3600 * 1000).toISOString());
+    p.server.api.pulisci();
+    assert.equal(fs.readdirSync(path.join(p.cartella, 'foto', '1')).length, 0);
+    // «Elimina subito» dei docenti: via per davvero, senza cestino
+    await p.chiedi('PUT', '/api/foto/fyyy12345', { jpeg: JPEG_B64, mini: JPEG_B64 }, { cookie: sara });
+    assert.equal((await p.chiedi('DELETE', '/api/studenti/1/foto/fyyy12345', undefined, { cookie: k.docente })).stato, 200);
+    assert.equal(fs.readdirSync(path.join(p.cartella, 'foto', '1')).length, 0);
+    assert.equal(db.prepare('SELECT COUNT(*) AS n FROM foto').get().n, 0);
+  } finally { await p.chiudi(); }
+});

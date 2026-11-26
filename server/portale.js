@@ -31,7 +31,18 @@ const INTESTAZIONI = {
   'Cross-Origin-Resource-Policy': 'same-origin'
 };
 
+// Una foto: JPEG consegnato solo a chi ha il permesso (lo decide api.js), mai in cache condivise.
+function rispondiBinario(res, stato, byte, tipo) {
+  res.writeHead(stato, {
+    'Content-Type': tipo, 'Content-Length': byte.length, 'Cache-Control': 'private, max-age=60',
+    'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer',
+    'Content-Security-Policy': "default-src 'none'; frame-ancestors 'none'; sandbox", 'Cross-Origin-Resource-Policy': 'same-origin'
+  });
+  res.end(byte);
+}
+
 function rispondi(res, stato, oggetto) {
+  if (oggetto && oggetto.binario) return rispondiBinario(res, stato, oggetto.binario, oggetto.tipo || 'application/octet-stream');
   const corpo = JSON.stringify(oggetto);
   res.writeHead(stato, Object.assign({ 'Content-Length': Buffer.byteLength(corpo) }, INTESTAZIONI));
   res.end(corpo);
@@ -98,7 +109,7 @@ function creaServer(opzioni) {
     if (secondi < 0) v += '; Max-Age=0';
     return v;
   };
-  const api = API.creaApi(db);
+  const api = API.creaApi(db, { cartellaFoto: o.dati ? path.join(o.dati, 'foto') : '' });
   api.pulisci();
   const pulizia = setInterval(function () { try { api.pulisci(); } catch (e) { /* riprova alla prossima */ } }, 3600 * 1000);
   pulizia.unref();

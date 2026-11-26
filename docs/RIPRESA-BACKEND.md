@@ -149,13 +149,23 @@ Decisioni del 26/11: si fa F1 a blocchi, uno alla volta, provandoli prima di and
 
 **Provato** (26/11) in Chromium con il server vero avviato nello script di prova: telefono con QR e PC con codice sulla stessa studentessa, diario scritto sul telefono e ritrovato sul PC, stessa voce cambiata sui due dispositivi (domanda e unione: restano la città scritta dal telefono e l'azienda scelta sul PC), «Esci» che svuota il browser, lavoro fatto senza accesso adottato al primo ingresso, cartellino rigenerato (avviso, lavoro conservato). Test automatici: `tests/unione.test.cjs`, tipo `portfolio` in `tests/server.test.cjs`.
 
+### 4.7 Foto sul server (F1, blocco 2, 26 novembre 2026)
+
+- **Archivio:** tabella `foto` (migrazione 4: studente, id scelto dal telefono, nome casuale del file, byte, dimensioni); i file in `PORTALE_DATI/foto/<id studente>/<nome casuale>.jpg` e `…-m.jpg` (miniatura), cartella 700, file 600, **fuori dal sito**.
+- **Controlli:** JPEG vero (inizia FF D8 FF, finisce FF D9, ha le dimensioni); grande fino a 400 KB e 1600 px, miniatura fino a 60 KB e 480 px; id `f[a-z0-9]{6,40}`; **200 MB e 1500 foto per studente** (413 «quota»). Il caricamento è JSON con i due JPEG in base64 (resta sotto il limite di 1 MB del corpo e di 2 MB di Apache).
+- **Richieste:** studente `GET /api/foto` (elenco), `PUT /api/foto/:id`, `GET /api/foto/:id` e `/mini`, `DELETE /api/foto/:id`. Docente `GET /api/studenti/:id/foto` (+ `/:fid`, `/:fid/mini`) e `DELETE /api/studenti/:id/foto/:fid` («elimina subito», con una riga nel registro). Le foto si consegnano solo allo studente e ai docenti (404 agli altri), con `nosniff`, `private, max-age=60`, CSP con `sandbox`. Le letture dei docenti vanno nel registro (una volta ogni 10 minuti per studente).
+- **Telefono** (`portfolio/js/foto.js`): la riduzione tiene la foto sotto 380 KB (abbassa qualità e poi pixel); da entrati ogni foto parte in coda appena è pronta (confronto con l'elenco del server: manda solo quelle che mancano), senza rete aspetta; le foto tolte si tolgono dal server (anche in coda); una foto non presente su questo dispositivo si mostra, si mette nel PDF e nella copia prendendola dal server. «Esci» aspetta le foto e, se non ci riesce, chiede conferma (`registraSincronizzatore` in `js/archivio.js`).
+- **Backup:** `server/backup.js` specchia `foto/` in `backup/foto` (copia le nuove, toglie quelle eliminate, così «elimina subito» vale anche lì). Resta da portare fuori dal server.
+- **Non ancora:** pulizia delle foto non più usate da nessuna attività (si farà con il cestino, blocco 4), foto del curriculum.
+- **Provato** (26/11, server vero): foto dal telefono sul server (87 e 83 KB), PC che le mostra senza averle, PDF dal PC con le foto, foto tolta senza rete che parte al ritorno della rete, «Esci» con foto ancora da mandare. Test: `foto: caricamento controllato…` e `backup delle foto…` in `tests/server.test.cjs`.
+
 **Sul server**, in `/opt/portale/app` oltre a `server/` servono: `js/dati.js`, `js/bilancio.js`, `js/cv.js`, `js/competenze.js`, `diario/js/diario.js`, `portfolio/js/attivita.js`.
 
 ---
 
 ## 5. Che cosa manca (in ordine consigliato)
 
-1. ~~Collegare i siti al server~~: **fatto il 26/11/2026** (§4.6). Restano da fare: modalità senza rete con service worker (oggi senza rete la pagina deve essere già aperta o nella cache del browser); QR sullo schermo del PC; correzioni sul foglio del curriculum salvate nel documento. Era:
+1. ~~Collegare i siti al server~~ (le foto: §4.7): **fatto il 26/11/2026** (§4.6). Restano da fare: modalità senza rete con service worker (oggi senza rete la pagina deve essere già aperta o nella cache del browser); QR sullo schermo del PC; correzioni sul foglio del curriculum salvate nel documento. Era:
    - salvataggio locale **separato per studente** (oggi le chiavi `bilancio-competenze-v1`, `cv-v1`, `diario-tirocinio-v1` sono uguali per tutti; su un PC condiviso lo studente dopo caricherebbe il lavoro di quello prima);
    - invio al server con `base`, coda quando non c'è rete;
    - gestione del 409 con **unione per voce** (tirocini, settimane ed esperienze hanno già un `id`), chiedendo allo studente solo se la stessa voce è cambiata da tutte e due le parti;

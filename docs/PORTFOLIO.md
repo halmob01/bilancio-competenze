@@ -59,7 +59,7 @@ Le regole del piano (§6): si importa solo su richiesta, la sorgente non viene m
 ## Da fare
 
 - Far rivedere le frasi semplici ai docenti dei tre indirizzi, poi `RIVISTO = true`.
-- Collegamento al server (F1): un tipo di documento `portfolio` nel programma, e il caricamento delle foto (fino a 400 KB l'una, 200 MB per studente, servite solo con permesso).
+- ~~Collegamento al server~~: fatto il 26/11/2026, testi e foto (`docs/RIPRESA-BACKEND.md` §4.7).
 - Attività → curriculum (sezione «Lavori svolti», competenze documentate).
 - Provare su iPhone (HEIC dalla galleria) e su un telefono Android economico (memoria nella riduzione di foto grandi).
 - Conferma del docente «ho visto questo lavoro» (F5).

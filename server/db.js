@@ -97,6 +97,19 @@ const MIGRAZIONI = [
   `CREATE TABLE impostazioni (
      chiave TEXT PRIMARY KEY,
      valore TEXT NOT NULL
+   );`,
+
+  // 4. Foto delle attività: i file stanno fuori dal sito (PORTALE_DATI/foto/<id studente>/), qui solo l'elenco.
+  `CREATE TABLE foto (
+     studente_id INTEGER NOT NULL REFERENCES studenti(id),
+     id TEXT NOT NULL,                         -- scelto dal telefono, lo stesso scritto nelle attività
+     file TEXT NOT NULL,                       -- nome casuale del file (senza estensione)
+     byte INTEGER NOT NULL,
+     byte_mini INTEGER NOT NULL,
+     w INTEGER NOT NULL,
+     h INTEGER NOT NULL,
+     creata TEXT NOT NULL,
+     PRIMARY KEY (studente_id, id)
    );`
 ];
 

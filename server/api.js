@@ -9,6 +9,8 @@
    - ogni salvataggio lascia una revisione, con chi l'ha fatto e quando. */
 'use strict';
 
+const fs = require('node:fs');
+const path = require('node:path');
 const S = require('./sicurezza.js');
 const DB = require('./db.js');
 const BILANCIO = require('../js/bilancio.js');
@@ -33,6 +35,35 @@ const DURATA = {
 };
 const REVISIONE_UNITA_MS = 10 * 60 * 1000; // salvataggi dello stesso autore entro 10 minuti: una sola revisione
 const REVISIONI_GIORNI = 30;
+
+// Foto delle attività (piano §5): già ridotte sul telefono, qui si controlla soltanto.
+const FOTO_MAX_BYTE = 400 * 1024;          // la foto grande
+const FOTO_MINI_MAX_BYTE = 60 * 1024;      // la miniatura
+const FOTO_LATO_MAX = 1600;                // lato lungo della foto grande (il telefono la riduce a 1280)
+const FOTO_MINI_LATO_MAX = 480;
+const FOTO_QUOTA_BYTE = 200 * 1024 * 1024; // per studente
+const FOTO_MAX_PER_STUDENTE = 1500;
+const ID_FOTO = /^f[a-z0-9]{6,40}$/;
+const BASE64 = /^[A-Za-z0-9+/]+={0,2}$/;
+
+// Legge le dimensioni di un JPEG vero e proprio (inizia con FF D8, finisce con FF D9, ha un blocco SOF). Altrimenti null.
+function dimensioniJpeg(b) {
+  if (!Buffer.isBuffer(b) || b.length < 125 || b[0] !== 0xFF || b[1] !== 0xD8 || b[2] !== 0xFF) return null;
+  if (b[b.length - 2] !== 0xFF || b[b.length - 1] !== 0xD9) return null;
+  let i = 2;
+  while (i + 9 < b.length) {
+    if (b[i] !== 0xFF) { i++; continue; }
+    const m = b[i + 1];
+    if (m === 0xFF) { i++; continue; }
+    if (m >= 0xC0 && m <= 0xCF && m !== 0xC4 && m !== 0xC8 && m !== 0xCC) {
+      const h = (b[i + 5] << 8) | b[i + 6]; const w = (b[i + 7] << 8) | b[i + 8];
+      return w > 0 && h > 0 ? { w: w, h: h } : null;
+    }
+    if (m === 0xD8 || (m >= 0xD0 && m <= 0xD7) || m === 0x01) { i += 2; continue; }
+    i += 2 + ((b[i + 2] << 8) | b[i + 3]);
+  }
+  return null;
+}
 
 function fineAnnoScolastico(t) {
   const d = new Date(t);
@@ -120,6 +151,12 @@ function creaApi(db, opzioni) {
     docenti: db.prepare('SELECT id, email, nome, admin, attivo, creato FROM docenti ORDER BY nome'),
     nuovoDocente: db.prepare('INSERT INTO docenti (email, nome, password, admin, creato) VALUES (?, ?, ?, ?, ?)'),
     cambiaPassword: db.prepare('UPDATE docenti SET password = ? WHERE id = ?'),
+    foto: db.prepare('SELECT * FROM foto WHERE studente_id = ? AND id = ?'),
+    fotoElenco: db.prepare('SELECT id, byte, byte_mini, w, h, creata FROM foto WHERE studente_id = ? ORDER BY creata'),
+    fotoTotali: db.prepare('SELECT COUNT(*) AS n, COALESCE(SUM(byte + byte_mini), 0) AS byte FROM foto WHERE studente_id = ?'),
+    nuovaFoto: db.prepare('INSERT INTO foto (studente_id, id, file, byte, byte_mini, w, h, creata) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'),
+    togliFoto: db.prepare('DELETE FROM foto WHERE studente_id = ? AND id = ?'),
+    ultimaLettura: db.prepare('SELECT quando FROM letture WHERE docente_id = ? AND studente_id = ? AND tipo = ? AND azione = ? ORDER BY id DESC LIMIT 1'),
     registro: db.prepare('SELECT l.quando, l.tipo, l.azione, d.nome AS docente FROM letture l JOIN docenti d ON d.id = l.docente_id WHERE l.studente_id = ? ORDER BY l.id DESC LIMIT 200')
   };
 
@@ -212,6 +249,72 @@ function creaApi(db, opzioni) {
     const r = q.revisione.get(studenteId, tipo, rev);
     if (!r) return [404, { ok: false, errore: 'revisione' }];
     return [200, { ok: true, rev: r.rev, quando: r.quando, autore: autore(r.autore_tipo, r.autore_id), dati: JSON.parse(r.dati) }];
+  }
+
+  // ---------- foto ----------
+  const cartellaFoto = o.cartellaFoto || '';
+  function fileFoto(studenteId, file, mini) { return path.join(cartellaFoto, String(studenteId), file + (mini ? '-m' : '') + '.jpg'); }
+
+  function decodificaJpeg(b64, maxByte, maxLato) {
+    if (typeof b64 !== 'string' || b64.length < 100 || b64.length > Math.ceil(maxByte * 4 / 3) + 8 || !BASE64.test(b64)) return null;
+    const byte = Buffer.from(b64, 'base64');
+    if (byte.length > maxByte) return null;
+    const d = dimensioniJpeg(byte);
+    if (!d || Math.max(d.w, d.h) > maxLato) return null;
+    return { byte: byte, w: d.w, h: d.h };
+  }
+
+  function caricaFoto(studenteId, id, corpo) {
+    if (!cartellaFoto) return [503, { ok: false, errore: 'foto' }];
+    if (!ID_FOTO.test(id)) return [400, { ok: false, errore: 'id' }];
+    if (q.foto.get(studenteId, id)) return [200, { ok: true, invariato: true }];
+    const b = corpo || {};
+    const grande = decodificaJpeg(b.jpeg, FOTO_MAX_BYTE, FOTO_LATO_MAX);
+    const mini = decodificaJpeg(b.mini, FOTO_MINI_MAX_BYTE, FOTO_MINI_LATO_MAX);
+    if (!grande || !mini) return [400, { ok: false, errore: 'formato' }];
+    const t = q.fotoTotali.get(studenteId);
+    if (t.n >= FOTO_MAX_PER_STUDENTE || t.byte + grande.byte.length + mini.byte.length > FOTO_QUOTA_BYTE) return [413, { ok: false, errore: 'quota' }];
+    const file = S.casuale(32, 'abcdef0123456789');
+    fs.mkdirSync(path.join(cartellaFoto, String(studenteId)), { recursive: true, mode: 0o700 });
+    fs.writeFileSync(fileFoto(studenteId, file, false), grande.byte, { mode: 0o600 });
+    fs.writeFileSync(fileFoto(studenteId, file, true), mini.byte, { mode: 0o600 });
+    try {
+      q.nuovaFoto.run(studenteId, id, file, grande.byte.length, mini.byte.length, grande.w, grande.h, adesso());
+    } catch (e) {
+      try { fs.unlinkSync(fileFoto(studenteId, file, false)); fs.unlinkSync(fileFoto(studenteId, file, true)); } catch (e2) { /* niente da togliere */ }
+      throw e;
+    }
+    return [200, { ok: true }];
+  }
+
+  function leggiFoto(studenteId, id, mini) {
+    if (!cartellaFoto || !ID_FOTO.test(id)) return [404, { ok: false, errore: 'foto' }];
+    const f = q.foto.get(studenteId, id);
+    if (!f) return [404, { ok: false, errore: 'foto' }];
+    let byte;
+    try { byte = fs.readFileSync(fileFoto(studenteId, f.file, mini)); } catch (e) { return [404, { ok: false, errore: 'foto' }]; }
+    return [200, { binario: byte, tipo: 'image/jpeg' }];
+  }
+
+  function eliminaFoto(studenteId, id) {
+    if (!cartellaFoto || !ID_FOTO.test(id)) return [404, { ok: false, errore: 'foto' }];
+    const f = q.foto.get(studenteId, id);
+    if (!f) return [404, { ok: false, errore: 'foto' }];
+    q.togliFoto.run(studenteId, id);
+    [false, true].forEach(function (m) { try { fs.unlinkSync(fileFoto(studenteId, f.file, m)); } catch (e) { /* già tolto */ } });
+    return [200, { ok: true }];
+  }
+
+  function elencoFoto(studenteId) {
+    return [200, { ok: true, foto: q.fotoElenco.all(studenteId).map(function (f) { return { id: f.id, byte: f.byte, w: f.w, h: f.h, creata: f.creata }; }), quota: FOTO_QUOTA_BYTE }];
+  }
+
+  // Un docente che apre le foto di uno studente finisce nel registro; per non riempirlo con le miniature di una galleria
+  // la stessa azione dello stesso docente sullo stesso studente si scrive una volta ogni 10 minuti.
+  function registraLettura(docenteId, studenteId, tipo, azione) {
+    const u = q.ultimaLettura.get(docenteId, studenteId, tipo, azione);
+    if (u && Date.now() - Date.parse(u.quando) < REVISIONE_UNITA_MS) return;
+    q.registra.run(docenteId, studenteId, tipo, azione, adesso());
   }
 
   // ---------- codici ----------
@@ -307,6 +410,13 @@ function creaApi(db, opzioni) {
     return unaRevisione(c.sessione.utente.id, p.tipo, intero(p.rev));
   });
 
+  // Le foto dello studente
+  rotta('GET', '/api/foto', serveStudente, function (c) { return elencoFoto(c.sessione.utente.id); });
+  rotta('PUT', '/api/foto/:id', serveStudente, function (c, p) { return caricaFoto(c.sessione.utente.id, p.id, c.corpo); });
+  rotta('GET', '/api/foto/:id', serveStudente, function (c, p) { return leggiFoto(c.sessione.utente.id, p.id, false); });
+  rotta('GET', '/api/foto/:id/mini', serveStudente, function (c, p) { return leggiFoto(c.sessione.utente.id, p.id, true); });
+  rotta('DELETE', '/api/foto/:id', serveStudente, function (c, p) { return eliminaFoto(c.sessione.utente.id, p.id); });
+
   // Docenti: classi e studenti
   rotta('GET', '/api/classi', serveDocente, function () {
     return [200, { ok: true, classi: q.classi.all() }];
@@ -397,6 +507,28 @@ function creaApi(db, opzioni) {
     return unaRevisione(intero(p.id), p.tipo, intero(p.rev));
   });
 
+  // Le foto di uno studente viste da un docente: letture nel registro; «elimina subito» decisa dai docenti, con una riga nel registro.
+  rotta('GET', '/api/studenti/:id/foto', serveDocente, function (c, p) {
+    const e = studenteEDocumento({ id: p.id, tipo: 'portfolio' }); if (e) return e;
+    return elencoFoto(intero(p.id));
+  });
+  rotta('GET', '/api/studenti/:id/foto/:fid', serveDocente, function (c, p) {
+    const e = studenteEDocumento({ id: p.id, tipo: 'portfolio' }); if (e) return e;
+    registraLettura(c.sessione.utente.id, intero(p.id), 'portfolio', 'lettura foto');
+    return leggiFoto(intero(p.id), p.fid, false);
+  });
+  rotta('GET', '/api/studenti/:id/foto/:fid/mini', serveDocente, function (c, p) {
+    const e = studenteEDocumento({ id: p.id, tipo: 'portfolio' }); if (e) return e;
+    registraLettura(c.sessione.utente.id, intero(p.id), 'portfolio', 'lettura foto');
+    return leggiFoto(intero(p.id), p.fid, true);
+  });
+  rotta('DELETE', '/api/studenti/:id/foto/:fid', serveDocente, function (c, p) {
+    const e = studenteEDocumento({ id: p.id, tipo: 'portfolio' }); if (e) return e;
+    const r = eliminaFoto(intero(p.id), p.fid);
+    if (r[0] === 200) q.registra.run(c.sessione.utente.id, intero(p.id), 'portfolio', 'elimina foto ' + p.fid, adesso());
+    return r;
+  });
+
   // Docenti: la propria password
   rotta('POST', '/api/docente/password', serveDocente, async function (c) {
     const b = c.corpo || {};
@@ -454,4 +586,4 @@ function creaApi(db, opzioni) {
   return { gestisci: gestisci, creaDocente: creaDocente, pulisci: pulisci, TIPI: TIPI };
 }
 
-module.exports = { creaApi, fineAnnoScolastico, TIPI };
+module.exports = { creaApi, fineAnnoScolastico, TIPI, dimensioniJpeg, FOTO_QUOTA_BYTE, FOTO_MAX_BYTE };

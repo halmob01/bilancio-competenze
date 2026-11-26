@@ -120,12 +120,22 @@
     });
     return inCorso[tipo];
   }
+  // Altri pezzi da tenere allineati con il server (per esempio le foto delle attività): { nome, invia(), inSospeso() }.
+  const sincronizzatori = [];
+  function registraSincronizzatore(s) { sincronizzatori.push(s); }
   function inviaTutto() {
-    return Object.keys(CHIAVE_DI).reduce(function (p, t) {
+    const docs = Object.keys(CHIAVE_DI).reduce(function (p, t) {
       return p.then(function (ok) { return invia(t).then(function (x) { return ok && x !== false; }); });
     }, Promise.resolve(true));
+    return sincronizzatori.reduce(function (p, s) {
+      return p.then(function (ok) { return Promise.resolve(s.invia()).then(function (x) { return ok && x !== false; }, function () { return false; }); });
+    }, docs);
   }
-  function inSospeso() { return Object.keys(CHIAVE_DI).filter(function (t) { return leggiMeta(t).sporco; }); }
+  function inSospeso() {
+    const out = Object.keys(CHIAVE_DI).filter(function (t) { return leggiMeta(t).sporco; });
+    sincronizzatori.forEach(function (s) { try { if (s.inSospeso()) out.push(s.nome); } catch (e) { /* un sincronizzatore rotto non blocca gli altri */ } });
+    return out;
+  }
 
   // Il server ha una versione più nuova di quella da cui siamo partiti: si uniscono le due.
   function conflitto(tipo, r) {
@@ -332,7 +342,7 @@
       'Lo vedete solo tu e i docenti del CFP.',
       'Lo ritrovi su ogni telefono o computer in cui entri con il cartellino.',
       'Su un computer della scuola, alla fine premi «Esci».',
-      'Le foto delle attività restano su questo dispositivo.'
+      'Le foto delle attività sono sul server insieme ai testi.'
     ] : [
       'Il tuo lavoro resta su questo telefono o computer.',
       'Non lo vede nessun altro.',
@@ -389,6 +399,10 @@
     adotta: adotta,
     inviaTutto: inviaTutto,
     inSospeso: inSospeso,
+    registraSincronizzatore: registraSincronizzatore,
+    richiesta: function (metodo, via, corpo) { return richiesta(metodo, via, corpo); },
+    // Indirizzo di una cosa del server (per esempio una foto da mostrare in un'immagine). Vuoto se non si è entrati.
+    urlApi: function (via) { return sessione ? API + via : ''; },
     elencoDocumenti: function () { return sessione ? richiesta('GET', 'documenti') : Promise.resolve({ stato: 0, json: {} }); },
     mostraUtente: mostraUtente,
     domanda: domanda,

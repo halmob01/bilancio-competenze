@@ -134,9 +134,17 @@
     if (u) { if (u.mini) URL.revokeObjectURL(u.mini); if (u.grande) URL.revokeObjectURL(u.grande); delete urlFoto[id]; }
   }
   // Un'immagine che si riempie quando la foto è letta dall'archivio.
+  // Se la foto non è su questo dispositivo e si è entrati, si prende dal server.
   function immagine(id, alt, grande, classe) {
     const img = h('img', { class: classe || null, alt: alt, decoding: 'async' });
-    urlDi(id, grande).then(function (u) { if (u) img.src = u; else img.replaceWith(h('span', { class: classe ? classe + ' foto-mancante' : 'foto-mancante', text: 'Foto non trovata su questo dispositivo' })); });
+    const mancante = function () { img.replaceWith(h('span', { class: classe ? classe + ' foto-mancante' : 'foto-mancante', text: 'Foto non trovata' })); };
+    urlDi(id, grande).then(function (u) {
+      if (u) { img.src = u; return; }
+      const server = F.urlServer(id, !grande);
+      if (!server) { mancante(); return; }
+      img.addEventListener('error', mancante, { once: true });
+      img.src = server;
+    });
     return img;
   }
 
@@ -367,6 +375,7 @@
         return F.riduci(file, id).then(F.salva).then(function () {
           if (a.foto.length < A.MAX_FOTO) a.foto.push(id);
           modificato();
+          F.sincronizza();
         }).catch(function () {
           avvisa('Una foto non va. Prova con un\'altra.');
         }).then(function () { inLavorazione--; ridisegna(); });
@@ -379,6 +388,7 @@
       a.foto = a.foto.filter(function (x) { return x !== id; });
       scriviArchivio();
       F.elimina(id).catch(function () { /* resta un avanzo, lo toglie la pulizia */ });
+      F.togliDalServer(id);
       dimentica(id);
       ridisegna('galleria');
     });
@@ -524,7 +534,7 @@
   function eliminaAttivita(a) {
     chiedi('Eliminare questa attività con le sue foto? Non si può annullare.', 'Elimina', function () {
       stato.attivita = stato.attivita.filter(function (x) { return x.id !== a.id; });
-      a.foto.forEach(function (id) { F.elimina(id).catch(function () {}); dimentica(id); });
+      a.foto.forEach(function (id) { F.elimina(id).catch(function () {}); F.togliDalServer(id); dimentica(id); });
       clearTimeout(timerSalva); scriviArchivio();
       vista = null; vai(null);
     });
@@ -626,7 +636,7 @@
     Promise.all([
       leggiFont(['firasans-regular', 'firasans-semibold']),
       Promise.all(ids.map(function (id) {
-        return F.leggi(id).then(function (rec) { return rec ? rec.jpeg.arrayBuffer() : null; }).then(function (b) { if (b) foto[id] = new Uint8Array(b); }).catch(function () {});
+        return F.jpegGrande(id).then(function (b) { if (b) foto[id] = b; }).catch(function () {});
       }))
     ]).then(function (r) {
       const bilancio = leggiAltro(CHIAVE_BILANCIO);
@@ -645,6 +655,7 @@
     chiedi('Cancellare tutte le attività e le foto? Se non hai una copia, le perdi.', 'Cancella tutto', function () {
       clearTimeout(timerSalva); timerSalva = null;
       try { M.removeItem(A.CHIAVE); } catch (e) { /* niente da fare */ }
+      A.fotoUsate(stato) && Object.keys(A.fotoUsate(stato)).forEach(function (id) { F.togliDalServer(id); });
       F.svuota().catch(function () {});
       Object.keys(urlFoto).forEach(dimentica);
       stato = A.statoVuoto(); $('salvato').textContent = 'Attività cancellate';
@@ -659,6 +670,8 @@
   else if (stato.aggiornato) $('salvato').textContent = 'Attività ritrovate';
   // Le foto che nessuna attività usa più (per esempio dopo un'uscita a metà) si tolgono all'avvio.
   F.pulisci(A.fotoUsate(stato)).catch(function () { fotoDisponibili = false; if (vista) ridisegna(); });
+  // Da entrati le foto vanno anche sul server (e si prendono da lì se non sono su questo dispositivo).
+  F.avviaSincronizzazione(function () { return Object.keys(A.fotoUsate(stato)); });
   $('vai-home').addEventListener('click', function () { vai(null); });
   $('apri-salva').addEventListener('click', function () { $('dialogo-salva').showModal(); });
   $('chiudi-salva').addEventListener('click', function () { $('dialogo-salva').close(); });

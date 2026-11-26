@@ -260,6 +260,67 @@ test('le mie attività si salvano come gli altri documenti, ricontrollate con le
   } finally { await p.chiudi(); }
 });
 
+// Un JPEG vero (8 × 6, rosso) per le prove delle foto.
+const JPEG_B64 = '/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAoHBwgHBgoICAgLCgoLDhgQDg0NDh0VFhEYIx8lJCIfIiEmKzcvJik0KSEiMEExNDk7Pj4+JS5ESUM8SDc9Pjv/2wBDAQoLCw4NDhwQEBw7KCIoOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozv/wAARCAAGAAgDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwDiaKKK8Q/Uj//Z';
+
+test('foto: caricamento controllato, consegna solo allo studente e ai docenti, registro e quota', async () => {
+  const p = await avvia();
+  try {
+    const k = await preparaClasse(p);
+    const sara = (await p.chiedi('POST', '/api/accesso/studente', { codice: k.studenti[0].codice })).cookie;
+    const luca = (await p.chiedi('POST', '/api/accesso/studente', { codice: k.studenti[1].codice })).cookie;
+    const carica = (cookie, id, corpo) => p.chiedi('PUT', '/api/foto/' + id, corpo, { cookie: cookie });
+    // Una foto vera passa, due volte non cambia niente
+    const ok = await carica(sara, 'fabc12345', { jpeg: JPEG_B64, mini: JPEG_B64 });
+    assert.equal(ok.stato, 200, JSON.stringify(ok.json));
+    assert.equal((await carica(sara, 'fabc12345', { jpeg: JPEG_B64, mini: JPEG_B64 })).json.invariato, true);
+    // Non è una foto, identificativo strano, formato sbagliato: respinti
+    const finta = Buffer.from('<html>non sono una foto</html>'.repeat(10)).toString('base64');
+    assert.equal((await carica(sara, 'fabc99999', { jpeg: finta, mini: finta })).stato, 400);
+    assert.equal((await carica(sara, '..%2Fx', { jpeg: JPEG_B64, mini: JPEG_B64 })).stato, 400);
+    assert.equal((await carica(sara, 'fabc88888', { jpeg: JPEG_B64 })).stato, 400, 'serve anche la miniatura');
+    assert.equal((await carica(sara, 'fabc77777', { jpeg: JPEG_B64.slice(0, -8), mini: JPEG_B64 })).stato, 400, 'JPEG tagliato');
+    const enorme = Buffer.concat([Buffer.from(JPEG_B64, 'base64').subarray(0, -2), Buffer.alloc(API.FOTO_MAX_BYTE + 10), Buffer.from([0xFF, 0xD9])]).toString('base64');
+    assert.equal((await carica(sara, 'fabc66666', { jpeg: enorme, mini: JPEG_B64 })).stato, 400, 'oltre 400 KB');
+    // Il file è fuori dal sito, con nome casuale, e consegnato come JPEG
+    const f = await fetch('http://127.0.0.1:' + p.server.address().port + '/api/foto/fabc12345', { headers: { Cookie: 'portale=' + sara } });
+    assert.equal(f.status, 200); assert.equal(f.headers.get('content-type'), 'image/jpeg');
+    assert.equal(f.headers.get('x-content-type-options'), 'nosniff');
+    assert.deepEqual(Buffer.from(await f.arrayBuffer()), Buffer.from(JPEG_B64, 'base64'));
+    const nomi = fs.readdirSync(path.join(p.cartella, 'foto', '1'));
+    assert.equal(nomi.length, 2); assert.ok(nomi.every((n) => /^[0-9a-f]{32}(-m)?\.jpg$/.test(n)), 'nomi casuali');
+    // Elenco
+    const el = await p.chiedi('GET', '/api/foto', undefined, { cookie: sara });
+    assert.deepEqual(el.json.foto.map((x) => [x.id, x.w, x.h]), [['fabc12345', 8, 6]]);
+    // Un altro studente non la vede e non la toglie; senza accesso nemmeno
+    assert.equal((await p.chiedi('GET', '/api/foto/fabc12345', undefined, { cookie: luca })).stato, 404);
+    assert.equal((await p.chiedi('DELETE', '/api/foto/fabc12345', undefined, { cookie: luca })).stato, 404);
+    assert.equal((await p.chiedi('GET', '/api/foto/fabc12345')).stato, 401);
+    assert.deepEqual((await p.chiedi('GET', '/api/foto', undefined, { cookie: luca })).json.foto, []);
+    // Il docente la apre: nel registro una volta sola ogni 10 minuti
+    const saraId = k.studenti[0].id;
+    const d1 = await fetch('http://127.0.0.1:' + p.server.address().port + '/api/studenti/' + saraId + '/foto/fabc12345/mini', { headers: { Cookie: 'portale=' + k.docente } });
+    assert.equal(d1.status, 200);
+    await fetch('http://127.0.0.1:' + p.server.address().port + '/api/studenti/' + saraId + '/foto/fabc12345', { headers: { Cookie: 'portale=' + k.docente } });
+    let reg = (await p.chiedi('GET', '/api/studenti/' + saraId + '/registro', undefined, { cookie: k.docente })).json.registro;
+    assert.equal(reg.filter((r) => r.azione === 'lettura foto').length, 1);
+    // Quota: oltre il limite si rifiuta
+    p.server.db.prepare("INSERT INTO foto (studente_id, id, file, byte, byte_mini, w, h, creata) VALUES (1, 'fpieno0000', 'x', ?, 0, 1, 1, 'ora')").run(API.FOTO_QUOTA_BYTE);
+    assert.equal((await carica(sara, 'fabc55555', { jpeg: JPEG_B64, mini: JPEG_B64 })).stato, 413);
+    p.server.db.prepare("DELETE FROM foto WHERE id = 'fpieno0000'").run();
+    // Elimina subito: il docente decide, con una riga nel registro; lo studente toglie le sue
+    assert.equal((await p.chiedi('DELETE', '/api/studenti/' + saraId + '/foto/fabc12345', undefined, { cookie: k.docente })).stato, 200);
+    reg = (await p.chiedi('GET', '/api/studenti/' + saraId + '/registro', undefined, { cookie: k.docente })).json.registro;
+    assert.ok(reg.some((r) => r.azione === 'elimina foto fabc12345'));
+    assert.equal(fs.readdirSync(path.join(p.cartella, 'foto', '1')).length, 0, 'i file sono stati cancellati');
+    assert.equal((await carica(sara, 'fdef12345', { jpeg: JPEG_B64, mini: JPEG_B64 })).stato, 200);
+    assert.equal((await p.chiedi('DELETE', '/api/foto/fdef12345', undefined, { cookie: sara })).stato, 200);
+    assert.equal((await p.chiedi('GET', '/api/foto/fdef12345', undefined, { cookie: sara })).stato, 404);
+    // Le scritture vengono solo dalle pagine del portale
+    assert.equal((await p.chiedi('PUT', '/api/foto/fzzz12345', { jpeg: JPEG_B64, mini: JPEG_B64 }, { cookie: sara, fidata: false })).stato, 403);
+  } finally { await p.chiudi(); }
+});
+
 test('il docente legge e corregge: tutto finisce nel registro e lo studente vede chi ha cambiato', async () => {
   const p = await avvia();
   try {
@@ -351,6 +412,21 @@ test('fine dell\'anno scolastico: sempre il 31 agosto che viene', () => {
   assert.equal(f('2026-11-18T10:00:00Z'), '2027-08-31');
   assert.equal(f('2027-06-10T10:00:00Z'), '2027-08-31');
   assert.equal(f('2027-09-01T10:00:00Z'), '2028-08-31');
+});
+
+test('backup delle foto: si copiano le nuove e si tolgono quelle eliminate dal portale', () => {
+  const dati = fs.mkdtempSync(path.join(os.tmpdir(), 'portale-bf-'));
+  try {
+    assert.deepEqual(BACKUP.specchiaFoto(dati), { copiate: 0, tolte: 0 }, 'senza foto non fa niente');
+    fs.mkdirSync(path.join(dati, 'foto', '1'), { recursive: true });
+    fs.writeFileSync(path.join(dati, 'foto', '1', 'aa.jpg'), 'a');
+    fs.writeFileSync(path.join(dati, 'foto', '1', 'bb.jpg'), 'b');
+    assert.deepEqual(BACKUP.specchiaFoto(dati), { copiate: 2, tolte: 0 });
+    assert.deepEqual(BACKUP.specchiaFoto(dati), { copiate: 0, tolte: 0 }, 'la seconda volta niente da fare');
+    fs.unlinkSync(path.join(dati, 'foto', '1', 'aa.jpg'));
+    assert.deepEqual(BACKUP.specchiaFoto(dati), { copiate: 0, tolte: 1 }, '«elimina subito» vale anche nel backup');
+    assert.deepEqual(fs.readdirSync(path.join(dati, 'backup', 'foto', '1')), ['bb.jpg']);
+  } finally { fs.rmSync(dati, { recursive: true, force: true }); }
 });
 
 test('backup: copia coerente e rotazione 7 giornaliere, 4 settimanali, 12 mensili', async () => {

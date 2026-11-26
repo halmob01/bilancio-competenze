@@ -1,7 +1,9 @@
 /* Portale dello studente — copia notturna del database (la avvia un timer di systemd).
    Crea in PORTALE_DATI/backup una copia coerente con la data nel nome e tiene:
    le ultime 7 copie giornaliere, 4 settimanali (domenica) e 12 mensili (giorno 1).
-   Portare le copie FUORI dal server (con le foto) è un passo a parte, deciso con il collega (piano §14).
+   Le foto (PORTALE_DATI/foto) si specchiano in backup/foto: i file nuovi si copiano, quelli tolti dal portale si tolgono anche
+   dalla copia (così «elimina subito» vale anche nel backup). Portare le copie FUORI dal server è un passo a parte,
+   deciso con il collega (piano §14).
 
    Avvio: node server/backup.js */
 'use strict';
@@ -28,6 +30,34 @@ function daCancellare(nomi) {
   return copie.filter(function (c) { return !tieni.has(c.n); }).map(function (c) { return c.n; });
 }
 
+// Specchio delle foto: i file non cambiano mai (nomi casuali), quindi basta copiare quelli che mancano e togliere quelli che non ci sono più.
+function specchiaFoto(dati) {
+  const src = path.join(dati, 'foto');
+  const dst = path.join(dati, 'backup', 'foto');
+  const r = { copiate: 0, tolte: 0 };
+  if (!fs.existsSync(src)) return r;
+  fs.mkdirSync(dst, { recursive: true, mode: 0o700 });
+  const presenti = new Set();
+  fs.readdirSync(src).forEach(function (s) {
+    const ds = path.join(src, s);
+    if (!fs.statSync(ds).isDirectory()) return;
+    fs.mkdirSync(path.join(dst, s), { recursive: true, mode: 0o700 });
+    fs.readdirSync(ds).forEach(function (f) {
+      presenti.add(s + '/' + f);
+      const d = path.join(dst, s, f);
+      if (!fs.existsSync(d)) { fs.copyFileSync(path.join(ds, f), d); fs.chmodSync(d, 0o600); r.copiate++; }
+    });
+  });
+  fs.readdirSync(dst).forEach(function (s) {
+    const dd = path.join(dst, s);
+    if (!fs.statSync(dd).isDirectory()) return;
+    fs.readdirSync(dd).forEach(function (f) {
+      if (!presenti.has(s + '/' + f)) { fs.unlinkSync(path.join(dd, f)); r.tolte++; }
+    });
+  });
+  return r;
+}
+
 async function esegui(dati, oggi) {
   const cartella = path.join(dati, 'backup');
   const g = oggi || new Date();
@@ -37,8 +67,9 @@ async function esegui(dati, oggi) {
     await DB.copia(db, path.join(cartella, nome));
     const via = daCancellare(fs.readdirSync(cartella));
     via.forEach(function (n) { fs.unlinkSync(path.join(cartella, n)); });
-    DB.annota(db, 'backup', nome + (via.length ? ', tolte ' + via.length : ''));
-    return { copia: nome, tolte: via };
+    const foto = specchiaFoto(dati);
+    DB.annota(db, 'backup', nome + (via.length ? ', tolte ' + via.length : '') + (foto.copiate || foto.tolte ? ', foto +' + foto.copiate + ' −' + foto.tolte : ''));
+    return { copia: nome, tolte: via, foto: foto };
   } finally {
     db.close();
   }
@@ -53,4 +84,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { esegui, daCancellare };
+module.exports = { esegui, daCancellare, specchiaFoto };

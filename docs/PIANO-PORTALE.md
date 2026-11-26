@@ -366,8 +366,8 @@ Si procede **un blocco alla volta**: ogni blocco si chiude con test, prova nel b
 
 | # | Blocco | Che cosa | Stato |
 |---|---|---|---|
-| 1 | **R. Redesign leggero** | le schermate di lavoro dei quattro siti: meno «modulo burocratico» (pannelli grigi, riquadri, filetti), più spazio e lettura | **prossimo** |
-| 2 | **F1.2 Foto sul server** | invio delle foto delle attività (ridotte sul telefono), controllo del formato, quota per studente, foto consegnate solo allo studente e ai docenti | da fare |
+| 1 | **R. Redesign leggero** | le schermate di lavoro dei quattro siti: meno «modulo burocratico» (pannelli grigi, riquadri, filetti), più spazio e lettura; testata compatta, testi brevi, «Dove va il mio lavoro?» | **fatto il 26/11/2026** (`design.md`) |
+| 2 | **F1.2 Foto sul server** | invio delle foto delle attività (ridotte sul telefono), controllo del formato, quota per studente, foto consegnate solo allo studente e ai docenti | **fatto il 26/11/2026** (`docs/RIPRESA-BACKEND.md` §4.7); manca la pulizia delle foto non più usate, che arriva con il cestino |
 | 3 | **F1.3 Pannello docente minimo** | accesso dei docenti; classi; elenco incollato da un foglio; cartellini con QR da stampare (libreria QR con licenza MIT copiata nel progetto); avanzamento della classe; esportazione in foglio di calcolo | da fare |
 | 4 | **F1.4 Cestino** | cose cancellate recuperabili per 30 giorni da studente e docente; «elimina subito» per le foto | da fare |
 | 5 | **F0 Installazione** | `deploy/aggiorna.sh` (pubblica da git dopo i test, cartella di prova, ritorno alla versione precedente), `deploy/LEGGIMI.md` per il collega, configurazione per il nome di dominio dedicato, backup fuori dal server; poi installazione sul server della scuola con dati finti | da fare |

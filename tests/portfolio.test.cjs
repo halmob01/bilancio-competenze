@@ -66,7 +66,7 @@ test('le attività sopravvivono alla copia e i dati non validi vengono scartati'
   const a = n.attivita[0];
   assert.equal(a.fatto, ''); assert.equal(a.luogo, ''); assert.equal(a.data, '');
   assert.deepEqual(a.competenze, ['el-verifiche', 'sicurezza', 'pianificare'], 'solo competenze del catalogo, senza doppioni, al massimo tre');
-  assert.deepEqual(a.foto, ['fabc1234', 'fdef5678', 'f1111111', 'f2222222'], 'solo identificativi validi, al massimo quattro');
+  assert.deepEqual(a.foto, ['fabc1234', 'fdef5678', 'f1111111', 'f2222222', 'f3333333'], 'solo identificativi validi, senza doppioni, nessun limite di quattro');
   assert.equal(a.diario, null);
   assert.ok(!('extra' in a));
   assert.notEqual(n.attivita[0].id, n.attivita[1].id, 'gli id doppi si rinnovano');
@@ -79,7 +79,10 @@ test('elenco, titolo, riassunto e promemoria di un\'attività', () => {
   assert.equal(A.titolo({ fatto: '' }), 'Attività senza descrizione');
   assert.ok(A.titolo({ fatto: 'parola '.repeat(30) }).endsWith('…'));
   assert.equal(A.riassunto(s.attivita[0]), '10 marzo 2026 · A scuola · Laboratorio impianti');
-  assert.deepEqual(A.mancanti(s.attivita[1]), ['una foto']);
+  assert.deepEqual(A.mancanti(s.attivita[1]), ['una foto o un file']);
+  s.attivita[1].file.push({ id: 'dabc12345', nome: 'planimetria.dwg', byte: 4000 });
+  assert.deepEqual(A.mancanti(s.attivita[1]), [], 'un file basta come prova');
+  s.attivita[1].file.pop();
   assert.deepEqual(Object.keys(A.fotoUsate(s)), ['fabc1234']);
 });
 
@@ -128,7 +131,7 @@ test('il PDF delle attività contiene le foto e il testo, in Fira Sans', async (
   assert.equal(m.nome, 'Le attività di Sara Bianchi');
   assert.equal(m.occupazione, 'Operatore elettrico · III anno');
   assert.equal(m.sezioni.length, 2);
-  assert.ok(m.sezioni[1].blocchi.some((b) => b.t === 'foto'), 'la foto è nella sezione della sua attività');
+  assert.ok(m.sezioni.some((x) => x.blocchi.some((b) => b.t === 'foto')), 'la foto è nella sezione della sua attività');
   const byte = await P.creaPdf(m, { f: carica('firasans-regular'), fs: carica('firasans-semibold') });
   const t = Buffer.from(byte).toString('latin1');
   assert.ok(t.startsWith('%PDF-1.5'));
@@ -136,4 +139,43 @@ test('il PDF delle attività contiene le foto e il testo, in Fira Sans', async (
   assert.ok(/\/Width 8 \/Height 6/.test(t), 'con le sue dimensioni');
   assert.ok(t.includes('/Title (Le mie attivita)'));
   assert.ok(!t.includes('ANTON'), 'niente Anton nel documento delle attività');
+});
+
+test('foto senza limite di quattro e file allegati: normalizzati, ripuliti, con nomi sicuri', () => {
+  const molte = Array.from({ length: 30 }, (_, i) => 'f' + String(1000000 + i));
+  const n = A.normalizza({ attivita: [{ id: 'a1x2y3', fatto: 'Ho fatto una cosa.', foto: molte,
+    file: [{ id: 'dabc12345', nome: '../../etc/passwd', byte: 1234 }, { id: 'dabc12345', nome: 'doppio', byte: 1 }, { id: 'sbagliato', nome: 'x', byte: 1 },
+      { id: 'ddef56789', nome: '  Relazione: finale?.docx ', byte: 99 * 1024 * 1024 }, 7, null, { id: 'dghi11111', nome: 42, byte: 'molti' }] }] });
+  const a = n.attivita[0];
+  assert.equal(a.foto.length, 30, 'tutte le foto');
+  assert.deepEqual(a.file.map((x) => x.id), ['dabc12345', 'ddef56789', 'dghi11111'], 'solo id validi, senza doppioni');
+  assert.equal(a.file[0].nome, '.._.._etc_passwd'.replace(/^\.+/, ''), 'niente percorsi');
+  assert.equal(a.file[1].nome, 'Relazione_ finale_.docx', 'caratteri vietati sostituiti');
+  assert.equal(a.file[1].byte, 0, 'oltre 25 MB non è una dimensione credibile');
+  assert.deepEqual([a.file[2].nome, a.file[2].byte], ['file', 0]);
+  assert.equal(A.formatoByte(0), ''); assert.equal(A.formatoByte(900), '900 B'); assert.equal(A.formatoByte(150 * 1024), '150 KB');
+  assert.equal(A.formatoByte(3.5 * 1024 * 1024), '3,5 MB');
+  assert.deepEqual(Object.keys(A.fileUsati(n)).sort(), ['dabc12345', 'ddef56789', 'dghi11111']);
+  assert.deepEqual(A.normalizza(JSON.parse(JSON.stringify(n))), n);
+});
+
+test('le attività si dividono per anno di corso, dentro ogni anno dalla più recente', () => {
+  const s = A.statoVuoto();
+  const mk = (data, anno, fatto) => Object.assign(A.attivitaVuota(data, anno), { fatto: fatto });
+  s.attivita.push(mk('2025-10-01', 'anno1', 'Uno'), mk('2026-03-01', 'anno2', 'Due'), mk('2025-12-01', 'anno1', 'Tre'), mk('2026-01-01', '', 'Senza'), mk('2026-05-01', 'anno9', 'Anno falso'));
+  const n = A.normalizza(JSON.parse(JSON.stringify(s)));
+  const g = A.perAnno(n);
+  assert.deepEqual(g.map((x) => x.id), ['anno1', 'anno2', 'anno3', 'anno4', '']);
+  assert.deepEqual(g[0].attivita.map((a) => a.fatto), ['Tre', 'Uno'], 'I anno, dalla più recente');
+  assert.deepEqual(g[1].attivita.map((a) => a.fatto), ['Due']);
+  assert.deepEqual(g[2].attivita.concat(g[3].attivita), []);
+  assert.deepEqual(g[4].attivita.map((a) => a.fatto), ['Anno falso', 'Senza'], 'un anno non valido finisce in «senza anno»');
+  assert.equal(A.etichettaAnno('anno2'), 'II anno');
+  // Il documento va per anno, dal più vecchio al più nuovo, e dice anno e file
+  const a = n.attivita[0]; a.file.push({ id: 'dabc12345', nome: 'planimetria.dwg', byte: 150 * 1024 });
+  const m = A.modelloPdf(n, {});
+  assert.match(m.sezioni[0].titolo, /^I anno · /);
+  assert.deepEqual(m.sezioni.slice(0, 3).map((x) => x.titolo.split(' · ')[0]), ['I anno', 'I anno', 'II anno'], 'prima i primi anni');
+  assert.ok(!/anno ·/.test(m.sezioni[3].titolo + m.sezioni[4].titolo), 'senza anno, solo la data');
+  assert.ok(m.sezioni[0].blocchi.some((b) => b.runs && b.runs[0].t === 'File: ' && /planimetria\.dwg \(150 KB\)/.test(b.runs[1].t)));
 });

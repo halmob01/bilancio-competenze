@@ -668,7 +668,7 @@
       return h('li', null,
         h('button', { type: 'button', class: 'pulsante pulsante--secondario pulsante--piccolo', disabled: gia || pieneAbbastanza, onclick: function () { usa(pr); } },
           (gia ? 'Già inserita: ' : 'Usa: ') + pr.titolo),
-        ' ', h('span', { class: 'meta', text: [pr.data ? pr.data.split('-').reverse().join('/') : '', pr.foto ? (pr.foto === 1 ? 'una foto' : pr.foto + ' foto') : 'senza foto'].filter(Boolean).join(' · ') }));
+        ' ', h('span', { class: 'meta', text: [pr.data ? pr.data.split('-').reverse().join('/') : '', (pr.foto || pr.file) ? [pr.foto ? (pr.foto === 1 ? 'una foto' : pr.foto + ' foto') : '', pr.file ? (pr.file === 1 ? 'un file' : pr.file + ' file') : ''].filter(Boolean).join(' e ') : 'senza foto'].filter(Boolean).join(' · ') }));
     };
     const prime = proposte.slice(0, 5);
     const altre = proposte.slice(5);

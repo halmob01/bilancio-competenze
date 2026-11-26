@@ -161,6 +161,7 @@
   const CHIAVE_TOGLIERE = 'foto-da-togliere';
   let usate = function () { return []; }; // le foto che le attività usano adesso (le dà il sito)
   let inCorso = null;
+  let rifare = false; // arrivato qualcosa di nuovo mentre si stava mandando: si rifà il giro
 
   function entrato() { return !!(ARCH && ARCH.attivo && ARCH.sessione()); }
   function daTogliere() { try { return JSON.parse(ARCH.memoria.getItem(CHIAVE_TOGLIERE) || '[]'); } catch (e) { return []; } }
@@ -177,7 +178,7 @@
   // Manda al server le foto che mancano e toglie quelle da togliere. Una sola volta alla volta.
   function sincronizza() {
     if (!entrato()) return Promise.resolve(true);
-    if (inCorso) return inCorso;
+    if (inCorso) { rifare = true; return inCorso; }
     inCorso = Promise.resolve().then(function () {
       return ARCH.richiesta('GET', 'foto').then(function (r) {
         if (r.stato !== 200) return false;
@@ -206,7 +207,11 @@
           });
         }, passo.then(function () { return rimaste.length === 0; }));
       });
-    }).catch(function () { return false; }).then(function (ok) { inCorso = null; return ok; });
+    }).catch(function () { return false; }).then(function (ok) {
+      inCorso = null;
+      if (rifare) { rifare = false; return sincronizza(); }
+      return controllaPendenti().then(function () { return ok; });
+    });
     return inCorso;
   }
 

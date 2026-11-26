@@ -20,6 +20,7 @@ const API = require('./api.js');
 
 const VERSIONE = '0.2.0';
 const MAX_CORPO = 1024 * 1024; // 1 MB: il documento più grande previsto dal piano (§5)
+const MAX_ALLEGATO = 25 * 1024 * 1024; // un file allegato a un'attività (si legge solo dopo aver controllato chi è)
 
 // Intestazioni di sicurezza su ogni risposta dell'API (Apache non ha mod_headers attivo).
 const INTESTAZIONI = {
@@ -32,17 +33,17 @@ const INTESTAZIONI = {
 };
 
 // Una foto: JPEG consegnato solo a chi ha il permesso (lo decide api.js), mai in cache condivise.
-function rispondiBinario(res, stato, byte, tipo) {
-  res.writeHead(stato, {
+function rispondiBinario(res, stato, byte, tipo, extra) {
+  res.writeHead(stato, Object.assign({
     'Content-Type': tipo, 'Content-Length': byte.length, 'Cache-Control': 'private, max-age=60',
     'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer',
     'Content-Security-Policy': "default-src 'none'; frame-ancestors 'none'; sandbox", 'Cross-Origin-Resource-Policy': 'same-origin'
-  });
+  }, extra || {}));
   res.end(byte);
 }
 
 function rispondi(res, stato, oggetto) {
-  if (oggetto && oggetto.binario) return rispondiBinario(res, stato, oggetto.binario, oggetto.tipo || 'application/octet-stream');
+  if (oggetto && oggetto.binario) return rispondiBinario(res, stato, oggetto.binario, oggetto.tipo || 'application/octet-stream', oggetto.intestazioni);
   const corpo = JSON.stringify(oggetto);
   res.writeHead(stato, Object.assign({ 'Content-Length': Buffer.byteLength(corpo) }, INTESTAZIONI));
   res.end(corpo);
@@ -109,7 +110,7 @@ function creaServer(opzioni) {
     if (secondi < 0) v += '; Max-Age=0';
     return v;
   };
-  const api = API.creaApi(db, { cartellaFoto: o.dati ? path.join(o.dati, 'foto') : '' });
+  const api = API.creaApi(db, { cartellaFoto: o.dati ? path.join(o.dati, 'foto') : '', cartellaAllegati: o.dati ? path.join(o.dati, 'allegati') : '' });
   api.pulisci();
   const pulizia = setInterval(function () { try { api.pulisci(); } catch (e) { /* riprova alla prossima */ } }, 3600 * 1000);
   pulizia.unref();
@@ -134,8 +135,13 @@ function creaServer(opzioni) {
         return rispondi(res, 200, { ok: true, versione: VERSIONE, schema: DB.versione(db), avvio: avvio });
       }
 
+      // Un file allegato è un corpo grezzo, fino a 25 MB: non si legge finché api.js non ha controllato chi lo manda.
+      const grezzo = metodo === 'PUT' && /^\/api\/allegati\/[^/]+$/.test(via);
+      let corpoLetto = !grezzo;
       let corpo = null;
-      if (scrive) {
+      if (grezzo) {
+        // niente da fare qui
+      } else if (scrive) {
         const byte = await leggiCorpo(req, MAX_CORPO);
         if (byte.length) {
           try { corpo = JSON.parse(byte.toString('utf8')); } catch (e) { return rispondi(res, 400, { ok: false, errore: 'json' }); }
@@ -147,10 +153,13 @@ function creaServer(opzioni) {
       const c = {
         req: req, via: via, metodo: metodo, corpo: corpo, ip: ipDi(req),
         cookie: leggiCookie(req, NOME_COOKIE), cookieDispositivo: leggiCookie(req, NOME_DISPOSITIVO),
+        leggiGrezzo: function (limite) { corpoLetto = true; return leggiCorpo(req, Math.min(limite, MAX_ALLEGATO)); },
+        scarta: function () { corpoLetto = true; res.setHeader('Connection', 'close'); req.resume(); },
         impostaCookie: function (valore, secondi) { cookieDaImpostare.push(cookie(NOME_COOKIE, valore, secondi)); },
         impostaCookieDispositivo: function (valore) { cookieDaImpostare.push(cookie(NOME_DISPOSITIVO, valore, 365 * 24 * 3600)); }
       };
       const r = await api.gestisci(c);
+      if (!corpoLetto) { res.setHeader('Connection', 'close'); req.resume(); } // rifiutato prima di leggere il file
       if (!r) return rispondi(res, 404, { ok: false, errore: 'percorso' });
       if (cookieDaImpostare.length) res.setHeader('Set-Cookie', cookieDaImpostare);
       return rispondi(res, r[0], r[1]);
@@ -162,7 +171,7 @@ function creaServer(opzioni) {
     });
   });
 
-  server.requestTimeout = 30000;
+  server.requestTimeout = 300000; // un file da 25 MB da un telefono lento; le intestazioni restano a 10 secondi
   server.headersTimeout = 10000;
   server.db = db;
   server.api = api;

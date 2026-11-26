@@ -7,10 +7,11 @@
   const A = window.BC_ATTIVITA;
   const C = window.BC_COMPETENZE;
   const F = window.BC_FOTO;
+  const FILE = window.BC_FILE;
   const L = window.BC_LOGICA;
 
   const PASSI = [
-    { id: 'foto', titolo: 'Le foto' },
+    { id: 'foto', titolo: 'Foto e file' },
     { id: 'fatto', titolo: 'Che cosa hai fatto' },
     { id: 'dove', titolo: 'Dove e quando' },
     { id: 'competenze', titolo: 'Che cosa sai fare' }
@@ -27,7 +28,7 @@
 
   let stato = A.statoVuoto();
   let vista = null; // null = home; { modo: 'passo', id, k } | { modo: 'vedi', id } | { modo: 'diario' }
-  let filtro = { luogo: '', competenza: '' };
+  let filtro = { luogo: '', competenza: '', anno: null }; // anno: null = quello del profilo (o tutti), '' = tutti, 'anno1'… = quell'anno
   let archivioDisponibile = true;
   let fotoDisponibili = true;
   let timerSalva = null;
@@ -151,7 +152,7 @@
   // ---------- Selezione ----------
   function trova(id) { return stato.attivita.find(function (a) { return a.id === id; }) || null; }
   function corrente() { return vista && vista.id ? trova(vista.id) : null; }
-  function vuota(a) { return !a.foto.length && !pieno(a.fatto) && !pieno(a.dove) && !a.competenze.length && !pieno(a.difficolta) && !pieno(a.aiuto); }
+  function vuota(a) { return !a.foto.length && !a.file.length && !pieno(a.fatto) && !pieno(a.dove) && !a.competenze.length && !pieno(a.difficolta) && !pieno(a.aiuto); }
 
   // Uscendo da un'attività rimasta del tutto vuota, non la si conserva.
   function lasciaAttivita() {
@@ -274,8 +275,10 @@
   // ---------- Home ----------
   function proposteDiario() { return A.proposteDalDiario(leggiAltro(CHIAVE_DIARIO), stato); }
 
+  // L'anno di una nuova attività: quello della scheda aperta, altrimenti quello del profilo.
+  function annoProposto() { const x = annoMostrato(); return x || stato.profilo.anno || ''; }
   function nuovaAttivita(daProposta) {
-    const a = daProposta ? A.attivitaDaProposta(daProposta) : A.attivitaVuota(A.oggiIso());
+    const a = daProposta ? A.attivitaDaProposta(daProposta, annoProposto()) : A.attivitaVuota(A.oggiIso(), annoProposto());
     stato.attivita.push(a);
     modificato();
     vai({ modo: 'passo', id: a.id, k: 0 });
@@ -301,16 +304,48 @@
           avvisoFoto())));
   }
 
+  // L'anno mostrato nella home: la scelta fatta, altrimenti l'anno del profilo se ha attività, altrimenti tutti.
+  function annoMostrato() {
+    if (filtro.anno !== null) return filtro.anno;
+    const p = stato.profilo.anno;
+    return p && stato.attivita.some(function (a) { return a.anno === p; }) ? p : '';
+  }
+
+  function carta(a) {
+    const manca = A.mancanti(a);
+    return h('li', null, h('button', { type: 'button', class: 'carta', id: 'carta-' + a.id, onclick: function () { vai({ modo: 'vedi', id: a.id }); } },
+      h('span', { class: 'carta__foto' }, a.foto.length ? immagine(a.foto[0], '', false) : h('span', { class: 'carta__senza carta__senza--' + (a.file.length ? 'file' : 'foto'), text: a.file.length ? (a.file.length === 1 ? '1 file' : a.file.length + ' file') : 'Senza foto' }),
+        a.foto.length > 1 ? h('span', { class: 'carta__conta', text: '+' + (a.foto.length - 1) }) : null,
+        a.foto.length && a.file.length ? h('span', { class: 'carta__file', text: a.file.length === 1 ? '1 file' : a.file.length + ' file' }) : null),
+      h('span', { class: 'carta__testo' },
+        h('span', { class: 'meta', text: A.riassunto(a) }),
+        h('span', { class: 'carta__titolo', text: A.titolo(a) }),
+        manca.length ? h('span', { class: 'meta carta__manca', text: 'Manca ' + manca.join(', ') }) : null)));
+  }
+
   function galleria() {
     const usate = {};
     stato.attivita.forEach(function (a) { a.competenze.forEach(function (c) { usate[c] = true; }); });
-    const elenco = A.ordinate(stato).filter(function (a) {
-      return (!filtro.luogo || a.luogo === filtro.luogo) && (!filtro.competenza || a.competenze.indexOf(filtro.competenza) !== -1);
-    });
+    const anno = annoMostrato();
+    const gruppi = A.perAnno(stato);
+    const conta = function (g) { return g.attivita.length; };
+    const passa = function (a) { return (!filtro.luogo || a.luogo === filtro.luogo) && (!filtro.competenza || a.competenze.indexOf(filtro.competenza) !== -1); };
     const opzComp = Object.keys(usate).map(function (id) { return C.trova(id); }).filter(Boolean);
+    // Le schede: tutte, poi un anno per volta (quelli senza attività restano, spenti; «senza anno» solo se serve).
+    const schede = [{ id: '', testo: 'Tutte', n: stato.attivita.length }].concat(gruppi.filter(function (g) { return g.id || conta(g); }).map(function (g) { return { id: g.id, testo: g.testo, n: conta(g) }; }));
+    const mostrare = anno === '' ? gruppi.filter(function (g) { return conta(g); }) : gruppi.filter(function (g) { return g.id === anno; });
+    const sezioni = mostrare.map(function (g) {
+      const el = g.attivita.filter(passa);
+      return { g: g, el: el };
+    }).filter(function (x) { return x.el.length; });
     return [
+      h('div', { class: 'anni-schede', role: 'tablist', 'aria-label': 'Anno di corso' }, schede.map(function (x) {
+        return h('button', { type: 'button', role: 'tab', class: 'anno-scheda', 'aria-selected': anno === x.id ? 'true' : 'false', id: 'anno-' + (x.id || 'tutte'),
+          onclick: function () { filtro.anno = x.id; ridisegna('anno-' + (x.id || 'tutte')); } },
+          x.testo, h('span', { class: 'anno-scheda__n', text: String(x.n) }));
+      })),
       h('div', { class: 'filtri', role: 'group', 'aria-label': 'Mostra' },
-        [{ id: '', testo: 'Tutte' }].concat(A.LUOGHI.map(function (l) { return { id: l.id, testo: l.breve }; })).map(function (l) {
+        [{ id: '', testo: 'Tutti i luoghi' }].concat(A.LUOGHI.map(function (l) { return { id: l.id, testo: l.breve }; })).map(function (l) {
           return h('button', { type: 'button', class: 'filtro', 'aria-pressed': filtro.luogo === l.id ? 'true' : 'false',
             onclick: function () { filtro.luogo = l.id; ridisegna(); } }, l.testo);
         }),
@@ -319,54 +354,81 @@
           h('select', { onchange: function (e) { filtro.competenza = e.target.value; ridisegna(); } },
             h('option', { value: '', text: 'Tutto quello che sai fare' }),
             opzComp.map(function (c) { return h('option', { value: c.id, text: c.semplice, selected: filtro.competenza === c.id ? 'selected' : null }); }))) : null),
-      elenco.length ? h('ul', { class: 'galleria' }, elenco.map(function (a) {
-        const manca = A.mancanti(a);
-        return h('li', null, h('button', { type: 'button', class: 'carta', id: 'carta-' + a.id, onclick: function () { vai({ modo: 'vedi', id: a.id }); } },
-          h('span', { class: 'carta__foto' }, a.foto.length ? immagine(a.foto[0], '', false) : h('span', { class: 'carta__senza', text: 'Senza foto' }),
-            a.foto.length > 1 ? h('span', { class: 'carta__conta', text: '+' + (a.foto.length - 1) }) : null),
-          h('span', { class: 'carta__testo' },
-            h('span', { class: 'meta', text: A.riassunto(a) }),
-            h('span', { class: 'carta__titolo', text: A.titolo(a) }),
-            manca.length ? h('span', { class: 'meta carta__manca', text: 'Manca ' + manca.join(', ') }) : null)));
-      })) : h('p', { class: 'vuoto', text: 'Nessuna attività con questo filtro.' })
+      sezioni.length ? sezioni.map(function (x) {
+        return h('section', { class: 'anno-sezione', 'aria-label': x.g.testo },
+          anno === '' ? h('h3', { class: 'anno-sezione__titolo' }, x.g.testo, h('span', { class: 'meta', text: x.el.length === 1 ? '1 attività' : x.el.length + ' attività' })) : null,
+          h('ul', { class: 'galleria' }, x.el.map(carta)));
+      }) : h('p', { class: 'vuoto', text: anno ? 'Nessuna attività per il ' + A.etichettaAnno(anno) + '.' : 'Nessuna attività con questo filtro.' })
     ];
   }
 
-  // ---------- Passo 1: le foto ----------
+  // ---------- Passo 1: foto e file ----------
+  // Messaggi per un file rifiutato (il motivo lo dà FILE.controlla).
+  function motivoFile(nome, motivo) {
+    return motivo === 'vuoto' ? '«' + nome + '» è vuoto.'
+      : motivo === 'grande' ? '«' + nome + '» è troppo grande: il massimo è 25 MB.'
+        : '«' + nome + '» è un programma. Mettilo in un file ZIP.';
+  }
+
+  function elencoFile(a, conAzioni) {
+    if (!a.file.length) return null;
+    const entrato = !!ARCH.sessione();
+    return h('ul', { class: 'file-elenco', 'aria-label': 'I file di questa attività' }, a.file.map(function (f) {
+      const nota = h('span', { class: 'meta file__nota' });
+      FILE.stato(f.id).then(function (st) {
+        if (st.errore) nota.textContent = st.errore === 'quota' ? 'Spazio finito: non è sul server.' : st.errore === 'programma' ? 'Non si può caricare.' : 'Troppo grande per il server.';
+        else if (!st.locale && !entrato) { nota.textContent = 'Non è su questo dispositivo.'; const b = nota.parentNode && nota.parentNode.querySelector('.file__scarica'); if (b) b.disabled = true; }
+      });
+      return h('li', { class: 'file' },
+        h('span', { class: 'file__icona', 'aria-hidden': 'true' }),
+        h('span', { class: 'file__testo' }, h('span', { class: 'file__nome', text: f.nome }), h('span', { class: 'meta', text: A.formatoByte(f.byte) }), nota),
+        h('span', { class: 'file__azioni' },
+          h('button', { type: 'button', class: 'pulsante pulsante--testo file__scarica', 'aria-label': 'Scarica ' + f.nome, onclick: function () {
+            FILE.scarica(f.id, f.nome).then(function (ok) { if (!ok) avvisa('Il file non è su questo dispositivo.'); });
+          } }, 'Scarica'),
+          conAzioni ? h('button', { type: 'button', class: 'pulsante pulsante--testo', 'aria-label': 'Togli ' + f.nome, onclick: function () { togliFile(a, f); } }, 'Togli') : null));
+    }));
+  }
+
   function passoFoto(a) {
-    const piene = a.foto.length >= A.MAX_FOTO;
     const scegli = function (cattura) {
       const input = h('input', { type: 'file', accept: 'image/*', multiple: cattura ? null : true, capture: cattura ? 'environment' : null, hidden: true,
         onchange: function (e) { aggiungiFoto(a, Array.prototype.slice.call(e.target.files || [])); input.remove(); } });
       document.body.appendChild(input);
       input.click();
     };
+    const scegliFile = function () {
+      const input = h('input', { type: 'file', multiple: true, hidden: true,
+        onchange: function (e) { aggiungiFile(a, Array.prototype.slice.call(e.target.files || [])); input.remove(); } });
+      document.body.appendChild(input);
+      input.click();
+    };
     const intro = [
-      h('p', { text: 'Fino a quattro foto. Puoi aggiungerle anche dopo.' }),
+      h('p', { text: 'Tutte le foto e i file che vuoi: documenti Word, disegni CAD, codice.' }),
       avvisoFoto()
     ];
     const risposta = [
-      fotoDisponibili ? null : h('p', { class: 'avviso', text: 'Qui non si possono salvare foto. Scrivi l\'attività e aggiungile da un altro browser.' }),
+      fotoDisponibili ? null : h('p', { class: 'avviso', text: 'Qui non si possono salvare foto né file. Scrivi l\'attività e aggiungili da un altro browser.' }),
       h('div', { class: 'home__azioni' },
-        h('button', { type: 'button', class: 'pulsante', id: 'scatta', disabled: piene || !fotoDisponibili, onclick: function () { scegli(true); } }, 'Scatta una foto'),
-        h('button', { type: 'button', class: 'pulsante pulsante--secondario', id: 'galleria', disabled: piene || !fotoDisponibili, onclick: function () { scegli(false); } }, 'Scegli dalla galleria')),
-      inLavorazione ? h('p', { class: 'meta', role: 'status', text: inLavorazione === 1 ? 'Sto preparando la foto…' : 'Sto preparando ' + inLavorazione + ' foto…' }) : null,
+        h('button', { type: 'button', class: 'pulsante', id: 'scatta', disabled: !fotoDisponibili, onclick: function () { scegli(true); } }, 'Scatta una foto'),
+        h('button', { type: 'button', class: 'pulsante pulsante--secondario', id: 'galleria', disabled: !fotoDisponibili, onclick: function () { scegli(false); } }, 'Scegli dalla galleria'),
+        h('button', { type: 'button', class: 'pulsante pulsante--secondario', id: 'aggiungi-file', disabled: !fotoDisponibili || a.file.length >= A.MAX_FILE, onclick: scegliFile }, 'Aggiungi un file')),
+      inLavorazione ? h('p', { class: 'meta', role: 'status', text: inLavorazione === 1 ? 'Sto preparando…' : 'Sto preparando ' + inLavorazione + ' elementi…' }) : null,
       a.foto.length ? h('ul', { class: 'striscia', 'aria-label': 'Le foto di questa attività' }, a.foto.map(function (id, i) {
         return h('li', { class: 'striscia__foto' },
           immagine(id, 'Foto ' + (i + 1), false),
           h('div', { class: 'striscia__azioni' },
             i > 0 ? h('button', { type: 'button', class: 'pulsante pulsante--testo', onclick: function () { a.foto.splice(i, 1); a.foto.unshift(id); modificato(); ridisegna(); } }, 'Metti per prima') : h('span', { class: 'meta', text: 'In copertina' }),
             h('button', { type: 'button', class: 'pulsante pulsante--testo', 'aria-label': 'Togli la foto ' + (i + 1), onclick: function () { togliFoto(a, id); } }, 'Togli')));
-      })) : h('p', { class: 'vuoto', text: 'Nessuna foto per ora.' }),
-      piene ? h('p', { class: 'nota', text: 'Hai già quattro foto: per aggiungerne un\'altra togline una.' }) : null
+      })) : null,
+      elencoFile(a, true),
+      !a.foto.length && !a.file.length ? h('p', { class: 'vuoto', text: 'Ancora niente. Puoi aggiungere anche dopo.' }) : null
     ];
-    return [testa('01 / 04', 'Le foto'), corpo(intro, risposta)];
+    return [testa('01 / 04', 'Foto e file'), corpo(intro, risposta)];
   }
 
   function aggiungiFoto(a, files) {
-    const posto = A.MAX_FOTO - a.foto.length;
-    const scelti = files.filter(function (f) { return /^image\//.test(f.type || 'image/'); }).slice(0, Math.max(0, posto));
-    if (files.length > scelti.length && posto <= files.length) avvisa('Al massimo quattro foto per attività: ho preso le prime ' + scelti.length + '.');
+    const scelti = files.filter(function (f) { return /^image\//.test(f.type || 'image/'); }).slice(0, Math.max(0, A.MAX_FOTO - a.foto.length));
     if (!scelti.length) return;
     inLavorazione += scelti.length; ridisegna();
     scelti.reduce(function (p, file) {
@@ -381,6 +443,42 @@
         }).then(function () { inLavorazione--; ridisegna(); });
       });
     }, Promise.resolve()).then(function () { scriviArchivio(); });
+  }
+
+  // Un file allegato resta com'è: si controlla soltanto che non sia vuoto, troppo grande o un programma compilato.
+  function aggiungiFile(a, files) {
+    const posto = Math.max(0, A.MAX_FILE - a.file.length);
+    const scelti = files.slice(0, posto);
+    if (!scelti.length) return;
+    inLavorazione += scelti.length; ridisegna();
+    const problemi = [];
+    scelti.reduce(function (p, file) {
+      return p.then(function () {
+        const nome = A.nomeFile(file.name);
+        return FILE.controlla(file).then(function (motivo) {
+          if (motivo) { problemi.push(motivoFile(nome, motivo)); return; }
+          const id = A.nuovoIdFile();
+          return FILE.salva({ id: id, nome: nome, byte: file.size, blob: file, creato: new Date().toISOString() }).then(function () {
+            a.file.push({ id: id, nome: nome, byte: file.size });
+            modificato();
+            FILE.sincronizza();
+          });
+        }).catch(function () { problemi.push('«' + nome + '» non si è salvato.'); }).then(function () { inLavorazione--; ridisegna(); });
+      });
+    }, Promise.resolve()).then(function () {
+      scriviArchivio();
+      if (problemi.length) avvisa(problemi.join(' '));
+    });
+  }
+
+  function togliFile(a, f) {
+    chiedi('Togliere «' + f.nome + '»?', 'Togli', function () {
+      a.file = a.file.filter(function (x) { return x.id !== f.id; });
+      scriviArchivio();
+      FILE.elimina(f.id).catch(function () { /* resta un avanzo, lo toglie la pulizia */ });
+      FILE.togliDalServer(f.id);
+      ridisegna('aggiungi-file');
+    });
   }
 
   function togliFoto(a, id) {
@@ -433,7 +531,9 @@
         suggerimento: a.luogo === 'tirocinio' && aziende.length ? 'Puoi scegliere un\'azienda del tuo diario.' : 'Facoltativo.',
         aggiorna: function (v) { a.dove = v; } }) : null,
       aziende.length ? h('datalist', { id: 'aziende-diario' }, aziende.map(function (x) { return h('option', { value: x }); })) : null,
-      campo({ id: 'f-data', etichetta: 'Quando?', tipo: 'date', valore: a.data, max: 10, aggiorna: function (v) { a.data = v; } })
+      campo({ id: 'f-data', etichetta: 'Quando?', tipo: 'date', valore: a.data, max: 10, aggiorna: function (v) { a.data = v; } }),
+      gruppoScelte({ legenda: 'In che anno di corso?', nome: 'f-anno-corso', opzioni: A.ANNI, valore: a.anno, riga: true,
+        aggiorna: function (id) { a.anno = id; modificato(); ridisegna('f-anno-corso-' + id); } })
     ];
     return [testa('03 / 04', 'Dove e quando'), corpo([h('p', { text: 'Dove eri e quando.' })], risposta)];
   }
@@ -513,13 +613,14 @@
       h('button', { type: 'button', class: 'pulsante pulsante--testo ed__torna-sempre', onclick: function () { vai(null); } }, '← Tutte le attività'),
       h('div', { class: 'schermata__testa' },
         h('span', { class: 'meta' }, h('span', { class: 'segno', 'aria-hidden': 'true' }),
-          [A.luogo(a.luogo) ? A.luogo(a.luogo).breve : 'Attività', a.dove.trim()].filter(Boolean).join(' · ')),
+          [A.etichettaAnno(a.anno), A.luogo(a.luogo) ? A.luogo(a.luogo).breve : 'Attività', a.dove.trim()].filter(Boolean).join(' · ')),
         h('h2', { id: 'titolo-schermata', text: a.data ? A.formatoData(a.data) : 'Attività senza data' })),
       h('div', { class: 'scheda-attivita' },
         a.foto.length ? h('ul', { class: 'foto-grandi' + (a.foto.length === 1 ? ' foto-grandi--una' : '') }, a.foto.map(function (id, i) {
           return h('li', null, immagine(id, 'Foto ' + (i + 1) + ' dell\'attività', true));
-        })) : h('p', { class: 'avviso', text: 'Questa attività non ha ancora una foto.' }),
+        })) : (a.file.length ? null : h('p', { class: 'avviso', text: 'Questa attività non ha ancora una foto o un file.' })),
         h('div', { class: 'scheda-attivita__testo' },
+          a.file.length ? h('section', null, h('h3', { class: 'meta occhiello', text: a.file.length === 1 ? 'File' : 'File (' + a.file.length + ')' }), elencoFile(a, false)) : null,
           pieno(a.fatto) ? h('blockquote', { class: 'citazione', text: a.fatto }) : h('p', { class: 'vuoto', text: 'Non hai ancora scritto che cosa hai fatto.' }),
           comp.length ? h('section', null, h('h3', { class: 'meta occhiello', text: 'Che cosa so fare' }),
             h('ul', { class: 'competenze' }, comp.map(function (c) { return h('li', { text: c.semplice }); }))) : null,
@@ -527,7 +628,7 @@
           pieno(a.aiuto) ? h('section', null, h('h3', { class: 'meta occhiello', text: 'Chi o che cosa mi ha aiutato' }), h('p', { class: 'testo-libero', text: a.aiuto })) : null,
           manca.length ? h('p', { class: 'nota', text: 'Manca ' + manca.join(', ') + '.' }) : null,
           h('div', { class: 'home__azioni' },
-            h('button', { type: 'button', class: 'pulsante', id: 'modifica', onclick: function () { vai({ modo: 'passo', id: a.id, k: manca.indexOf('una foto') !== -1 ? 0 : 1 }); } }, 'Modifica'),
+            h('button', { type: 'button', class: 'pulsante', id: 'modifica', onclick: function () { vai({ modo: 'passo', id: a.id, k: manca.indexOf('una foto o un file') !== -1 ? 0 : 1 }); } }, 'Modifica'),
             h('button', { type: 'button', class: 'pulsante pulsante--secondario', onclick: function () { eliminaAttivita(a); } }, 'Elimina')))));
   }
 
@@ -535,6 +636,7 @@
     chiedi('Eliminare questa attività con le sue foto? Non si può annullare.', 'Elimina', function () {
       stato.attivita = stato.attivita.filter(function (x) { return x.id !== a.id; });
       a.foto.forEach(function (id) { F.elimina(id).catch(function () {}); F.togliDalServer(id); dimentica(id); });
+      a.file.forEach(function (f) { FILE.elimina(f.id).catch(function () {}); FILE.togliDalServer(f.id); });
       clearTimeout(timerSalva); scriviArchivio();
       vista = null; vai(null);
     });
@@ -577,6 +679,9 @@
     }
     aggiornaTestata(); aggiornaIndice();
     principale.querySelectorAll('textarea').forEach(adattaAltezza);
+    // La scheda dell'anno scelto resta in vista quando le schede scorrono di lato (telefono).
+    const sel = principale.querySelector('.anno-scheda[aria-selected="true"]');
+    if (sel && sel.scrollIntoView) sel.scrollIntoView({ block: 'nearest', inline: 'center' });
   }
 
   // ---------- Copia, PDF, cancellazione ----------
@@ -610,6 +715,7 @@
           stato = A.normalizza(dati);
           scriviArchivio();
           F.pulisci(A.fotoUsate(stato)).catch(function () {});
+          FILE.pulisci(A.fileUsati(stato)).catch(function () {});
           if ($('dialogo-salva').open) $('dialogo-salva').close();
           vista = null; vai(null);
         });
@@ -655,7 +761,9 @@
     chiedi('Cancellare tutte le attività e le foto? Se non hai una copia, le perdi.', 'Cancella tutto', function () {
       clearTimeout(timerSalva); timerSalva = null;
       try { M.removeItem(A.CHIAVE); } catch (e) { /* niente da fare */ }
-      A.fotoUsate(stato) && Object.keys(A.fotoUsate(stato)).forEach(function (id) { F.togliDalServer(id); });
+      Object.keys(A.fotoUsate(stato)).forEach(function (id) { F.togliDalServer(id); });
+      Object.keys(A.fileUsati(stato)).forEach(function (id) { FILE.togliDalServer(id); });
+      FILE.svuota().catch(function () {});
       F.svuota().catch(function () {});
       Object.keys(urlFoto).forEach(dimentica);
       stato = A.statoVuoto(); $('salvato').textContent = 'Attività cancellate';
@@ -672,6 +780,8 @@
   F.pulisci(A.fotoUsate(stato)).catch(function () { fotoDisponibili = false; if (vista) ridisegna(); });
   // Da entrati le foto vanno anche sul server (e si prendono da lì se non sono su questo dispositivo).
   F.avviaSincronizzazione(function () { return Object.keys(A.fotoUsate(stato)); });
+  FILE.pulisci(A.fileUsati(stato)).catch(function () {});
+  FILE.avviaSincronizzazione(function () { return Object.keys(A.fileUsati(stato)); });
   $('vai-home').addEventListener('click', function () { vai(null); });
   $('apri-salva').addEventListener('click', function () { $('dialogo-salva').showModal(); });
   $('chiudi-salva').addEventListener('click', function () { $('dialogo-salva').close(); });

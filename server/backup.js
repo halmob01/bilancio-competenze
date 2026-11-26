@@ -1,7 +1,7 @@
 /* Portale dello studente — copia notturna del database (la avvia un timer di systemd).
    Crea in PORTALE_DATI/backup una copia coerente con la data nel nome e tiene:
    le ultime 7 copie giornaliere, 4 settimanali (domenica) e 12 mensili (giorno 1).
-   Le foto (PORTALE_DATI/foto) si specchiano in backup/foto: i file nuovi si copiano, quelli tolti dal portale si tolgono anche
+   Le foto e i file allegati (PORTALE_DATI/foto e /allegati) si specchiano in backup/foto e backup/allegati: i file nuovi si copiano, quelli tolti dal portale si tolgono anche
    dalla copia (così «elimina subito» vale anche nel backup). Portare le copie FUORI dal server è un passo a parte,
    deciso con il collega (piano §14).
 
@@ -31,9 +31,9 @@ function daCancellare(nomi) {
 }
 
 // Specchio delle foto: i file non cambiano mai (nomi casuali), quindi basta copiare quelli che mancano e togliere quelli che non ci sono più.
-function specchiaFoto(dati) {
-  const src = path.join(dati, 'foto');
-  const dst = path.join(dati, 'backup', 'foto');
+function specchiaCartella(dati, nome) {
+  const src = path.join(dati, nome);
+  const dst = path.join(dati, 'backup', nome);
   const r = { copiate: 0, tolte: 0 };
   if (!fs.existsSync(src)) return r;
   fs.mkdirSync(dst, { recursive: true, mode: 0o700 });
@@ -58,6 +58,8 @@ function specchiaFoto(dati) {
   return r;
 }
 
+function specchiaFoto(dati) { return specchiaCartella(dati, 'foto'); }
+
 async function esegui(dati, oggi) {
   const cartella = path.join(dati, 'backup');
   const g = oggi || new Date();
@@ -67,9 +69,12 @@ async function esegui(dati, oggi) {
     await DB.copia(db, path.join(cartella, nome));
     const via = daCancellare(fs.readdirSync(cartella));
     via.forEach(function (n) { fs.unlinkSync(path.join(cartella, n)); });
-    const foto = specchiaFoto(dati);
-    DB.annota(db, 'backup', nome + (via.length ? ', tolte ' + via.length : '') + (foto.copiate || foto.tolte ? ', foto +' + foto.copiate + ' −' + foto.tolte : ''));
-    return { copia: nome, tolte: via, foto: foto };
+    const foto = specchiaCartella(dati, 'foto');
+    const allegati = specchiaCartella(dati, 'allegati');
+    DB.annota(db, 'backup', nome + (via.length ? ', tolte ' + via.length : '') +
+      (foto.copiate || foto.tolte ? ', foto +' + foto.copiate + ' −' + foto.tolte : '') +
+      (allegati.copiate || allegati.tolte ? ', file +' + allegati.copiate + ' −' + allegati.tolte : ''));
+    return { copia: nome, tolte: via, foto: foto, allegati: allegati };
   } finally {
     db.close();
   }
@@ -84,4 +89,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { esegui, daCancellare, specchiaFoto };
+module.exports = { esegui, daCancellare, specchiaFoto, specchiaCartella };

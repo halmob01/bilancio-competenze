@@ -41,10 +41,30 @@ const FOTO_MAX_BYTE = 400 * 1024;          // la foto grande
 const FOTO_MINI_MAX_BYTE = 60 * 1024;      // la miniatura
 const FOTO_LATO_MAX = 1600;                // lato lungo della foto grande (il telefono la riduce a 1280)
 const FOTO_MINI_LATO_MAX = 480;
-const FOTO_QUOTA_BYTE = 200 * 1024 * 1024; // per studente
-const FOTO_MAX_PER_STUDENTE = 1500;
+const QUOTA_BYTE = 1024 * 1024 * 1024;     // per studente, foto e file insieme
+const FOTO_QUOTA_BYTE = QUOTA_BYTE;
+const FOTO_MAX_PER_STUDENTE = 5000;
+// File allegati alle attività (Word, CAD, codice…)
+const ALLEGATO_MAX_BYTE = 25 * 1024 * 1024;
+const ALLEGATI_MAX_PER_STUDENTE = 2000;
+const ID_ALLEGATO = /^d[a-z0-9]{6,40}$/;
 const ID_FOTO = /^f[a-z0-9]{6,40}$/;
 const BASE64 = /^[A-Za-z0-9+/]+={0,2}$/;
+
+// Un programma compilato (Windows, Linux, Mac) si riconosce dai primi byte, non dal nome. Il codice sorgente è testo e passa.
+function eProgramma(b) {
+  if (b.length < 4) return false;
+  if (b[0] === 0x4D && b[1] === 0x5A) return true;                                                  // MZ: exe, dll, scr, com
+  if (b[0] === 0x7F && b[1] === 0x45 && b[2] === 0x4C && b[3] === 0x46) return true;                // ELF
+  const m = b.readUInt32BE(0);
+  return m === 0xFEEDFACE || m === 0xFEEDFACF || m === 0xCEFAEDFE || m === 0xCFFAEDFE;             // Mach-O
+}
+
+// Il nome originale serve solo a chi scarica: niente percorsi, niente caratteri di controllo.
+function nomePulito(v) {
+  const t = String(typeof v === 'string' ? v : '').replace(/[\u0000-\u001f\u007f\\/:*?"<>|]+/g, '_').replace(/^[.\s]+/, '').trim().slice(0, 120);
+  return t || 'file';
+}
 
 // Legge le dimensioni di un JPEG vero e proprio (inizia con FF D8, finisce con FF D9, ha un blocco SOF). Altrimenti null.
 function dimensioniJpeg(b) {
@@ -156,6 +176,11 @@ function creaApi(db, opzioni) {
     fotoTotali: db.prepare('SELECT COUNT(*) AS n, COALESCE(SUM(byte + byte_mini), 0) AS byte FROM foto WHERE studente_id = ?'),
     nuovaFoto: db.prepare('INSERT INTO foto (studente_id, id, file, byte, byte_mini, w, h, creata) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'),
     togliFoto: db.prepare('DELETE FROM foto WHERE studente_id = ? AND id = ?'),
+    allegato: db.prepare('SELECT * FROM allegati WHERE studente_id = ? AND id = ?'),
+    allegatiElenco: db.prepare('SELECT id, nome, byte, creata FROM allegati WHERE studente_id = ? ORDER BY creata'),
+    allegatiTotali: db.prepare('SELECT COUNT(*) AS n, COALESCE(SUM(byte), 0) AS byte FROM allegati WHERE studente_id = ?'),
+    nuovoAllegato: db.prepare('INSERT INTO allegati (studente_id, id, file, nome, byte, creata) VALUES (?, ?, ?, ?, ?, ?)'),
+    togliAllegato: db.prepare('DELETE FROM allegati WHERE studente_id = ? AND id = ?'),
     ultimaLettura: db.prepare('SELECT quando FROM letture WHERE docente_id = ? AND studente_id = ? AND tipo = ? AND azione = ? ORDER BY id DESC LIMIT 1'),
     registro: db.prepare('SELECT l.quando, l.tipo, l.azione, d.nome AS docente FROM letture l JOIN docenti d ON d.id = l.docente_id WHERE l.studente_id = ? ORDER BY l.id DESC LIMIT 200')
   };
@@ -273,7 +298,7 @@ function creaApi(db, opzioni) {
     const mini = decodificaJpeg(b.mini, FOTO_MINI_MAX_BYTE, FOTO_MINI_LATO_MAX);
     if (!grande || !mini) return [400, { ok: false, errore: 'formato' }];
     const t = q.fotoTotali.get(studenteId);
-    if (t.n >= FOTO_MAX_PER_STUDENTE || t.byte + grande.byte.length + mini.byte.length > FOTO_QUOTA_BYTE) return [413, { ok: false, errore: 'quota' }];
+    if (t.n >= FOTO_MAX_PER_STUDENTE || occupato(studenteId) + grande.byte.length + mini.byte.length > QUOTA_BYTE) return [413, { ok: false, errore: 'quota' }];
     const file = S.casuale(32, 'abcdef0123456789');
     fs.mkdirSync(path.join(cartellaFoto, String(studenteId)), { recursive: true, mode: 0o700 });
     fs.writeFileSync(fileFoto(studenteId, file, false), grande.byte, { mode: 0o600 });
@@ -306,7 +331,64 @@ function creaApi(db, opzioni) {
   }
 
   function elencoFoto(studenteId) {
-    return [200, { ok: true, foto: q.fotoElenco.all(studenteId).map(function (f) { return { id: f.id, byte: f.byte, w: f.w, h: f.h, creata: f.creata }; }), quota: FOTO_QUOTA_BYTE }];
+    return [200, { ok: true, foto: q.fotoElenco.all(studenteId).map(function (f) { return { id: f.id, byte: f.byte, w: f.w, h: f.h, creata: f.creata }; }), quota: QUOTA_BYTE, occupato: occupato(studenteId) }];
+  }
+
+  // Spazio usato da uno studente: foto e file insieme.
+  function occupato(studenteId) { return q.fotoTotali.get(studenteId).byte + q.allegatiTotali.get(studenteId).byte; }
+
+  // ---------- allegati (file) ----------
+  const cartellaAllegati = o.cartellaAllegati || '';
+  function fileAllegato(studenteId, file) { return path.join(cartellaAllegati, String(studenteId), file + '.bin'); }
+
+  // Il corpo è il file così com'è (non JSON); il nome originale arriva in X-Nome, codificato per l'indirizzo.
+  async function caricaAllegato(c, studenteId, id) {
+    if (!cartellaAllegati) { c.scarta(); return [503, { ok: false, errore: 'allegati' }]; }
+    if (!ID_ALLEGATO.test(id)) { c.scarta(); return [400, { ok: false, errore: 'id' }]; }
+    if (q.allegato.get(studenteId, id)) { c.scarta(); return [200, { ok: true, invariato: true }]; }
+    let nome = '';
+    try { nome = nomePulito(decodeURIComponent(String(c.req.headers['x-nome'] || ''))); } catch (e) { nome = 'file'; }
+    const dich = Number(c.req.headers['content-length'] || 0);
+    const t = q.allegatiTotali.get(studenteId);
+    if (dich > ALLEGATO_MAX_BYTE) { c.scarta(); return [413, { ok: false, errore: 'dimensione' }]; }
+    if (t.n >= ALLEGATI_MAX_PER_STUDENTE || occupato(studenteId) + dich > QUOTA_BYTE) { c.scarta(); return [413, { ok: false, errore: 'quota' }]; }
+    const byte = await c.leggiGrezzo(ALLEGATO_MAX_BYTE);
+    if (!byte.length) return [400, { ok: false, errore: 'vuoto' }];
+    if (eProgramma(byte)) return [415, { ok: false, errore: 'programma' }];
+    if (occupato(studenteId) + byte.length > QUOTA_BYTE) return [413, { ok: false, errore: 'quota' }];
+    const file = S.casuale(32, 'abcdef0123456789');
+    fs.mkdirSync(path.join(cartellaAllegati, String(studenteId)), { recursive: true, mode: 0o700 });
+    fs.writeFileSync(fileAllegato(studenteId, file), byte, { mode: 0o600 });
+    try { q.nuovoAllegato.run(studenteId, id, file, nome, byte.length, adesso()); }
+    catch (e) { try { fs.unlinkSync(fileAllegato(studenteId, file)); } catch (e2) { /* niente da togliere */ } throw e; }
+    return [200, { ok: true, nome: nome }];
+  }
+
+  // Si scarica sempre come allegato, mai aperto nel browser, con un tipo che non si può interpretare.
+  function leggiAllegato(studenteId, id) {
+    if (!cartellaAllegati || !ID_ALLEGATO.test(id)) return [404, { ok: false, errore: 'allegato' }];
+    const f = q.allegato.get(studenteId, id);
+    if (!f) return [404, { ok: false, errore: 'allegato' }];
+    let byte;
+    try { byte = fs.readFileSync(fileAllegato(studenteId, f.file)); } catch (e) { return [404, { ok: false, errore: 'allegato' }]; }
+    const ascii = f.nome.replace(/[^\x20-\x7e]/g, '_').replace(/"/g, '_');
+    return [200, { binario: byte, tipo: 'application/octet-stream',
+      // Senza «sandbox» nella CSP: per un download è inutile e Chrome può annullarlo.
+      intestazioni: { 'Content-Disposition': 'attachment; filename="' + ascii + '"; filename*=UTF-8\'\'' + encodeURIComponent(f.nome),
+        'Content-Security-Policy': "default-src 'none'; frame-ancestors 'none'", 'Cache-Control': 'private, no-store' } }];
+  }
+
+  function eliminaAllegato(studenteId, id) {
+    if (!cartellaAllegati || !ID_ALLEGATO.test(id)) return [404, { ok: false, errore: 'allegato' }];
+    const f = q.allegato.get(studenteId, id);
+    if (!f) return [404, { ok: false, errore: 'allegato' }];
+    q.togliAllegato.run(studenteId, id);
+    try { fs.unlinkSync(fileAllegato(studenteId, f.file)); } catch (e) { /* già tolto */ }
+    return [200, { ok: true }];
+  }
+
+  function elencoAllegati(studenteId) {
+    return [200, { ok: true, allegati: q.allegatiElenco.all(studenteId), quota: QUOTA_BYTE, occupato: occupato(studenteId), massimo: ALLEGATO_MAX_BYTE }];
   }
 
   // Un docente che apre le foto di uno studente finisce nel registro; per non riempirlo con le miniature di una galleria
@@ -416,6 +498,11 @@ function creaApi(db, opzioni) {
   rotta('GET', '/api/foto/:id', serveStudente, function (c, p) { return leggiFoto(c.sessione.utente.id, p.id, false); });
   rotta('GET', '/api/foto/:id/mini', serveStudente, function (c, p) { return leggiFoto(c.sessione.utente.id, p.id, true); });
   rotta('DELETE', '/api/foto/:id', serveStudente, function (c, p) { return eliminaFoto(c.sessione.utente.id, p.id); });
+  // I file allegati (Word, CAD, codice…)
+  rotta('GET', '/api/allegati', serveStudente, function (c) { return elencoAllegati(c.sessione.utente.id); });
+  rotta('PUT', '/api/allegati/:id', serveStudente, function (c, p) { return caricaAllegato(c, c.sessione.utente.id, p.id); });
+  rotta('GET', '/api/allegati/:id', serveStudente, function (c, p) { return leggiAllegato(c.sessione.utente.id, p.id); });
+  rotta('DELETE', '/api/allegati/:id', serveStudente, function (c, p) { return eliminaAllegato(c.sessione.utente.id, p.id); });
 
   // Docenti: classi e studenti
   rotta('GET', '/api/classi', serveDocente, function () {
@@ -529,6 +616,22 @@ function creaApi(db, opzioni) {
     return r;
   });
 
+  rotta('GET', '/api/studenti/:id/allegati', serveDocente, function (c, p) {
+    const e = studenteEDocumento({ id: p.id, tipo: 'portfolio' }); if (e) return e;
+    return elencoAllegati(intero(p.id));
+  });
+  rotta('GET', '/api/studenti/:id/allegati/:aid', serveDocente, function (c, p) {
+    const e = studenteEDocumento({ id: p.id, tipo: 'portfolio' }); if (e) return e;
+    registraLettura(c.sessione.utente.id, intero(p.id), 'portfolio', 'lettura file');
+    return leggiAllegato(intero(p.id), p.aid);
+  });
+  rotta('DELETE', '/api/studenti/:id/allegati/:aid', serveDocente, function (c, p) {
+    const e = studenteEDocumento({ id: p.id, tipo: 'portfolio' }); if (e) return e;
+    const r = eliminaAllegato(intero(p.id), p.aid);
+    if (r[0] === 200) q.registra.run(c.sessione.utente.id, intero(p.id), 'portfolio', 'elimina file ' + p.aid, adesso());
+    return r;
+  });
+
   // Docenti: la propria password
   rotta('POST', '/api/docente/password', serveDocente, async function (c) {
     const b = c.corpo || {};
@@ -586,4 +689,4 @@ function creaApi(db, opzioni) {
   return { gestisci: gestisci, creaDocente: creaDocente, pulisci: pulisci, TIPI: TIPI };
 }
 
-module.exports = { creaApi, fineAnnoScolastico, TIPI, dimensioniJpeg, FOTO_QUOTA_BYTE, FOTO_MAX_BYTE };
+module.exports = { creaApi, fineAnnoScolastico, TIPI, dimensioniJpeg, FOTO_QUOTA_BYTE, FOTO_MAX_BYTE, QUOTA_BYTE, ALLEGATO_MAX_BYTE, eProgramma, nomePulito };

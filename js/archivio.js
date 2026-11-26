@@ -74,6 +74,14 @@
     }).catch(function () { return { stato: 0, json: {} }; });
   }
 
+  // Un corpo che non è JSON (per esempio un file): stesse regole, il corpo parte com'è.
+  function richiestaGrezza(metodo, via, corpo, intestazioni) {
+    const o = { method: metodo, credentials: 'same-origin', headers: Object.assign({ 'X-Portale': '1', 'Content-Type': 'application/octet-stream' }, intestazioni || {}), body: corpo };
+    return fetch(API + via, o).then(function (r) {
+      return r.json().catch(function () { return {}; }).then(function (j) { return { stato: r.status, json: j || {} }; });
+    }).catch(function () { return { stato: 0, json: {} }; });
+  }
+
   // ---------- Avvisi ai siti ----------
   const ascoltatori = [];
   function quandoCambia(fn) { ascoltatori.push(fn); }
@@ -255,7 +263,9 @@
         st.removeItem(CHIAVE_SESSIONE);
       } catch (e) { /* niente da fare */ }
     });
-    try { if (window.indexedDB) window.indexedDB.deleteDatabase('portfolio-foto' + suffisso()); } catch (e) { /* niente da fare */ }
+    try {
+      if (window.indexedDB) { window.indexedDB.deleteDatabase('portfolio-foto' + suffisso()); window.indexedDB.deleteDatabase('portfolio-file' + suffisso()); }
+    } catch (e) { /* niente da fare */ }
   }
 
   // «Esci» toglie sempre la copia del lavoro da questo browser (piano §4). Prima prova a mandare quello che manca.
@@ -342,11 +352,12 @@
       'Lo vedete solo tu e i docenti del CFP.',
       'Lo ritrovi su ogni telefono o computer in cui entri con il cartellino.',
       'Su un computer della scuola, alla fine premi «Esci».',
-      'Le foto delle attività sono sul server insieme ai testi.'
+      'Anche le foto e i file delle attività sono sul server.'
     ] : [
       'Il tuo lavoro resta su questo telefono o computer.',
       'Non lo vede nessun altro.',
       'Per spostarlo: «Scarica una copia», poi «Carica una copia» sull\'altro dispositivo.',
+      'I file delle attività (Word, disegni…) non stanno nella copia: scaricali uno per uno dalla scheda.',
       'Su un computer della scuola, alla fine scarica la copia e cancella il lavoro.'
     ];
     const d = document.createElement('dialog');
@@ -401,6 +412,7 @@
     inSospeso: inSospeso,
     registraSincronizzatore: registraSincronizzatore,
     richiesta: function (metodo, via, corpo) { return richiesta(metodo, via, corpo); },
+    richiestaGrezza: richiestaGrezza,
     // Indirizzo di una cosa del server (per esempio una foto da mostrare in un'immagine). Vuoto se non si è entrati.
     urlApi: function (via) { return sessione ? API + via : ''; },
     elencoDocumenti: function () { return sessione ? richiesta('GET', 'documenti') : Promise.resolve({ stato: 0, json: {} }); },

@@ -137,9 +137,9 @@ installa() {
   ok "$PROGRAMMA/app pronto (proprietario $(stat -c %U "$PROGRAMMA/app"), gruppo $UTENTE)"
 
   # I dati: solo l'utente portale. Nessun altro utente (né Apache né PHP) può leggerli.
-  mkdir -p "$DATI/foto" "$DATI/backup"
+  mkdir -p "$DATI/foto" "$DATI/allegati" "$DATI/backup"
   chown -R "$UTENTE:$UTENTE" "$DATI"
-  chmod 700 "$DATI" "$DATI/foto" "$DATI/backup"
+  chmod 700 "$DATI" "$DATI/foto" "$DATI/allegati" "$DATI/backup"
   ok "$DATI pronto (solo $UTENTE)"
 
   mkdir -p "$CONFIG"; chown root:root "$CONFIG"; chmod 755 "$CONFIG"

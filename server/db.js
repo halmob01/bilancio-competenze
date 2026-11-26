@@ -110,6 +110,18 @@ const MIGRAZIONI = [
      h INTEGER NOT NULL,
      creata TEXT NOT NULL,
      PRIMARY KEY (studente_id, id)
+   );`,
+
+  // 5. File allegati alle attività (Word, CAD, codice…): stanno in PORTALE_DATI/allegati/<id studente>/<nome casuale>.bin.
+  //    Il nome vero serve solo per il download; il server non apre e non esegue mai questi file.
+  `CREATE TABLE allegati (
+     studente_id INTEGER NOT NULL REFERENCES studenti(id),
+     id TEXT NOT NULL,                         -- scelto dal telefono o dal PC, lo stesso scritto nelle attività
+     file TEXT NOT NULL,                       -- nome casuale del file (senza estensione)
+     nome TEXT NOT NULL,                       -- nome originale, ripulito
+     byte INTEGER NOT NULL,
+     creata TEXT NOT NULL,
+     PRIMARY KEY (studente_id, id)
    );`
 ];
 

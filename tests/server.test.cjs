@@ -321,6 +321,72 @@ test('foto: caricamento controllato, consegna solo allo studente e ai docenti, r
   } finally { await p.chiudi(); }
 });
 
+test('file allegati: qualsiasi documento o codice, mai programmi compilati; si scaricano soltanto; quota unica con le foto', async () => {
+  const p = await avvia();
+  try {
+    const k = await preparaClasse(p);
+    const sara = (await p.chiedi('POST', '/api/accesso/studente', { codice: k.studenti[0].codice })).cookie;
+    const luca = (await p.chiedi('POST', '/api/accesso/studente', { codice: k.studenti[1].codice })).cookie;
+    const base = 'http://127.0.0.1:' + p.server.address().port;
+    const manda = (cookie, id, byte, nome, extra) => fetch(base + '/api/allegati/' + id, { method: 'PUT',
+      headers: Object.assign({ 'X-Portale': '1', Origin: ORIGINE, Cookie: cookie ? 'portale=' + cookie : '', 'Content-Type': 'application/octet-stream', 'X-Nome': encodeURIComponent(nome) }, extra || {}), body: byte });
+    // Un documento Word (finto: un file ZIP come i .docx) e un disegno CAD passano; il nome è ripulito
+    const docx = Buffer.concat([Buffer.from('PK\x03\x04'), Buffer.alloc(2000, 7)]);
+    const r1 = await manda(sara, 'dabc12345', docx, '../planimetria casa.docx');
+    assert.equal(r1.status, 200);
+    assert.equal((await r1.json()).nome, '.._planimetria casa.docx'.replace(/^\.+/, ''), 'niente percorsi nel nome');
+    const dwg = Buffer.from('AC1027' + 'x'.repeat(5000));
+    assert.equal((await manda(sara, 'dabc22222', dwg, 'Pianta piano terra.dwg')).status, 200);
+    // Il codice sorgente passa, in qualunque linguaggio
+    for (const [id, nome, testo] of [['dpy123456', 'gioco.py', 'print("ciao")\n'], ['dphp12345', 'form.php', '<?php echo 1; ?>'], ['dsh123456', 'avvio.sh', '#!/bin/sh\necho ok\n'], ['dhtml1234', 'index.html', '<script>alert(1)</script>']]) {
+      assert.equal((await manda(sara, id, Buffer.from(testo), nome)).status, 200, nome);
+    }
+    // Un programma compilato no: Windows (MZ), Linux (ELF), Mac (Mach-O), anche se rinominato
+    const exe = Buffer.concat([Buffer.from('MZ'), Buffer.alloc(300)]);
+    assert.equal((await manda(sara, 'dexe12345', exe, 'relazione.docx')).status, 415);
+    assert.equal((await manda(sara, 'delf12345', Buffer.concat([Buffer.from([0x7f, 0x45, 0x4c, 0x46]), Buffer.alloc(300)]), 'a.out')).status, 415);
+    assert.equal((await manda(sara, 'dmac12345', Buffer.concat([Buffer.from([0xcf, 0xfa, 0xed, 0xfe]), Buffer.alloc(300)]), 'app')).status, 415);
+    // Vuoto, id sbagliato, grande troppo, senza accesso
+    assert.equal((await manda(sara, 'dvuoto1234', Buffer.alloc(0), 'v.txt')).status, 400);
+    assert.equal((await manda(sara, 'sbagliato', Buffer.from('x'), 'x.txt')).status, 400);
+    assert.equal((await manda(null, 'dnoacc1234', Buffer.from('x'), 'x.txt')).status, 401, 'senza accesso non si legge nemmeno il corpo');
+    const grande = await manda(sara, 'dgrande123', Buffer.alloc(API.ALLEGATO_MAX_BYTE + 1024, 1), 'grande.zip').catch(() => ({ status: 413 }));
+    assert.equal(grande.status, 413);
+    // Si scarica come allegato, con un tipo che il browser non può interpretare, e il nome vero
+    const d = await fetch(base + '/api/allegati/dabc12345', { headers: { Cookie: 'portale=' + sara } });
+    assert.equal(d.status, 200);
+    assert.equal(d.headers.get('content-type'), 'application/octet-stream');
+    assert.match(d.headers.get('content-disposition'), /^attachment; filename="_planimetria casa\.docx"|^attachment; filename="planimetria casa\.docx"|^attachment/);
+    assert.equal(d.headers.get('x-content-type-options'), 'nosniff');
+    assert.deepEqual(Buffer.from(await d.arrayBuffer()), docx);
+    // Sul disco: fuori dal sito, nome casuale, senza estensione vera
+    const nomi = fs.readdirSync(path.join(p.cartella, 'allegati', '1'));
+    assert.equal(nomi.length, 6); assert.ok(nomi.every((n) => /^[0-9a-f]{32}\.bin$/.test(n)));
+    // Elenco; un altro studente non vede e non toglie; senza accesso nemmeno
+    const el = await p.chiedi('GET', '/api/allegati', undefined, { cookie: sara });
+    assert.equal(el.json.allegati.length, 6);
+    assert.equal((await fetch(base + '/api/allegati/dabc12345', { headers: { Cookie: 'portale=' + luca } })).status, 404);
+    assert.equal((await p.chiedi('DELETE', '/api/allegati/dabc12345', undefined, { cookie: luca })).stato, 404);
+    assert.equal((await p.chiedi('GET', '/api/allegati')).stato, 401);
+    // Il docente lo scarica (registro, una volta ogni 10 minuti) ed «elimina subito»
+    const saraId = k.studenti[0].id;
+    await fetch(base + '/api/studenti/' + saraId + '/allegati/dabc12345', { headers: { Cookie: 'portale=' + k.docente } });
+    await fetch(base + '/api/studenti/' + saraId + '/allegati/dabc22222', { headers: { Cookie: 'portale=' + k.docente } });
+    let reg = (await p.chiedi('GET', '/api/studenti/' + saraId + '/registro', undefined, { cookie: k.docente })).json.registro;
+    assert.equal(reg.filter((r) => r.azione === 'lettura file').length, 1);
+    assert.equal((await p.chiedi('DELETE', '/api/studenti/' + saraId + '/allegati/dabc12345', undefined, { cookie: k.docente })).stato, 200);
+    reg = (await p.chiedi('GET', '/api/studenti/' + saraId + '/registro', undefined, { cookie: k.docente })).json.registro;
+    assert.ok(reg.some((r) => r.azione === 'elimina file dabc12345'));
+    assert.equal(fs.readdirSync(path.join(p.cartella, 'allegati', '1')).length, 5);
+    // La quota è unica: foto e file insieme. Con lo spazio quasi pieno entra una foto piccola ma non un file grande.
+    p.server.db.prepare("INSERT INTO allegati (studente_id, id, file, nome, byte, creata) VALUES (1, 'dpieno0000', 'x', 'x', ?, 'ora')").run(API.QUOTA_BYTE - 600);
+    assert.equal((await manda(sara, 'dquota1234', Buffer.from('abc'.repeat(300)), 'q.txt')).status, 413);
+    assert.equal((await p.chiedi('PUT', '/api/foto/fquota1234', { jpeg: JPEG_B64, mini: JPEG_B64 }, { cookie: sara })).stato, 413, 'le foto contano nella stessa quota');
+    // Le scritture vengono solo dalle pagine del portale
+    assert.equal((await manda(sara, 'dfuori1234', Buffer.from('x'), 'x.txt', { Origin: 'https://altro.sito' })).status, 403);
+  } finally { await p.chiudi(); }
+});
+
 test('il docente legge e corregge: tutto finisce nel registro e lo studente vede chi ha cambiato', async () => {
   const p = await avvia();
   try {

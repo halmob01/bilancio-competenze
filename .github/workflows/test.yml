@@ -30,6 +30,7 @@ jobs:
           node --check js/area.js
           node --check portfolio/js/attivita.js
           node --check portfolio/js/foto.js
+          node --check portfolio/js/file.js
           node --check portfolio/js/app.js
           for f in server/*.js; do node --check "$f"; done
           bash -n deploy/installa-portale.sh

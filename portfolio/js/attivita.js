@@ -10,7 +10,10 @@
   const CHIAVE = 'portfolio-attivita-v1';
   const VERSIONE = 1;
   const MAX_ATTIVITA = 300;
-  const MAX_FOTO = 4;
+  // Nessun limite pratico: lo spazio è limitato dalla quota dello studente (1 GB, foto e file insieme).
+  // Questi tetti servono solo a tenere il documento sotto 1 MB e le pagine veloci.
+  const MAX_FOTO = 100;
+  const MAX_FILE = 50;
   const MAX_COMPETENZE = 3;
   const MAX_BREVE = 200;
   const MAX_LUNGO = 4000;
@@ -38,13 +41,30 @@
     return x.getFullYear() + '-' + ('0' + (x.getMonth() + 1)).slice(-2) + '-' + ('0' + x.getDate()).slice(-2);
   }
   const ID_FOTO = /^f[a-z0-9]{6,40}$/;
+  const ID_FILE = /^d[a-z0-9]{6,40}$/;
+  const MAX_BYTE_FILE = 25 * 1024 * 1024;
 
   function statoVuoto() { return { versione: VERSIONE, aggiornato: '', profilo: { indirizzo: '', anno: '' }, attivita: [] }; }
 
-  function attivitaVuota(oggi) {
-    return { id: nuovoId('a'), fatto: '', luogo: '', dove: '', data: oggi || oggiIso(), competenze: [], difficolta: '', aiuto: '', foto: [], diario: null };
+  // anno: l'anno di corso in cui è stata fatta (I-IV); si propone quello del profilo e si può cambiare.
+  function attivitaVuota(oggi, anno) {
+    return { id: nuovoId('a'), fatto: '', luogo: '', dove: '', data: oggi || oggiIso(), anno: inElenco(anno, ANNI),
+      competenze: [], difficolta: '', aiuto: '', foto: [], file: [], diario: null };
   }
   function nuovoIdFoto() { return nuovoId('f'); }
+  function nuovoIdFile() { return nuovoId('d'); }
+
+  // Il nome di un file serve solo a riconoscerlo e a scaricarlo: niente percorsi né caratteri strani.
+  function nomeFile(v) {
+    const t = String(typeof v === 'string' ? v : '').replace(/[\u0000-\u001f\u007f\\/:*?"<>|]+/g, '_').replace(/^[.\s]+/, '').trim().slice(0, 120);
+    return t || 'file';
+  }
+  function formatoByte(n) {
+    if (!(n > 0)) return '';
+    if (n < 1024) return n + ' B';
+    if (n < 1024 * 1024) return Math.round(n / 1024) + ' KB';
+    return (Math.round(n / 1024 / 102.4) / 10).toString().replace('.', ',') + ' MB';
+  }
 
   // Ricostruisce uno stato valido da dati salvati o caricati: scarta chiavi sconosciute, tipi errati, competenze inesistenti.
   function normalizza(grezzo) {
@@ -67,12 +87,19 @@
         luogo: inElenco(a.luogo, LUOGHI),
         dove: testo(a.dove, MAX_BREVE),
         data: dataValida(a.data),
+        anno: inElenco(a.anno, ANNI),
         competenze: (Array.isArray(a.competenze) ? a.competenze : [])
           .filter(function (x, i, arr) { return typeof x === 'string' && C.esiste(x) && arr.indexOf(x) === i; }).slice(0, MAX_COMPETENZE),
         difficolta: testo(a.difficolta, MAX_LUNGO),
         aiuto: testo(a.aiuto, MAX_LUNGO),
         foto: (Array.isArray(a.foto) ? a.foto : [])
           .filter(function (x, i, arr) { return typeof x === 'string' && ID_FOTO.test(x) && arr.indexOf(x) === i; }).slice(0, MAX_FOTO),
+        file: (Array.isArray(a.file) ? a.file : []).filter(function (x, i, arr) {
+          return x && typeof x === 'object' && typeof x.id === 'string' && ID_FILE.test(x.id) && arr.findIndex(function (y) { return y && y.id === x.id; }) === i;
+        }).slice(0, MAX_FILE).map(function (x) {
+          const b = Number(x.byte);
+          return { id: x.id, nome: nomeFile(x.nome), byte: Number.isFinite(b) && b > 0 && b <= MAX_BYTE_FILE ? Math.floor(b) : 0 };
+        }),
         diario: d && d.settimana ? d : null
       });
     });
@@ -111,7 +138,7 @@
   // Che cosa manca perché l'attività serva come prova: niente blocchi, solo un promemoria.
   function mancanti(a) {
     const m = [];
-    if (!a.foto.length) m.push('una foto');
+    if (!a.foto.length && !a.file.length) m.push('una foto o un file');
     if (!pieno(a.fatto)) m.push('che cosa hai fatto');
     if (!a.luogo) m.push('dove');
     return m;
@@ -123,6 +150,23 @@
     stato.attivita.forEach(function (a) { a.foto.forEach(function (f) { u[f] = true; }); });
     return u;
   }
+
+  // I file allegati usati dalle attività (per capire quali tenere sul dispositivo e quali togliere).
+  function fileUsati(stato) {
+    const u = {};
+    stato.attivita.forEach(function (a) { a.file.forEach(function (f) { u[f.id] = true; }); });
+    return u;
+  }
+
+  // ---------- Per anno di corso ----------
+  // Le attività raggruppate per anno: I, II, III, IV e, se ce ne sono, «senza anno». Dentro ogni anno dalla più recente.
+  function perAnno(stato) {
+    const gruppi = ANNI.map(function (x) { return { id: x.id, testo: x.testo, attivita: [] }; });
+    gruppi.push({ id: '', testo: 'Senza anno', attivita: [] });
+    ordinate(stato).forEach(function (a) { gruppi.find(function (g) { return g.id === a.anno; }).attivita.push(a); });
+    return gruppi;
+  }
+  function etichettaAnno(id) { const x = ANNI.find(function (y) { return y.id === id; }); return x ? x.testo : ''; }
 
   // ---------- Dal diario (sola lettura) ----------
   // Una proposta per ogni settimana in cui lo studente ha scritto che cosa ha fatto. Le settimane già portate qui sono segnate.
@@ -151,8 +195,8 @@
     return out.sort(function (a, b) { return a.data < b.data ? 1 : a.data > b.data ? -1 : 0; });
   }
 
-  function attivitaDaProposta(p) {
-    const a = attivitaVuota(p.data || oggiIso());
+  function attivitaDaProposta(p, anno) {
+    const a = attivitaVuota(p.data || oggiIso(), anno);
     a.fatto = p.fatto; a.luogo = 'tirocinio'; a.dove = p.azienda;
     a.difficolta = p.difficolta; a.aiuto = p.aiuto;
     a.diario = p.settimana ? { tirocinio: p.tirocinio, settimana: p.settimana } : null;
@@ -165,7 +209,12 @@
     const opz = o || {};
     const figura = C.figuraPer(stato.profilo.indirizzo, stato.profilo.anno);
     const anno = ANNI.find(function (x) { return x.id === stato.profilo.anno; });
-    const sezioni = ordinate(stato).map(function (a) {
+    // Nel documento le attività vanno per anno (I → IV) e, dentro l'anno, dalla più vecchia alla più recente.
+    const ordine = [].concat.apply([], perAnno(stato).slice().map(function (g) {
+      return g.attivita.slice().reverse().map(function (a) { return { a: a, anno: g.testo }; });
+    }));
+    const sezioni = ordine.map(function (x) {
+      const a = x.a;
       const blocchi = [];
       if (pieno(a.fatto)) blocchi.push({ t: 'par', runs: [{ t: a.fatto.trim() }] });
       const img = a.foto.map(function (id) { return foto[id]; }).filter(Boolean);
@@ -174,9 +223,10 @@
         const c = C.trova(id);
         if (c) blocchi.push({ t: 'voce', runs: [{ t: c.semplice }] });
       });
+      if (a.file.length) blocchi.push({ t: 'par', runs: [{ t: 'File: ', b: true }, { t: a.file.map(function (f) { return f.nome + (f.byte ? ' (' + formatoByte(f.byte) + ')' : ''); }).join(', ') }] });
       if (pieno(a.difficolta)) blocchi.push({ t: 'par', runs: [{ t: 'Che cosa è stato difficile: ', b: true }, { t: a.difficolta.trim() }] });
       if (pieno(a.aiuto)) blocchi.push({ t: 'par', runs: [{ t: 'Chi o che cosa mi ha aiutato: ', b: true }, { t: a.aiuto.trim() }] });
-      return { titolo: riassunto(a) || 'Attività', blocchi: blocchi };
+      return { titolo: [x.anno === 'Senza anno' ? '' : x.anno, riassunto(a)].filter(Boolean).join(' · ') || 'Attività', blocchi: blocchi };
     });
     return {
       layout: 'portfolio', carattere: 'moderno', colore: '#CC0000', titoli: '#CC0000', scala: 1,
@@ -189,9 +239,10 @@
   }
 
   const ATTIVITA = {
-    CHIAVE: CHIAVE, VERSIONE: VERSIONE, MAX_ATTIVITA: MAX_ATTIVITA, MAX_FOTO: MAX_FOTO, MAX_COMPETENZE: MAX_COMPETENZE,
-    LUOGHI: LUOGHI, INDIRIZZI: INDIRIZZI, ANNI: ANNI, ID_FOTO: ID_FOTO,
-    statoVuoto: statoVuoto, attivitaVuota: attivitaVuota, nuovoIdFoto: nuovoIdFoto, normalizza: normalizza,
+    CHIAVE: CHIAVE, VERSIONE: VERSIONE, MAX_ATTIVITA: MAX_ATTIVITA, MAX_FOTO: MAX_FOTO, MAX_FILE: MAX_FILE, MAX_BYTE_FILE: MAX_BYTE_FILE,
+    MAX_COMPETENZE: MAX_COMPETENZE, LUOGHI: LUOGHI, INDIRIZZI: INDIRIZZI, ANNI: ANNI, ID_FOTO: ID_FOTO, ID_FILE: ID_FILE,
+    statoVuoto: statoVuoto, attivitaVuota: attivitaVuota, nuovoIdFoto: nuovoIdFoto, nuovoIdFile: nuovoIdFile, normalizza: normalizza,
+    nomeFile: nomeFile, formatoByte: formatoByte, fileUsati: fileUsati, perAnno: perAnno, etichettaAnno: etichettaAnno,
     titolo: titolo, riassunto: riassunto, formatoData: formatoData, luogo: luogo, ordinate: ordinate, mancanti: mancanti,
     fotoUsate: fotoUsate, proposteDalDiario: proposteDalDiario, attivitaDaProposta: attivitaDaProposta,
     modelloPdf: modelloPdf, oggiIso: oggiIso, pieno: pieno

@@ -382,7 +382,9 @@
       const luogo = LUOGHI[a.luogo] ? a.luogo : '';
       const quando = luogo === 'tirocinio' ? 'tirocinio' : luogo === 'fuori' ? 'fuori' : (luogo === 'scuola' && anno ? anno : '');
       const prima = fatto.split('\n')[0];
-      const nFoto = Array.isArray(a.foto) ? Math.min(a.foto.length, 4) : 0;
+      const nFoto = Array.isArray(a.foto) ? Math.min(a.foto.length, 100) : 0;
+      const nFile = Array.isArray(a.file) ? Math.min(a.file.length, 50) : 0;
+      const parti = [nFoto ? (nFoto === 1 ? 'una foto' : nFoto + ' foto') : '', nFile ? (nFile === 1 ? 'un file' : nFile + ' file') : ''].filter(Boolean).join(' e ');
       return {
         id: id,
         data: /^\d{4}-\d{2}-\d{2}$/.test(a.data) ? a.data : '',
@@ -392,8 +394,9 @@
         azione: fatto,
         difficolta: t(a.difficolta, MAX_LUNGO),
         aiuto: t(a.aiuto, MAX_LUNGO),
-        prova: nFoto ? (nFoto === 1 ? 'Una foto' : nFoto + ' foto') + ' in «Le mie attività»' + (data(a.data) ? ', attività del ' + data(a.data) : '') + '.' : '',
-        foto: nFoto
+        prova: parti ? parti.charAt(0).toUpperCase() + parti.slice(1) + ' in «Le mie attività»' + (data(a.data) ? ', attività del ' + data(a.data) : '') + '.' : '',
+        foto: nFoto,
+        file: nFile
       };
     }).filter(Boolean).sort(function (x, y) { return x.data < y.data ? 1 : x.data > y.data ? -1 : 0; });
   }

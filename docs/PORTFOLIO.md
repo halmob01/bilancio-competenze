@@ -18,6 +18,12 @@ L'archivio delle cose fatte. Ogni volta che finisce un lavoro in laboratorio o i
 | Collegamenti | Diario → attività, attività → bilancio, PDF delle attività. Attività → curriculum: più avanti. |
 | Privacy delle foto | **Solo un avviso**, sempre visibile nella prima schermata e nel passo delle foto: fotografa il lavoro, non le persone; niente volti, documenti o schermi con dati di clienti; in azienda chiedi prima al tutor; per Estetica inquadra solo la zona trattata. Nessuna casella da spuntare. |
 
+## Aggiornamento del 26 novembre 2026: più articolato
+
+- **Nessun limite di 4 foto** e **file allegati** (Word, disegni CAD, codice, PDF, ZIP): il passo 1 diventa «Foto e file». Fino a 25 MB per file, 1 GB per studente.
+- **Per anno di corso:** ogni attività ha un anno (I-IV); la home ha le schede Tutte, I, II, III, IV (e «senza anno» se serve), con i filtri per luogo e competenza dentro ogni anno.
+- Dettagli e provvedimenti di sicurezza: `docs/RIPRESA-BACKEND.md` §4.8.
+
 ## Come funziona
 
 **Un'attività in quattro passi** (pensati per il telefono, si salta tutto quello che non serve):

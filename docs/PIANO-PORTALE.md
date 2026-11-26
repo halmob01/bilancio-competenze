@@ -360,6 +360,29 @@ Domande per chi gestisce la rete della scuola: dove stanno le cartelle degli stu
 
 Ogni fase si chiude con test automatici, prova nel browser su telefono e PC e documentazione aggiornata. Dimensione: S = pochi giorni di lavoro, M = una o due settimane, L = di più.
 
+### Tabella di marcia (decisa il 26 novembre 2026)
+
+Si procede **un blocco alla volta**: ogni blocco si chiude con test, prova nel browser con il server vero avviato nelle prove, commit su `main` e una pausa per provarlo prima di andare avanti.
+
+| # | Blocco | Che cosa | Stato |
+|---|---|---|---|
+| 1 | **R. Redesign leggero** | le schermate di lavoro dei quattro siti: meno «modulo burocratico» (pannelli grigi, riquadri, filetti), più spazio e lettura | **prossimo** |
+| 2 | **F1.2 Foto sul server** | invio delle foto delle attività (ridotte sul telefono), controllo del formato, quota per studente, foto consegnate solo allo studente e ai docenti | da fare |
+| 3 | **F1.3 Pannello docente minimo** | accesso dei docenti; classi; elenco incollato da un foglio; cartellini con QR da stampare (libreria QR con licenza MIT copiata nel progetto); avanzamento della classe; esportazione in foglio di calcolo | da fare |
+| 4 | **F1.4 Cestino** | cose cancellate recuperabili per 30 giorni da studente e docente; «elimina subito» per le foto | da fare |
+| 5 | **F0 Installazione** | `deploy/aggiorna.sh` (pubblica da git dopo i test, cartella di prova, ritorno alla versione precedente), `deploy/LEGGIMI.md` per il collega, configurazione per il nome di dominio dedicato, backup fuori dal server; poi installazione sul server della scuola con dati finti | da fare |
+| 6 | **Prova con una classe** | una classe vera per un paio di settimane, con dati finti o dopo il parere del DPO; raccolta dei problemi | da fare |
+| 7 | **F3 Competenze** | revisione delle frasi semplici con un docente per indirizzo; secondo livello nel bilancio con le competenze del proprio indirizzo; attività → curriculum (lavori svolti, competenze documentate) | da fare |
+| 8 | **F5 Docenti** | modalità docente nei siti (lettura e correzione con fascia in alto), avviso allo studente, conferma «ho visto questo lavoro», secondo fattore per i docenti; prima vanno prese le decisioni 4-6 del §17 | da fare |
+| 9 | **F4 Lingue** | inglese e arabo (con testo da destra a sinistra), curriculum in inglese | da fare |
+| 10 | **Documenti e senza rete** | PDF diretto di bilancio e diario, pacchetto ZIP con tutto, copie fisse di fine anno, pagine che si aprono anche senza rete (service worker) | da fare |
+| 11 | **F5 bis Copia nelle cartelle** | ogni notte il lavoro di ogni studente nella sua cartella di rete | da fare, serve chi gestisce la rete |
+| 12 | **F6 Rifinitura** | prove con studenti dei tre indirizzi, guide per studenti e docenti, accessibilità | da fare |
+
+**Fatto finora**: F0 preparato (script, servizio, backup, inoltro Apache; niente installato); F1 programma del server; F1 blocco 1 (siti collegati, accesso con il cartellino, la mia area, 26/11); F2 prima versione di «Le mie attività» sul dispositivo (26/11); catalogo delle competenze dagli allegati B2 (26/11).
+
+**Condizioni per i dati veri** (non cambiano): parere del DPO, nome di dominio dedicato senza PHP, backup fuori dal server con prova di ripristino, `PORTALE_ORIGINE` impostata, aggiornamenti di sicurezza attivi sul server.
+
 | Fase | Cosa | Pronto quando | Dipende da | Dim. |
 |---|---|---|---|---|
 | **F0 Fondamenta** | Node e cartelle sul server; git sul server e `aggiorna.sh` con cartella di prova e ritorno alla versione precedente (§3 bis); configurazione di Apache e servizio systemd (preparati, li applica il collega); backup; scheda per il DPO | i siti di oggi girano dal vostro server in HTTPS; il programma risponde a «sono vivo»; il backup è provato | collega | S |
@@ -371,7 +394,7 @@ Ogni fase si chiude con test automatici, prova nel browser su telefono e PC e do
 | **F5 bis Copia nelle cartelle** | attività notturna che scrive PDF, Word, foto e dati nella cartella di rete di ogni studente; abbinamento studente-cartella | uno studente apre la sua cartella da un PC della scuola e trova il suo lavoro aggiornato alla sera prima | F1, F2; chi gestisce la rete | M |
 | **F6 Rifinitura** | prove con studenti per indirizzo; tempi reali; accessibilità; guida per studenti e docenti | dati delle prove raccolti e problemi principali risolti | tutto | M |
 
-**Ordine consigliato**: F0 → F1 → **F4 prima di F2** (così il portfolio nasce già tradotto) → F2 → F3 (può partire in parallelo appena arrivano gli allegati) → F5 → F6. Le domande e i testi di ogni sito si rifiniscono in parallelo con i docenti. Per F4 può bastare preparare in F1 la struttura (file dei testi, direzione del testo) e tradurre quando i testi sono stabili.
+**Ordine consigliato all'inizio** (superato dalla tabella di marcia qui sopra): F0 → F1 → **F4 prima di F2** (così il portfolio nasce già tradotto) → F2 → F3 (può partire in parallelo appena arrivano gli allegati) → F5 → F6. Le domande e i testi di ogni sito si rifiniscono in parallelo con i docenti. Per F4 può bastare preparare in F1 la struttura (file dei testi, direzione del testo) e tradurre quando i testi sono stabili.
 
 **Stato al 18 novembre 2026** (il programma si sviluppa e si prova su GitHub, l'installazione sul server è l'ultimo passo):
 

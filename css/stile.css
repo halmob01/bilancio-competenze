@@ -296,35 +296,31 @@ body:has(.home) .avanzamento { display: none; }
 .schermata__testa { margin-bottom: 28px; }
 .schermata__testa .meta { margin-bottom: 12px; display: flex; align-items: center; }
 .schermata h2 {
-  font-size: var(--t-domanda); font-weight: 800; line-height: 1.15; letter-spacing: -.005em;
+  font-size: var(--t-sezione); font-weight: 800; line-height: 1.15; letter-spacing: -.005em;
   max-width: 30ch;
 }
 .schermata h2:focus { outline: none; }
 .schermata__corpo { display: grid; gap: 28px; }
-@media (min-width: 1000px) {
-  .schermata__corpo { grid-template-columns: 4fr 8fr; gap: 0; }
-  /* La spiegazione sta su un pannello grigio chiaro, il lavoro sul bianco. */
-  .schermata__corpo > .colonna-intro { background: var(--c-pannello); border-radius: var(--radius-card); padding: 24px 24px 28px; position: sticky; top: 100px; align-self: start; }
-  .schermata__corpo > .colonna-risposta { padding-left: clamp(28px, 3.5vw, 56px); }
-  .schermata__corpo--pieno { grid-template-columns: 1fr; }
-  .schermata__corpo--pieno > .colonna-risposta { border-left: 0; padding-left: 0; }
-}
-.colonna-intro > * + * { margin-top: 20px; }
-.colonna-intro p { max-width: var(--measure); }
+/* Redesign del 26/11/2026: niente pannelli né colonne affiancate. La spiegazione è un paragrafo d'apertura,
+   il lavoro sta sotto in una colonna di lettura; si separa con lo spazio, non con riquadri e filetti. */
+.schermata__corpo { gap: 36px; }
+.colonna-intro { display: grid; gap: 16px; max-width: 62ch; }
+.colonna-intro > p:first-child { font-size: 1.125rem; line-height: 1.55; color: var(--c-titolo); }
+.colonna-risposta { max-width: 760px; }
 .colonna-risposta { min-width: 0; }
-.colonna-risposta > * + * { margin-top: 28px; }
+.colonna-risposta > * + * { margin-top: 32px; }
 
 /* ---------- Aiuto, esempio, avvisi ---------- */
+/* L'aiuto è una nota a margine: filetto rosso sottile, niente fondo. */
 .aiuto {
-  background: var(--c-rosato);
-  border-left: 4px solid var(--c-rosso);
-  border-radius: 0 var(--radius-card) var(--radius-card) 0;
-  padding: 16px 18px;
+  border-left: 3px solid var(--c-rosso);
+  padding: 2px 0 2px 16px;
+  color: var(--c-testo);
   font-size: 16px; line-height: 1.55;
   max-width: var(--measure);
 }
 .aiuto > * + * { margin-top: 8px; }
-.esempio { max-width: var(--measure); border-top: 1px solid var(--c-filetto); border-bottom: 1px solid var(--c-filetto); }
+.esempio { max-width: var(--measure); }
 .esempio summary {
   cursor: pointer; padding: 12px 0; min-height: 44px; display: flex; align-items: center; gap: 10px;
   font-weight: 600; font-size: 15px; color: var(--c-titolo);
@@ -337,7 +333,7 @@ body:has(.home) .avanzamento { display: none; }
   border: 2px solid var(--c-rosso); border-radius: 50%; color: var(--c-rosso); font-weight: 800; font-size: 15px; line-height: 1;
 }
 .esempio[open] summary::before, .dettagli[open] summary::before { content: "–"; }
-.esempio__corpo { padding: 0 0 16px; font-size: 16px; }
+.esempio__corpo { padding: 4px 0 8px 32px; font-size: 16px; color: var(--c-testo); }
 .esempio__corpo > * + * { margin-top: 10px; }
 .esempio__corpo dl { display: grid; grid-template-columns: max-content 1fr; gap: 6px 14px; margin: 0; }
 .esempio__corpo dt { font-size: 14px; color: var(--c-testo-2); padding-top: 2px; }
@@ -382,12 +378,13 @@ legend { padding: 0; font-weight: 600; font-size: 17px; margin-bottom: 10px; }
   overflow-wrap: anywhere;
   display: flex; align-items: center; gap: 12px;
   min-height: 48px; padding: 10px 14px;
-  background: var(--c-bianco);
-  border: 1px solid var(--c-bordo-campo);
+  background: var(--c-pannello);
+  border: 1px solid transparent;
   border-radius: var(--radius-card);
   cursor: pointer; font-size: 16px; line-height: 1.35; color: var(--c-titolo);
 }
-.scelta:hover span { border-color: var(--c-rosso); }
+@media (hover: hover) { .scelta:hover span { border-color: var(--c-bordo-campo); } }
+.scelta input:checked + span { background: var(--c-bianco); }
 .scelta span::before {
   content: ""; flex: none; width: 20px; height: 20px;
   border: 2px solid var(--c-bordo-campo); border-radius: 50%; background: var(--c-bianco);
@@ -418,7 +415,6 @@ legend { padding: 0; font-weight: 600; font-size: 17px; margin-bottom: 10px; }
 .scheda__azioni { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
 .lingue { display: grid; gap: 14px; }
 .lingue__titolo { font-size: 17px; font-weight: 800; }
-.dettagli { border-top: 1px solid var(--c-filetto); border-bottom: 1px solid var(--c-filetto); }
 .dettagli summary { cursor: pointer; min-height: 48px; display: flex; align-items: center; gap: 10px; font-weight: 600; color: var(--c-titolo); list-style: none; }
 .dettagli summary:hover { color: var(--c-rosso); }
 .dettagli summary::-webkit-details-marker { display: none; }
@@ -426,7 +422,7 @@ legend { padding: 0; font-weight: 600; font-size: 17px; margin-bottom: 10px; }
 
 /* ---------- Che cosa so fare: blocchi ---------- */
 .blocchi { display: grid; gap: 0; }
-.blocco { display: grid; gap: 18px; padding: 32px 0; border-top: 1px solid var(--c-filetto); max-width: 720px; }
+.blocco { display: grid; gap: 18px; padding: 28px 0; max-width: 720px; }
 .blocco:first-child { padding-top: 0; border-top: 0; }
 .blocco h3 { font-size: clamp(20px, 2.4vw, 26px); font-weight: 800; line-height: 1.2; }
 .blocco h3:focus { outline: none; }
@@ -438,7 +434,7 @@ legend { padding: 0; font-weight: 600; font-size: 17px; margin-bottom: 10px; }
 /* ---------- Navigazione tra schermate ---------- */
 .navigazione {
   display: flex; flex-wrap: wrap; align-items: center; gap: 12px;
-  border-top: 1px solid var(--c-filetto); padding: 20px 0 48px; margin-top: 16px;
+  padding: 28px 0 56px; margin-top: 24px;
 }
 .navigazione .meta { flex: 1 1 100%; order: -1; }
 .navigazione__avanti { margin-left: auto; }
@@ -448,7 +444,7 @@ legend { padding: 0; font-weight: 600; font-size: 17px; margin-bottom: 10px; }
   .navigazione {
     position: sticky; bottom: 0; z-index: 5; background: var(--c-bianco);
     margin-inline: calc(-1 * var(--m)); padding: 12px var(--m) max(12px, env(safe-area-inset-bottom)); margin-top: 16px;
-    border-top-color: var(--c-filetto);
+    border-top: 1px solid var(--c-filetto);
   }
 }
 @media (min-width: 768px) {
@@ -631,7 +627,7 @@ dialog > * + * { margin-top: 14px; }
 
 /* ---------- Schermate a tutta larghezza: fascia di spiegazione in alto, lavoro sotto ---------- */
 .schermata__corpo--largo { display: grid; gap: 28px; grid-template-columns: 1fr; }
-.fascia { display: grid; gap: 16px 40px; align-items: start; background: var(--c-pannello); border-radius: var(--radius-card); padding: 20px 22px; }
+.fascia { display: grid; gap: 16px 48px; align-items: start; }
 .fascia > * { max-width: var(--measure); }
 @media (min-width: 900px) {
   .fascia { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -678,7 +674,7 @@ dialog > * + * { margin-top: 14px; }
 
 /* ---------- Che cosa so fare: una riga per situazione ---------- */
 .livelli { display: grid; gap: 0; }
-.livelli__riga { border-top: 1px solid var(--c-filetto); padding: 22px 0; display: grid; gap: 12px; min-width: 0; }
+.livelli__riga { padding: 20px 0; display: grid; gap: 12px; min-width: 0; }
 .livelli__riga:first-child { border-top: 0; padding-top: 0; }
 .livelli__riga h3 { font-size: clamp(18px, 2vw, 22px); font-weight: 800; line-height: 1.25; }
 .livelli__riga h3:focus { outline: none; }
@@ -689,10 +685,10 @@ dialog > * + * { margin-top: 14px; }
 .livello input { position: absolute; opacity: 0; width: 1px; height: 1px; }
 .livello span {
   display: flex; align-items: center; justify-content: center; text-align: center; height: 100%; min-height: 64px;
-  padding: 8px 10px; font-size: 15px; line-height: 1.3; background: var(--c-bianco); color: var(--c-titolo);
-  border: 1px solid var(--c-bordo-campo); border-radius: var(--radius-card); cursor: pointer;
+  padding: 8px 10px; font-size: 15px; line-height: 1.3; background: var(--c-pannello); color: var(--c-titolo);
+  border: 1px solid transparent; border-radius: var(--radius-card); cursor: pointer;
 }
-.livello:hover span { border-color: var(--c-rosso); }
+@media (hover: hover) { .livello:hover span { border-color: var(--c-bordo-campo); } }
 .livello input:checked + span { border-color: var(--c-rosso); box-shadow: inset 0 0 0 2px var(--c-rosso); background: var(--c-rosato); font-weight: 600; }
 .livello input:focus-visible + span { outline: 3px solid var(--c-nero); outline-offset: 2px; }
 .livelli__conta { font-size: 15px; }

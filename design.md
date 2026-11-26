@@ -64,7 +64,7 @@ Le sei regole di `reference/cerchi.md`: tratto uniforme (la parete dell'anello �
 
 - **Fondo bianco** ovunque. Il grigio chiaro `#F5F5F5` segna ciò che spiega (la colonna di introduzione, la fascia di spiegazione sopra il lavoro, le schede della pagina iniziale); il bianco è il posto dove si scrive.
 - **Home di ogni sito e pagina iniziale**: si apre con una **fascia rossa a tutta larghezza** (titolo bianco 900, sottotitolo, testo, pulsanti invertiti: bianco pieno con testo rosso, o bordo bianco). Sotto, sul bianco, l'indice come linea con le fermate (o le tre schede dei percorsi).
-- **Schermate di lavoro**: da 1100 px due colonne, indice laterale fisso a sinistra (232 px) e lavoro a destra; dentro il lavoro, da 1000 px, pannello grigio di spiegazione a sinistra (fisso mentre si scorre) e risposte a destra. Sotto, una colonna sola con l'avanzamento in testata e «Avanti» sempre raggiungibile in basso.
+- **Schermate di lavoro** (rivedute il 26/11/2026, «meno modulo, più lettura»): da 1100 px indice laterale fisso a sinistra (232 px) e lavoro a destra. Il lavoro è **una colonna sola**: occhiello, titolo, un paragrafo d'apertura più grande (al massimo 62 caratteri per riga), poi le domande in una colonna di 760 px. Niente pannelli grigi né colonne affiancate; le parti si separano con lo spazio, non con filetti. L'aiuto è una nota a margine (filetto rosso di 3 px, senza fondo). Le scelte sono su fondo grigio chiaro senza cornice; quella fatta diventa bianca con il bordo rosso e il testo in grassetto. Sotto i 1000 px «Avanti» resta fisso in basso.
 - **Piè di pagina** (pagina iniziale): scuro `#1A1A1A`, catena dei cerchi in bianco, una frase sulla privacy.
 - Margini 20 px sul telefono (16 sotto i 360), da 28 a 72 px oltre; contenitore di 1240 px; testo fino a circa 66 caratteri. Movimento sobrio (200 ms), `prefers-reduced-motion` rispettato.
 
@@ -75,8 +75,8 @@ Le sei regole di `reference/cerchi.md`: tratto uniforme (la parete dell'anello �
 - **Fuoco da tastiera**: contorno 3 px `#1A1A1A` staccato di 2 px (bianco sulla fascia rossa).
 - **Testata**: bianca, filetto rosso di 4 px in alto, «← Tutti i percorsi», segno e nome del sito in 800.
 - **Schede**: bianche con bordo 1 px `#CCCCCC`, angoli 6 px; la scheda aperta e il dossier hanno il filetto rosso in alto di 6 px.
-- **Aiuto e suggerimenti**: fondo rosato con filetto rosso di 4 px a sinistra.
-- **Scelte**: righe bianche con bordo grigio; scelta attiva con bordo rosso, testo in grassetto, radio come anello rosso pieno.
+- **Aiuto**: nota a margine con filetto rosso di 3 px, senza fondo. **Suggerimenti mentre si scrive**: fondo rosato con filetto rosso.
+- **Scelte**: righe su fondo grigio chiaro senza bordo; scelta attiva bianca con bordo rosso, testo in grassetto, radio come anello rosso pieno.
 - **Dialoghi**: bianchi con filetto rosso in alto, fondo scurito dietro.
 
 Restano esclusi: badge, punteggi, confetti, mascotte, foto stock, sfumature, ombre pesanti, colori per indirizzo.

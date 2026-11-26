@@ -221,3 +221,13 @@ bash deploy/prepara-siti.sh         # pacchetto dei siti
 ```
 
 Il docente scrive in italiano semplice e non vuole emoji. Il piano completo è `docs/PIANO-PORTALE.md`, in questo ramo.
+
+### 4.9 Pannello dei docenti (F1, blocco 3, 26 novembre 2026)
+- Indirizzo: `/docenti/` (sito statico, copiato da `deploy/prepara-siti.sh`). Accesso con email e password; la password provvisoria va cambiata al primo accesso.
+- I docenti vedono solo «Attività e avanzamento» (stati di portfolio, diario, bilancio, curriculum, foto, file, ultimo accesso); la lettura dei testi è il blocco 8.
+- Classi: elenco incollato da un foglio, codici, nuovo codice, sposta, disattiva, esportazione CSV (punto e virgola, BOM, celle protette da formule).
+- Cartellini: griglia A4, 10 per foglio (85x50 mm). Il QR contiene `<sito>/#qr=<codice>`; verificato leggendo il QR stampato con jsQR e accedendo come studente.
+- Pagina dello studente: attività per anno, foto, file scaricabili, «Elimina subito» (senza cestino, registrato nel registro letture).
+- Solo l'amministratore: crea docenti, reimposta password (mostrata una volta), disattiva. Il primo amministratore resta da terminale.
+- Libreria QR: `js/qrcode.js` (qrcode-generator, MIT, licenza in `js/LICENSE-qrcode-generator.txt`).
+- Prova nel browser: lo script e2e è stato eseguito con il server vero (accesso, cambio password, classe, elenco, cartellini, avanzamento, CSV, studente, docenti).

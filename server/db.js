@@ -122,7 +122,10 @@ const MIGRAZIONI = [
      byte INTEGER NOT NULL,
      creata TEXT NOT NULL,
      PRIMARY KEY (studente_id, id)
-   );`
+   );`,
+
+  // 6. Un docente appena creato (o con la password reimpostata) deve sceglierne una sua al primo accesso.
+  `ALTER TABLE docenti ADD COLUMN deve_cambiare INTEGER NOT NULL DEFAULT 0;`
 ];
 
 function apri(percorso) {

@@ -387,6 +387,78 @@ test('file allegati: qualsiasi documento o codice, mai programmi compilati; si s
   } finally { await p.chiudi(); }
 });
 
+test('pannello docenti: riepilogo della classe, scheda dello studente, modifica della classe', async () => {
+  const p = await avvia();
+  try {
+    const k = await preparaClasse(p);
+    const sara = (await p.chiedi('POST', '/api/accesso/studente', { codice: k.studenti[0].codice })).cookie;
+    // Sara ha scritto un po' di diario e due attività; Luca niente
+    await p.chiedi('PUT', '/api/documenti/diario', { base: 0, dati: { versione: 1, tirocini: [{ id: 't1', azienda: 'Elettro Rossi', settimane: [
+      { id: 's1', dal: '2026-03-02', fatto: 'Ho tirato i cavi.', imparato: 'A leggere lo schema.' }, { id: 's2', dal: '2026-03-09', fatto: 'Solo questo.' }] }] } }, { cookie: sara });
+    await p.chiedi('PUT', '/api/documenti/portfolio', { base: 0, dati: { versione: 1, attivita: [{ id: 'a1x2y3', fatto: 'Uno', luogo: 'scuola' }, { id: 'a4x5y6', fatto: 'Due' }] } }, { cookie: sara });
+    await p.chiedi('PUT', '/api/foto/fabc12345', { jpeg: JPEG_B64, mini: JPEG_B64 }, { cookie: sara });
+    const r = await p.chiedi('GET', '/api/classi/' + k.classeId + '/riepilogo', undefined, { cookie: k.docente });
+    assert.equal(r.stato, 200);
+    const [rs, rl] = r.json.studenti;
+    assert.equal(rs.cognome, 'Bianchi');
+    assert.deepEqual([rs.percorsi.portfolio.stato, rs.percorsi.portfolio.dettaglio], ['in_corso', '2 attività']);
+    assert.equal(rs.percorsi.diario.stato, 'in_corso');
+    assert.equal(rs.percorsi.diario.dettaglio, '1 tirocinio, 1 settimana', 'conta le settimane complete');
+    assert.equal(rs.percorsi.bilancio.stato, 'vuota'); assert.equal(rs.percorsi.curriculum.stato, 'vuota');
+    assert.equal(rs.foto, 1); assert.ok(rs.byte > 0); assert.ok(rs.ultimoAccesso);
+    assert.deepEqual([rl.percorsi.portfolio.stato, rl.foto, rl.ultimoAccesso], ['vuota', 0, ''], 'Luca non ha fatto niente');
+    assert.ok(!JSON.stringify(r.json).includes('Elettro Rossi'), 'il riepilogo non contiene i testi degli studenti');
+    assert.ok(!('codice' in rs) && !('qr' in rs), 'né i codici');
+    assert.equal((await p.chiedi('GET', '/api/classi/999/riepilogo', undefined, { cookie: k.docente })).stato, 404);
+    assert.equal((await p.chiedi('GET', '/api/classi/' + k.classeId + '/riepilogo', undefined, { cookie: sara })).stato, 403, 'uno studente no');
+    // La scheda dello studente
+    const sc = await p.chiedi('GET', '/api/studenti/' + rs.id, undefined, { cookie: k.docente });
+    assert.deepEqual([sc.json.studente.classe, sc.json.studente.indirizzo, sc.json.studente.anno, sc.json.studente.foto], ['3ELA', 'elettrico', 3, 1]);
+    assert.equal(sc.json.percorsi.portfolio.dettaglio, '2 attività');
+    assert.ok(!('codice' in sc.json.studente));
+    // Modifica della classe
+    assert.equal((await p.chiedi('PATCH', '/api/classi/' + k.classeId, { nome: '4ELA', anno: 4 }, { cookie: k.docente })).stato, 200);
+    const cl = (await p.chiedi('GET', '/api/classi', undefined, { cookie: k.docente })).json.classi[0];
+    assert.deepEqual([cl.nome, cl.anno, cl.indirizzo, cl.anno_scolastico], ['4ELA', 4, 'elettrico', '2026/27'], 'cambia solo quello che si manda');
+    assert.equal((await p.chiedi('PATCH', '/api/classi/' + k.classeId, { nome: '  ' }, { cookie: k.docente })).stato, 400);
+  } finally { await p.chiudi(); }
+});
+
+test('gestione dei docenti dal pannello: password provvisoria da cambiare, reimpostazione, disattivazione', async () => {
+  const p = await avvia();
+  try {
+    const k = await preparaClasse(p); // k.docente è l'amministratore
+    const nuovo = await p.chiedi('POST', '/api/docenti', { email: 'marco@scuola.it', nome: 'Marco Neri' }, { cookie: k.docente });
+    assert.equal(nuovo.stato, 200); assert.ok(nuovo.json.passwordProvvisoria);
+    // Il collega entra: il profilo dice che deve cambiare la password
+    let a = await p.chiedi('POST', '/api/accesso/docente', { email: 'marco@scuola.it', password: nuovo.json.passwordProvvisoria });
+    assert.equal(a.stato, 200); assert.equal(a.json.profilo.cambiaPassword, true);
+    assert.equal((await p.chiedi('POST', '/api/docente/password', { vecchia: nuovo.json.passwordProvvisoria, nuova: 'una password lunga 1' }, { cookie: a.cookie })).stato, 200);
+    a = await p.chiedi('POST', '/api/accesso/docente', { email: 'marco@scuola.it', password: 'una password lunga 1' });
+    assert.equal(a.json.profilo.cambiaPassword, false);
+    // Un docente semplice non gestisce i colleghi
+    const elenco = (await p.chiedi('GET', '/api/docenti', undefined, { cookie: k.docente })).json.docenti;
+    const marco = elenco.find((d) => d.email === 'marco@scuola.it');
+    assert.equal((await p.chiedi('POST', '/api/docenti/' + marco.id + '/password', {}, { cookie: a.cookie })).stato, 403);
+    assert.equal((await p.chiedi('PATCH', '/api/docenti/' + marco.id, { attivo: false }, { cookie: a.cookie })).stato, 403);
+    // L'amministratore reimposta: nuova password provvisoria, il collega esce ovunque e deve cambiarla
+    const rep = await p.chiedi('POST', '/api/docenti/' + marco.id + '/password', {}, { cookie: k.docente });
+    assert.equal(rep.stato, 200); assert.ok(rep.json.passwordProvvisoria && rep.json.passwordProvvisoria !== 'una password lunga 1');
+    assert.equal((await p.chiedi('GET', '/api/io', undefined, { cookie: a.cookie })).stato, 401, 'è uscito');
+    const b = await p.chiedi('POST', '/api/accesso/docente', { email: 'marco@scuola.it', password: rep.json.passwordProvvisoria });
+    assert.equal(b.json.profilo.cambiaPassword, true);
+    // Disattivazione: non entra più; non ci si disattiva da soli
+    assert.equal((await p.chiedi('PATCH', '/api/docenti/' + marco.id, { attivo: false }, { cookie: k.docente })).stato, 200);
+    assert.equal((await p.chiedi('GET', '/api/io', undefined, { cookie: b.cookie })).stato, 401);
+    assert.equal((await p.chiedi('POST', '/api/accesso/docente', { email: 'marco@scuola.it', password: rep.json.passwordProvvisoria })).stato, 401);
+    const io = (await p.chiedi('GET', '/api/io', undefined, { cookie: k.docente })).json.profilo;
+    assert.equal((await p.chiedi('PATCH', '/api/docenti/' + io.id, { attivo: false }, { cookie: k.docente })).stato, 400);
+    assert.equal((await p.chiedi('PATCH', '/api/docenti/' + marco.id, { attivo: true }, { cookie: k.docente })).stato, 200);
+    assert.equal((await p.chiedi('POST', '/api/accesso/docente', { email: 'marco@scuola.it', password: rep.json.passwordProvvisoria })).stato, 200);
+    assert.equal((await p.chiedi('POST', '/api/docenti/999/password', {}, { cookie: k.docente })).stato, 404);
+  } finally { await p.chiudi(); }
+});
+
 test('il docente legge e corregge: tutto finisce nel registro e lo studente vede chi ha cambiato', async () => {
   const p = await avvia();
   try {

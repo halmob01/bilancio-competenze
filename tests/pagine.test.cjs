@@ -5,7 +5,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const radice = path.join(__dirname, '..');
-const PAGINE = ['index.html', 'bilancio/index.html', 'cv/index.html', 'diario/index.html', 'portfolio/index.html'];
+const PAGINE = ['index.html', 'bilancio/index.html', 'cv/index.html', 'diario/index.html', 'portfolio/index.html', 'docenti/index.html'];
 const leggi = (f) => fs.readFileSync(path.join(radice, f), 'utf8');
 
 test('ogni pagina trova i suoi file: stili, script, caratteri e link', () => {

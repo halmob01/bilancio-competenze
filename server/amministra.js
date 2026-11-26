@@ -33,7 +33,7 @@ async function esegui(argomenti, db) {
     const d = docente(resto[0]);
     if (!d) return 'Docente non trovato.';
     const provvisoria = S.casuale(14, 'abcdefghjkmnpqrstuvwxyz23456789');
-    db.prepare('UPDATE docenti SET password = ? WHERE id = ?').run(await S.hashPassword(provvisoria), d.id);
+    db.prepare('UPDATE docenti SET password = ?, deve_cambiare = 1 WHERE id = ?').run(await S.hashPassword(provvisoria), d.id);
     db.prepare("DELETE FROM sessioni WHERE tipo = 'docente' AND utente_id = ?").run(d.id);
     DB.annota(db, 'password reimpostata', 'id ' + d.id);
     return 'Nuova password provvisoria per ' + d.email + ': ' + provvisoria;

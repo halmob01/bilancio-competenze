@@ -168,9 +168,16 @@ function creaApi(db, opzioni) {
     codiceUsato: db.prepare('SELECT 1 FROM studenti WHERE codice = ?'),
     nuoviCodici: db.prepare('UPDATE studenti SET codice = ?, codice_qr = ?, versione_codice = versione_codice + 1 WHERE id = ?'),
     modificaStudente: db.prepare('UPDATE studenti SET nome = ?, cognome = ?, classe_id = ?, attivo = ? WHERE id = ?'),
-    docenti: db.prepare('SELECT id, email, nome, admin, attivo, creato FROM docenti ORDER BY nome'),
-    nuovoDocente: db.prepare('INSERT INTO docenti (email, nome, password, admin, creato) VALUES (?, ?, ?, ?, ?)'),
-    cambiaPassword: db.prepare('UPDATE docenti SET password = ? WHERE id = ?'),
+    docenti: db.prepare('SELECT id, email, nome, admin, attivo, creato, deve_cambiare FROM docenti ORDER BY nome'),
+    docentePassword: db.prepare('UPDATE docenti SET password = ?, deve_cambiare = 1 WHERE id = ?'),
+    docenteAttivo: db.prepare('UPDATE docenti SET attivo = ? WHERE id = ?'),
+    modificaClasse: db.prepare('UPDATE classi SET nome = ?, indirizzo = ?, anno = ?, anno_scolastico = ? WHERE id = ?'),
+    studentiRiepilogo: db.prepare(`SELECT s.id, s.nome, s.cognome, s.attivo,
+        (SELECT MAX(ultimo_uso) FROM sessioni x WHERE x.tipo = 'studente' AND x.utente_id = s.id) AS ultimo_accesso,
+        (SELECT COUNT(*) FROM sessioni x WHERE x.tipo = 'studente' AND x.utente_id = s.id AND x.scade > ?) AS dispositivi
+      FROM studenti s WHERE s.classe_id = ? ORDER BY s.cognome, s.nome`),
+    nuovoDocente: db.prepare('INSERT INTO docenti (email, nome, password, admin, creato, deve_cambiare) VALUES (?, ?, ?, ?, ?, 1)'),
+    cambiaPassword: db.prepare('UPDATE docenti SET password = ?, deve_cambiare = 0 WHERE id = ?'),
     foto: db.prepare('SELECT * FROM foto WHERE studente_id = ? AND id = ?'),
     fotoElenco: db.prepare('SELECT id, byte, byte_mini, w, h, creata FROM foto WHERE studente_id = ? ORDER BY creata'),
     fotoTotali: db.prepare('SELECT COUNT(*) AS n, COALESCE(SUM(byte + byte_mini), 0) AS byte FROM foto WHERE studente_id = ?'),
@@ -224,7 +231,7 @@ function creaApi(db, opzioni) {
   function profiloStudente(u) {
     return { tipo: 'studente', id: u.id, nome: u.nome, cognome: u.cognome, classe: u.classe || '', indirizzo: u.indirizzo || '', anno: u.anno || 0, annoScolastico: u.anno_scolastico || '' };
   }
-  function profiloDocente(u) { return { tipo: 'docente', id: u.id, nome: u.nome, email: u.email, admin: !!u.admin }; }
+  function profiloDocente(u) { return { tipo: 'docente', id: u.id, nome: u.nome, email: u.email, admin: !!u.admin, cambiaPassword: !!u.deve_cambiare }; }
 
   // ---------- documenti ----------
   function leggiDocumento(studenteId, tipo) {
@@ -505,6 +512,67 @@ function creaApi(db, opzioni) {
   rotta('DELETE', '/api/allegati/:id', serveStudente, function (c, p) { return eliminaAllegato(c.sessione.utente.id, p.id); });
 
   // Docenti: classi e studenti
+  // Come sta andando una classe: per ogni studente lo stato dei quattro percorsi (stessi criteri dei siti), nessun testo dello studente.
+  function statoDi(avanz) {
+    if (avanz.complete === avanz.totale) return 'completa';
+    return avanz.stati.some(function (x) { return x !== 'vuota'; }) ? 'in_corso' : 'vuota';
+  }
+  function percorsiDi(studenteId) {
+    const docs = {};
+    q.documenti.all(studenteId).forEach(function (d) { docs[d.tipo] = d; });
+    const leggi = function (tipo) { const d = q.documento.get(studenteId, tipo); return d ? JSON.parse(d.dati) : null; };
+    const riga = function (tipo, stato, dettaglio) {
+      const d = docs[tipo];
+      return { stato: d ? stato : 'vuota', dettaglio: d ? dettaglio : '', aggiornato: d ? d.aggiornato : '', autore: d ? autore(d.autore_tipo, d.autore_id) : null };
+    };
+    const out = {};
+    const p = leggi('portfolio');
+    const nAtt = p && Array.isArray(p.attivita) ? p.attivita.length : 0;
+    out.portfolio = riga('portfolio', nAtt ? 'in_corso' : 'vuota', nAtt === 1 ? '1 attività' : nAtt + ' attività');
+    const dia = leggi('diario');
+    const sett = dia ? dia.tirocini.reduce(function (n, t) { return n + t.settimane.filter(DIARIO.completa).length; }, 0) : 0;
+    out.diario = riga('diario', dia && dia.tirocini.length ? 'in_corso' : 'vuota', dia ? dia.tirocini.length + (dia.tirocini.length === 1 ? ' tirocinio, ' : ' tirocini, ') + sett + (sett === 1 ? ' settimana' : ' settimane') : '');
+    const bil = leggi('bilancio');
+    const ab = bil ? BILANCIO.avanzamento(bil) : null;
+    out.bilancio = riga('bilancio', ab ? statoDi(ab) : 'vuota', ab ? ab.complete + ' di ' + ab.totale + ' sezioni' : '');
+    const cv = leggi('cv');
+    const ac = cv ? CV.avanzamento(cv) : null;
+    out.curriculum = riga('cv', ac ? statoDi(ac) : 'vuota', ac ? ac.complete + ' di ' + ac.totale + ' passi' : '');
+    out.attivita = nAtt;
+    return out;
+  }
+  rotta('GET', '/api/classi/:id/riepilogo', serveDocente, function (c, p) {
+    const cl = q.classe.get(intero(p.id));
+    if (!cl) return [404, { ok: false, errore: 'classe' }];
+    return [200, { ok: true, classe: cl, studenti: q.studentiRiepilogo.all(adesso(), cl.id).map(function (s) {
+      const pc = percorsiDi(s.id);
+      const t = q.fotoTotali.get(s.id); const f = q.allegatiTotali.get(s.id);
+      return { id: s.id, nome: s.nome, cognome: s.cognome, attivo: !!s.attivo, ultimoAccesso: s.ultimo_accesso || '', dispositivi: s.dispositivi,
+        percorsi: { portfolio: pc.portfolio, diario: pc.diario, bilancio: pc.bilancio, curriculum: pc.curriculum },
+        foto: t.n, file: f.n, byte: t.byte + f.byte };
+    }) }];
+  });
+  rotta('PATCH', '/api/classi/:id', serveDocente, function (c, p) {
+    const cl = q.classe.get(intero(p.id));
+    if (!cl) return [404, { ok: false, errore: 'classe' }];
+    const b = c.corpo || {};
+    const nome = b.nome === undefined ? cl.nome : testo(b.nome, 20);
+    if (!nome) return [400, { ok: false, errore: 'nome' }];
+    const indirizzo = b.indirizzo === undefined ? cl.indirizzo : (INDIRIZZI.indexOf(b.indirizzo) !== -1 ? b.indirizzo : '');
+    const anno = b.anno === undefined ? cl.anno : ([1, 2, 3, 4].indexOf(b.anno) !== -1 ? b.anno : 0);
+    q.modificaClasse.run(nome, indirizzo, anno, b.annoScolastico === undefined ? cl.anno_scolastico : testo(b.annoScolastico, 9), cl.id);
+    return [200, { ok: true }];
+  });
+  // La scheda di uno studente (senza i codici): per l'intestazione della sua pagina nel pannello.
+  rotta('GET', '/api/studenti/:id', serveDocente, function (c, p) {
+    const s = q.studente.get(intero(p.id));
+    if (!s) return [404, { ok: false, errore: 'studente' }];
+    const sess = q.studentiRiepilogo.all(adesso(), s.classe_id).find(function (x) { return x.id === s.id; });
+    const t = q.fotoTotali.get(s.id); const f = q.allegatiTotali.get(s.id);
+    return [200, { ok: true, studente: { id: s.id, nome: s.nome, cognome: s.cognome, attivo: !!s.attivo, classeId: s.classe_id, classe: s.classe || '', indirizzo: s.indirizzo || '', anno: s.anno || 0,
+      annoScolastico: s.anno_scolastico || '', ultimoAccesso: sess ? sess.ultimo_accesso || '' : '', dispositivi: sess ? sess.dispositivi : 0, foto: t.n, file: f.n, byte: t.byte + f.byte },
+      percorsi: percorsiDi(s.id) }];
+  });
   rotta('GET', '/api/classi', serveDocente, function () {
     return [200, { ok: true, classi: q.classi.all() }];
   });
@@ -649,6 +717,29 @@ function creaApi(db, opzioni) {
   rotta('POST', '/api/docenti', serveAdmin, async function (c) {
     const r = await creaDocente(c.corpo || {});
     return r.errore ? [400, { ok: false, errore: r.errore }] : [200, Object.assign({ ok: true }, r)];
+  });
+  // Un docente nuovo o con la password reimpostata la cambia al primo accesso. La nuova password provvisoria si vede una volta sola.
+  rotta('POST', '/api/docenti/:id/password', serveAdmin, async function (c, p) {
+    const d = q.docente.get(intero(p.id));
+    if (!d) return [404, { ok: false, errore: 'docente' }];
+    const provvisoria = S.casuale(14, 'abcdefghjkmnpqrstuvwxyz23456789');
+    q.docentePassword.run(await S.hashPassword(provvisoria), d.id);
+    q.togliSessioniDi.run('docente', d.id);
+    DB.annota(db, 'password reimpostata', 'id ' + d.id + ' da docente ' + c.sessione.utente.id);
+    // chi reimposta la propria password esce come gli altri
+    return [200, { ok: true, email: d.email, passwordProvvisoria: provvisoria }];
+  });
+  rotta('PATCH', '/api/docenti/:id', serveAdmin, function (c, p) {
+    const d = q.docente.get(intero(p.id));
+    if (!d) return [404, { ok: false, errore: 'docente' }];
+    const b = c.corpo || {};
+    if (b.attivo !== undefined) {
+      if (d.id === c.sessione.utente.id && !b.attivo) return [400, { ok: false, errore: 'te stesso' }];
+      q.docenteAttivo.run(b.attivo ? 1 : 0, d.id);
+      if (!b.attivo) q.togliSessioniDi.run('docente', d.id);
+      DB.annota(db, b.attivo ? 'docente riattivato' : 'docente disattivato', 'id ' + d.id + ' da docente ' + c.sessione.utente.id);
+    }
+    return [200, { ok: true }];
   });
   rotta('GET', '/api/studenti/:id/registro', serveAdmin, function (c, p) {
     return [200, { ok: true, registro: q.registro.all(intero(p.id)) }];

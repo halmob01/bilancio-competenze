@@ -15,7 +15,7 @@ PERCORSO="${PORTALE_PERCORSO:-/gcatalfamo/}"
 rm -rf "$DIST/siti"
 mkdir -p "$DIST/siti"
 
-cp -R index.html bilancio cv diario portfolio docenti js css fonts img "$DIST/siti/"
+cp -R index.html bilancio cv diario portfolio orientamento docenti js css fonts img "$DIST/siti/"
 
 # Il Foglio Google non si usa più: senza indirizzo il pulsante «Invia al docente» non compare.
 cat > "$DIST/siti/js/config.js" <<EOF

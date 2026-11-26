@@ -1018,3 +1018,31 @@ dialog p:empty { display: none; }
 .cestino__titolo { font-weight: 700; color: var(--c-titolo); overflow-wrap: anywhere; }
 .cestino__azioni { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 6px; }
 .cestino__esito:empty { display: none; }
+
+/* ---------- Orientamento ---------- */
+.scelte--carte { grid-template-columns: 1fr; }
+@media (min-width: 720px) { .scelte--carte { grid-template-columns: 1fr 1fr; } }
+.scelta--carta span { align-items: flex-start; }
+.scelta--carta span::before { margin-top: 2px; }
+.scelta__blocco { display: grid; gap: 3px; font-weight: inherit; }
+.scelta__blocco small { font-size: 15px; font-weight: 400; color: var(--c-testo); line-height: 1.4; }
+.promemoria { display: grid; gap: 8px; }
+.promemoria .voci { gap: 8px; }
+.promemoria .voce { padding-left: 14px; border-left: 3px solid var(--c-filetto); }
+
+/* La strada del CFP: una linea con le tappe; la tappa dello studente è in evidenza. */
+.strada { list-style: none; padding: 0; margin: 4px 0 0; display: grid; gap: 0; }
+.strada__tappa { position: relative; display: grid; grid-template-columns: 22px 1fr; gap: 14px; padding-bottom: 22px; }
+.strada__tappa:last-child { padding-bottom: 0; }
+.strada__tappa::before { content: ""; position: absolute; left: 10px; top: 22px; bottom: 0; width: 2px; background: var(--c-filetto); }
+.strada__tappa:last-child::before { display: none; }
+.strada__segno { width: 22px; height: 22px; border-radius: 50%; border: 3px solid var(--c-rosso); background: var(--c-bianco); margin-top: 2px; }
+.strada__tappa--qui .strada__segno { background: var(--c-rosso); box-shadow: 0 0 0 4px var(--c-rosato); }
+.strada__tappa--facoltativa .strada__segno { border-style: dashed; }
+.strada__corpo { display: grid; gap: 6px; min-width: 0; }
+.strada__titolo { font-size: 20px; font-weight: 800; line-height: 1.25; color: var(--c-titolo); display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: center; }
+.strada__qui { font-size: 13px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--c-rosso); background: var(--c-rosato); padding: 2px 8px; border-radius: 4px; }
+.strada__cambi { margin-top: 4px; padding: 10px 14px; background: var(--c-pannello); border-radius: var(--radius-card); display: grid; gap: 6px; }
+.strada__cambi ul { list-style: none; padding: 0; display: grid; gap: 6px; }
+.strada__cambi li { font-size: 16px; line-height: 1.4; }
+.note-strada { list-style: none; padding: 0; display: grid; gap: 10px; margin-top: 8px; }

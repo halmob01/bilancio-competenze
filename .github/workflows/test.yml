@@ -32,6 +32,8 @@ jobs:
           node --check portfolio/js/foto.js
           node --check portfolio/js/file.js
           node --check portfolio/js/app.js
+          node --check orientamento/js/orientamento.js
+          node --check orientamento/js/app.js
           node --check docenti/js/docenti.js
           node --check docenti/js/app.js
           node --check server/cestino.js

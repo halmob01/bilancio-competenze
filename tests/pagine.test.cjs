@@ -5,7 +5,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const radice = path.join(__dirname, '..');
-const PAGINE = ['index.html', 'bilancio/index.html', 'cv/index.html', 'diario/index.html', 'portfolio/index.html', 'docenti/index.html'];
+const PAGINE = ['index.html', 'bilancio/index.html', 'cv/index.html', 'diario/index.html', 'portfolio/index.html', 'orientamento/index.html', 'docenti/index.html'];
 const leggi = (f) => fs.readFileSync(path.join(radice, f), 'utf8');
 
 test('ogni pagina trova i suoi file: stili, script, caratteri e link', () => {
@@ -23,20 +23,20 @@ test('ogni pagina trova i suoi file: stili, script, caratteri e link', () => {
   });
 });
 
-test('la pagina iniziale ha quattro card: attività, diario, bilancio, curriculum', () => {
+test('la pagina iniziale ha cinque card: attività, diario, bilancio, curriculum, orientamento', () => {
   const html = leggi('index.html');
-  assert.deepEqual([...html.matchAll(/<a class="percorso" href="([^"]+)"/g)].map((m) => m[1]), ['portfolio/', 'diario/', 'bilancio/', 'cv/']);
+  assert.deepEqual([...html.matchAll(/<a class="percorso" href="([^"]+)"/g)].map((m) => m[1]), ['portfolio/', 'diario/', 'bilancio/', 'cv/', 'orientamento/']);
   // Gli unici script servono all'accesso con il cartellino e alla mia area; senza server configurato non fanno niente.
   assert.deepEqual([...html.matchAll(/<script src="([^"]+)"/g)].map((m) => m[1]), ['js/config.js', 'js/unione.js', 'js/archivio.js', 'js/area.js']);
   assert.ok(!/https?:\/\//.test(html), 'nessuna risorsa esterna');
 });
 
 test('i siti hanno il link alla pagina iniziale e si riconoscono tra loro solo da lì', () => {
-  ['bilancio/index.html', 'cv/index.html', 'diario/index.html', 'portfolio/index.html'].forEach((f) => {
+  ['bilancio/index.html', 'cv/index.html', 'diario/index.html', 'portfolio/index.html', 'orientamento/index.html'].forEach((f) => {
     const html = leggi(f);
     assert.equal((html.match(/<a class="testata__tutti" href="\.\.\/">Tutti i percorsi<\/a>/g) || []).length, 1, f);
   });
-  ['js/app.js', 'cv/js/app.js', 'diario/js/app.js', 'portfolio/js/app.js'].forEach((f) => {
+  ['js/app.js', 'cv/js/app.js', 'diario/js/app.js', 'portfolio/js/app.js', 'orientamento/js/app.js'].forEach((f) => {
     assert.ok(leggi(f).includes("h('a', { class: 'home__tutti', href: '../', text: 'Tutti i percorsi' })"), f);
   });
 });
@@ -48,6 +48,7 @@ test('gli script di ogni sito si caricano nell\'ordine giusto', () => {
   assert.deepEqual(ordine('cv/index.html'), comuni.concat(['../js/dati.js', '../js/bilancio.js', '../js/cv.js', '../js/docx.js', '../js/pdf.js', 'js/app.js']));
   assert.deepEqual(ordine('portfolio/index.html'), comuni.concat(['../js/dati.js', '../js/bilancio.js', '../js/competenze.js', '../js/pdf.js', 'js/attivita.js', 'js/foto.js', 'js/file.js', 'js/app.js']));
   assert.deepEqual(ordine('diario/index.html'), comuni.concat(['js/diario.js', 'js/app.js']));
+  assert.deepEqual(ordine('orientamento/index.html'), comuni.concat(['../js/dati.js', '../js/bilancio.js', 'js/orientamento.js', 'js/app.js']));
   assert.ok(!ordine('bilancio/index.html').some((s) => /docx|pdf/.test(s)), 'Word e PDF non sono del bilancio');
 });
 

@@ -89,10 +89,10 @@
   const NOMI_ANNO = { 1: 'I anno', 2: 'II anno', 3: 'III anno', 4: 'IV anno' };
   function csvRiepilogo(riepilogo) {
     const cl = riepilogo.classe || {};
-    const intest = ['Cognome', 'Nome', 'Classe', 'Indirizzo', 'Anno', 'Attività', 'Foto', 'File', 'Diario', 'Bilancio', 'Curriculum', 'Ultimo accesso', 'Attivo'];
+    const intest = ['Cognome', 'Nome', 'Classe', 'Indirizzo', 'Anno', 'Attività', 'Foto', 'File', 'Diario', 'Bilancio', 'Curriculum', 'Orientamento', 'Ultimo accesso', 'Attivo'];
     const righe = [intest].concat((riepilogo.studenti || []).map(function (s) {
       return [s.cognome, s.nome, cl.nome || '', cl.indirizzo || '', NOMI_ANNO[cl.anno] || '', s.percorsi.portfolio.dettaglio || '0 attività', s.foto, s.file,
-        statoTesto(s.percorsi.diario), statoTesto(s.percorsi.bilancio), statoTesto(s.percorsi.curriculum), s.ultimoAccesso ? s.ultimoAccesso.slice(0, 10) : 'Mai', s.attivo ? 'sì' : 'no'];
+        statoTesto(s.percorsi.diario), statoTesto(s.percorsi.bilancio), statoTesto(s.percorsi.curriculum), statoTesto(s.percorsi.orientamento), s.ultimoAccesso ? s.ultimoAccesso.slice(0, 10) : 'Mai', s.attivo ? 'sì' : 'no'];
     }));
     return '﻿' + righe.map(function (r) { return r.map(cella).join(';'); }).join('\r\n') + '\r\n';
   }

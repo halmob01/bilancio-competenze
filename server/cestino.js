@@ -78,7 +78,7 @@ function rimetti(dati, percorso, voce) {
   return { dati: copia };
 }
 
-const TITOLI = ['titolo', 'azienda', 'fatto', 'nome', 'dove', 'qualifica', 'istituto', 'luogo'];
+const TITOLI = ['titolo', 'azienda', 'fatto', 'cosa', 'nome', 'dove', 'qualifica', 'istituto', 'perche', 'luogo'];
 function titoloDi(voce) {
   for (let i = 0; i < TITOLI.length; i++) {
     const v = voce[TITOLI[i]];

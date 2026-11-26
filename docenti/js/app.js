@@ -10,7 +10,7 @@
   const C = window.BC_COMPETENZE;
   const PERCORSI = [
     { id: 'portfolio', titolo: 'Attività' }, { id: 'diario', titolo: 'Diario' },
-    { id: 'bilancio', titolo: 'Bilancio' }, { id: 'curriculum', titolo: 'Curriculum' }
+    { id: 'bilancio', titolo: 'Bilancio' }, { id: 'curriculum', titolo: 'Curriculum' }, { id: 'orientamento', titolo: 'Orientamento' }
   ];
   const INDIRIZZI = { elettrico: 'Elettrico', informatica: 'Informatica', estetica: 'Estetica' };
   const ANNI = { 1: 'I anno', 2: 'II anno', 3: 'III anno', 4: 'IV anno' };
@@ -527,7 +527,7 @@
   }
   // Quello che lo studente ha cancellato negli ultimi 30 giorni: il docente lo rimette a posto (la scelta resta nel registro).
   const DOVE = { portfolio: 'Le mie attività', diario: 'Diario', bilancio: 'Bilancio', cv: 'Curriculum' };
-  const COSA = { attivita: 'Attività', tirocini: 'Tirocinio', settimane: 'Settimana', esperienze: 'Esperienza', lingueElenco: 'Lingua', formazione: 'Formazione', lavoro: 'Lavoro' };
+  const COSA = { attivita: 'Attività', tirocini: 'Tirocinio', settimane: 'Settimana', esperienze: 'Esperienza', lingueElenco: 'Lingua', formazione: 'Formazione', lavoro: 'Lavoro', passi: 'Passo', strade: 'Strada' };
   function mostraCestino(s) {
     api('GET', 'studenti/' + s.id + '/cestino').then(function (r) {
       if (!controlla(r)) return;

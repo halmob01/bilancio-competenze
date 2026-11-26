@@ -10,8 +10,8 @@
   const ARCH = window.BC_ARCHIVIO;
   if (!ARCH || !ARCH.attivo) return;
 
-  const NOMI = { portfolio: 'le attività', diario: 'il diario', bilancio: 'il bilancio', cv: 'il curriculum' };
-  const TIPO_DI = { 'portfolio/': 'portfolio', 'diario/': 'diario', 'bilancio/': 'bilancio', 'cv/': 'cv' };
+  const NOMI = { portfolio: 'le attività', diario: 'il diario', bilancio: 'il bilancio', cv: 'il curriculum', orientamento: 'l\'orientamento' };
+  const TIPO_DI = { 'portfolio/': 'portfolio', 'diario/': 'diario', 'bilancio/': 'bilancio', 'cv/': 'cv', 'orientamento/': 'orientamento' };
   const INDIRIZZI = { elettrico: 'Elettrico', informatica: 'Informatica', estetica: 'Estetica' };
 
   const fascia = document.querySelector('.home__fascia-dentro');
@@ -104,8 +104,8 @@
   }
 
   // ---------- Cestino: quello che hai cancellato negli ultimi 30 giorni ----------
-  const DOVE = { portfolio: 'Le mie attività', diario: 'Diario', bilancio: 'Bilancio', cv: 'Curriculum' };
-  const COSA = { attivita: 'Attività', tirocini: 'Tirocinio', settimane: 'Settimana', esperienze: 'Esperienza', lingueElenco: 'Lingua', formazione: 'Formazione', lavoro: 'Lavoro' };
+  const DOVE = { portfolio: 'Le mie attività', diario: 'Diario', bilancio: 'Bilancio', cv: 'Curriculum', orientamento: 'Orientamento' };
+  const COSA = { attivita: 'Attività', tirocini: 'Tirocinio', settimane: 'Settimana', esperienze: 'Esperienza', lingueElenco: 'Lingua', formazione: 'Formazione', lavoro: 'Lavoro', passi: 'Passo', strade: 'Strada' };
   function giorniFa(iso) {
     const g = Math.floor((Date.now() - Date.parse(iso)) / 86400000);
     return g <= 0 ? 'oggi' : g === 1 ? 'ieri' : g + ' giorni fa';

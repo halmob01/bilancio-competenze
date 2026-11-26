@@ -240,3 +240,11 @@ Il docente scrive in italiano semplice e non vuole emoji. Il piano completo è `
 - **Scadenza.** `pulisci()` (ogni ora): voci oltre 30 giorni; foto e file oltre 31 giorni (un giorno in più, così una voce ancora nel cestino non perde le foto).
 - **Interfaccia.** Pagina iniziale: pulsante «Cestino» (`js/area.js`). Pannello docenti: «Cancellato di recente» nella pagina dello studente. Migrazione 7.
 - Non fatto: vista del cestino di tutta la classe; per i testi cancellati dentro un campo restano le revisioni (§5).
+
+### 4.11 Orientamento in uscita (26 novembre 2026)
+- **Sito** `orientamento/` (card 05 nella pagina iniziale). Parte «Cosa faccio dopo»: La strada, Cosa mi piace, Cosa so fare, Dove vorrei andare, I prossimi passi, Il mio foglio (stampa e copia). Modello: il diario.
+- **Documento** `orientamento` (chiave locale `orientamento-v1`): `profilo{indirizzo, anno}` e `uscita{piace, attivita[max 3], imparare, strade[max 2: id + perche], passi[max 3: id, cosa, con, entro]}`. Normalizzato in `orientamento/js/orientamento.js`, usato anche dal server (`TIPI.orientamento`).
+- **Dialogo con le altre sezioni**: solo lettura. Le attività piaciute si scelgono dal portfolio (per id); il bilancio si legge per il promemoria. Mai modificati.
+- **Mappa**: percorso 3+1 oppure quattro anni (`PERCORSO_QUADRIENNALE`, oggi Informatica I e II; da aggiornare ogni settembre). Tutti i fatti hanno la fonte in `docs/FILIERA.md`, con l'elenco di quello che resta da verificare.
+- **Pannello docenti**: quinta colonna «Orientamento» nell'avanzamento e nel CSV (6 passi). **Cestino**: i passi e le strade tolti si recuperano come ogni altra voce.
+- **Non fatto**: «Racconto il CFP» (orientamento in entrata: le quattro domande e il testo per l'open day oggi nel bilancio, più le domande dei ragazzi delle medie). Quando si sposta, la sezione 07 si toglie dal bilancio.

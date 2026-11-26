@@ -54,7 +54,7 @@ test('CSV: punto e virgola, BOM, virgolette, e nessun nome può diventare una fo
   assert.ok(c.startsWith('﻿Cognome;Nome;Classe'), 'BOM e intestazione');
   const righe = c.trim().split('\r\n');
   assert.equal(righe.length, 3);
-  assert.equal(righe[1], 'Bianchi;Sara;3ELE;elettrico;III anno;2 attività;3;1;In corso (1 tirocinio, 4 settimane);Completo (6 di 6 sezioni);Da iniziare;2026-11-26;sì');
+  assert.equal(righe[1], 'Bianchi;Sara;3ELE;elettrico;III anno;2 attività;3;1;In corso (1 tirocinio, 4 settimane);Completo (6 di 6 sezioni);Da iniziare;Da iniziare;2026-11-26;sì');
   assert.ok(righe[2].startsWith('\'=CMD();"Luca; ""il Rosso"""'), righe[2]);
   assert.equal(D.nomeFileCsv({ nome: '3ELE' }, '2026-11-26'), 'riepilogo-3ele-2026-11-26.csv');
   assert.equal(D.nomeFileCsv(null, '2026-11-26'), 'riepilogo-classe-2026-11-26.csv');

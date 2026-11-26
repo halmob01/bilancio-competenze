@@ -18,13 +18,15 @@ const BILANCIO = require('../js/bilancio.js');
 const CV = require('../js/cv.js');
 const DIARIO = require('../diario/js/diario.js');
 const ATTIVITA = require('../portfolio/js/attivita.js');
+const ORIENTAMENTO = require('../orientamento/js/orientamento.js');
 
 // I documenti che il server conosce e la funzione che li ricontrolla (la stessa usata dai siti).
 const TIPI = {
   diario: DIARIO.normalizza,
   bilancio: BILANCIO.normalizza,
   cv: CV.normalizza,
-  portfolio: ATTIVITA.normalizza // solo i testi; le foto arrivano con il blocco 2 di F1
+  portfolio: ATTIVITA.normalizza, // i testi; le foto e i file hanno le loro rotte
+  orientamento: ORIENTAMENTO.normalizza
 };
 const INDIRIZZI = ['elettrico', 'estetica', 'informatica'];
 
@@ -637,6 +639,9 @@ function creaApi(db, opzioni) {
     const cv = leggi('cv');
     const ac = cv ? CV.avanzamento(cv) : null;
     out.curriculum = riga('cv', ac ? statoDi(ac) : 'vuota', ac ? ac.complete + ' di ' + ac.totale + ' passi' : '');
+    const ori = leggi('orientamento');
+    const ao = ori ? ORIENTAMENTO.avanzamento(ori) : null;
+    out.orientamento = riga('orientamento', ao ? statoDi(ao) : 'vuota', ao ? ao.complete + ' di ' + ao.totale + ' passi' : '');
     out.attivita = nAtt;
     return out;
   }
@@ -647,7 +652,7 @@ function creaApi(db, opzioni) {
       const pc = percorsiDi(s.id);
       const t = q.fotoTotali.get(s.id); const f = q.allegatiTotali.get(s.id);
       return { id: s.id, nome: s.nome, cognome: s.cognome, attivo: !!s.attivo, ultimoAccesso: s.ultimo_accesso || '', dispositivi: s.dispositivi,
-        percorsi: { portfolio: pc.portfolio, diario: pc.diario, bilancio: pc.bilancio, curriculum: pc.curriculum },
+        percorsi: { portfolio: pc.portfolio, diario: pc.diario, bilancio: pc.bilancio, curriculum: pc.curriculum, orientamento: pc.orientamento },
         foto: t.n, file: f.n, byte: t.byte + f.byte };
     }) }];
   });

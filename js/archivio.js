@@ -19,7 +19,8 @@
     'bilancio-competenze-v1': 'bilancio',
     'cv-v1': 'cv',
     'diario-tirocinio-v1': 'diario',
-    'portfolio-attivita-v1': 'portfolio'
+    'portfolio-attivita-v1': 'portfolio',
+    'orientamento-v1': 'orientamento'
   };
   const CHIAVE_DI = {};
   Object.keys(DOCUMENTI).forEach(function (k) { CHIAVE_DI[DOCUMENTI[k]] = k; });

@@ -694,3 +694,34 @@ test('cestino: settimana senza tirocinio, scadenza dopo 30 giorni, e «elimina s
     assert.equal(db.prepare('SELECT COUNT(*) AS n FROM foto').get().n, 0);
   } finally { await p.chiudi(); }
 });
+
+test('orientamento: il documento si salva, il pannello ne vede lo stato, un passo tolto va nel cestino', async () => {
+  const p = await avvia();
+  try {
+    const k = await preparaClasse(p);
+    const sara = (await p.chiedi('POST', '/api/accesso/studente', { codice: k.studenti[0].codice })).cookie;
+    const doc = (passi) => ({ versione: 1, profilo: { indirizzo: 'elettrico', anno: 'anno3' }, uscita: { piace: 'I quadri elettrici', attivita: [], imparare: 'Gli schemi',
+      strade: [{ id: 'quarto', perche: 'Voglio il diploma' }], passi: passi } });
+    const passo = { id: 'p1abcd', cosa: 'Chiedere al docente come funziona il quarto anno', con: 'Il docente di laboratorio', entro: '2027-02-10' };
+    assert.equal((await p.chiedi('PUT', '/api/documenti/orientamento', { base: 0, dati: doc([passo]) }, { cookie: sara })).json.rev, 1);
+    const letto = (await p.chiedi('GET', '/api/documenti/orientamento', undefined, { cookie: sara })).json.dati;
+    assert.equal(letto.uscita.strade[0].id, 'quarto');
+    const rie = (await p.chiedi('GET', '/api/classi/' + k.classeId + '/riepilogo', undefined, { cookie: k.docente })).json;
+    const rs = rie.studenti.find((x) => x.nome === 'Sara');
+    assert.equal(rs.percorsi.orientamento.stato, 'in_corso');
+    assert.match(rs.percorsi.orientamento.dettaglio, /^\d di 6 passi$/);
+    assert.equal(rie.studenti.find((x) => x.nome === 'Luca').percorsi.orientamento.stato, 'vuota');
+    // Un dato non valido viene ripulito, non salvato com'è
+    const brutto = await p.chiedi('PUT', '/api/documenti/orientamento', { base: 1, dati: { versione: 1, uscita: { strade: [{ id: 'inventata' }], passi: 'no' } } }, { cookie: sara });
+    assert.equal(brutto.stato, 200);
+    const ripulito = (await p.chiedi('GET', '/api/documenti/orientamento', undefined, { cookie: sara })).json.dati;
+    assert.deepEqual(ripulito.uscita.strade, []); assert.deepEqual(ripulito.uscita.passi, []);
+    // Il passo che era scritto è finito nel cestino, con il suo titolo, e si rimette a posto
+    const voci = (await p.chiedi('GET', '/api/cestino', undefined, { cookie: sara })).json.voci;
+    const v = voci.find((x) => x.tipo === 'orientamento' && x.genere === 'passi');
+    assert.ok(voci.some((x) => x.genere === 'strade' && x.titolo === 'Voglio il diploma'), 'anche la strada tolta ha un titolo');
+    assert.ok(v && v.titolo.startsWith('Chiedere al docente'), JSON.stringify(voci));
+    assert.equal((await p.chiedi('POST', '/api/cestino/' + v.id + '/ripristina', undefined, { cookie: sara })).stato, 200);
+    assert.equal((await p.chiedi('GET', '/api/documenti/orientamento', undefined, { cookie: sara })).json.dati.uscita.passi[0].cosa, passo.cosa);
+  } finally { await p.chiudi(); }
+});

@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Orientamento</title>
+  <meta name="description" content="Orientamento: guarda le strade dopo il CFP e scegli i tuoi prossimi passi.">
+  <meta name="theme-color" content="#CC0000">
+  <link rel="icon" type="image/png" sizes="32x32" href="../img/favicon-32.png">
+  <link rel="apple-touch-icon" href="../img/favicon-180.png">
+  <link rel="preload" href="../fonts/fira-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../fonts/fira-sans-latin-900-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="../css/tokens.css?v=20261126-k">
+  <link rel="stylesheet" href="../css/stile.css?v=20261126-k">
+  <script src="../js/config.js" defer></script>
+  <script src="../js/unione.js" defer></script>
+  <script src="../js/archivio.js" defer></script>
+  <script src="../js/dati.js" defer></script>
+  <script src="../js/bilancio.js" defer></script>
+  <script src="js/orientamento.js" defer></script>
+  <script src="js/app.js" defer></script>
+</head>
+<body>
+  <a class="salta" href="#principale">Vai al contenuto</a>
+
+  <header class="testata">
+    <div class="testata__riga">
+      <a class="testata__tutti" href="../">Tutti i percorsi</a>
+      <button type="button" class="testata__nome" id="vai-home">Orientamento</button>
+      <span class="testata__tappa" id="tappa-mobile" hidden><button type="button" class="testata__tappa-btn" id="apri-indice" aria-haspopup="dialog"><span class="testata__tappa-nome" id="tappa-nome"></span><span class="meta testata__tappa-stato" id="tappa-stato"></span></button></span>
+      <span class="meta testata__salvato" id="salvato" role="status" aria-live="polite"></span>
+      <button type="button" class="pulsante pulsante--secondario pulsante--piccolo testata__salva" id="apri-salva"><span class="testata__salva-testo">Salva e stampa</span></button>
+    </div>
+  </header>
+  <div class="avanzamento" id="avanzamento" hidden aria-label="Avanzamento dell'orientamento"><div class="avanzamento__barra" id="barra"></div></div>
+
+  <main id="principale" tabindex="-1"></main>
+
+  <dialog id="dialogo-salva" aria-labelledby="dialogo-salva-titolo">
+    <h2 id="dialogo-salva-titolo">Salva e stampa</h2>
+    <div class="dialogo__azioni">
+      <button type="button" class="pulsante" id="scarica">Scarica una copia</button>
+      <button type="button" class="pulsante pulsante--secondario" id="carica">Carica una copia</button>
+      <button type="button" class="pulsante pulsante--secondario" id="stampa-dialogo">Stampa il foglio</button>
+    </div>
+    <div class="dialogo__azioni">
+      <button type="button" class="pulsante pulsante--secondario pulsante--piccolo" id="cancella">Cancella tutto</button>
+      <button type="button" class="pulsante pulsante--testo" data-informativa>Dove va il mio lavoro?</button>
+      <button type="button" class="pulsante pulsante--testo" id="chiudi-salva">Chiudi</button>
+    </div>
+    <input type="file" id="file-copia" accept="application/json,.json" hidden>
+  </dialog>
+
+  <dialog id="dialogo-indice" class="indice-dialogo" aria-labelledby="dialogo-indice-titolo">
+    <h2 id="dialogo-indice-titolo">Indice</h2>
+    <ol id="indice-elenco"></ol>
+    <button type="button" class="pulsante pulsante--testo" id="chiudi-indice">Chiudi</button>
+  </dialog>
+
+  <dialog id="dialogo-messaggio" aria-labelledby="messaggio-testo">
+    <p id="messaggio-testo"></p>
+    <div class="dialogo__azioni">
+      <button type="button" class="pulsante pulsante--secondario" id="messaggio-annulla">Annulla</button>
+      <button type="button" class="pulsante" id="messaggio-ok">Va bene</button>
+    </div>
+  </dialog>
+
+  <div id="stampa"></div>
+
+  <noscript><p style="padding:20px">Per usare l'orientamento serve JavaScript attivo nel browser.</p></noscript>
+</body>
+</html>

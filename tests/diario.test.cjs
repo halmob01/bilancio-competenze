@@ -111,7 +111,7 @@ test('il diario non ha più le ore: 8 ore al giorno, sempre', () => {
 test('assenze e ritardi: una domanda libera e una casella, senza elenco di giorni', () => {
   const app = fs.readFileSync(path.join(__dirname, '../diario/js/app.js'), 'utf8');
   assert.ok(app.includes("'Hai fatto assenze o ritardi?'"));
-  assert.ok(app.includes("Hai comunicato assenze o ritardi prima ai tutor della scuola e dell\\'azienda?"));
+  assert.ok(app.includes("Hai avvisato prima il tutor della scuola e quello dell\\'azienda?"));
   assert.ok(!/Quali giorni/.test(app));
   const w = D.settimanaVuota('2025-03-03');
   assert.equal(w.assenze, '');

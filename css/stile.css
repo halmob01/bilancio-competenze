@@ -274,6 +274,9 @@ body:has(.home) .avanzamento { display: none; }
   .rail .rail__voce[aria-current="step"]::before { border-color: var(--c-rosso); background: var(--c-rosso); box-shadow: 0 0 0 4px var(--c-bianco); }
   .rail .rail__voce:hover .rail__nome { color: var(--c-rosso); }
   .rail .rail__num { display: none; }
+  /* Lo stato si legge dall'anello: la scritta resta solo per i lettori di schermo. */
+  .rail .rail__stato { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .rail .rail__voce { min-height: 48px; justify-content: center; }
   .rail .rail__nome { font-size: 16px; line-height: 1.25; }
   .testata__tappa, .avanzamento { display: none !important; }
 }
@@ -864,3 +867,14 @@ dialog > * + * { margin-top: 14px; }
   .navigazione__avanti { flex: 1 1 auto; }
 }
 .navigazione__avanti--fine::after { content: none; }
+
+/* ---------- «Dove va il mio lavoro?» ---------- */
+dialog p:empty { display: none; }
+.informativa__elenco { list-style: none; padding: 0; display: grid; gap: 12px; }
+.informativa__elenco li { position: relative; padding-left: 26px; font-size: 17px; line-height: 1.45; color: var(--c-titolo); }
+.informativa__elenco li::before {
+  content: ""; position: absolute; left: 0; top: .35em; width: 14px; height: 14px; box-sizing: border-box;
+  border: 4px solid var(--c-rosso); border-radius: 50%;
+}
+.piede__info { color: var(--c-bianco); }
+.piede__info:hover { color: var(--c-bianco); }

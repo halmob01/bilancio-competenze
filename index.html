@@ -10,8 +10,8 @@
   <link rel="apple-touch-icon" href="img/favicon-180.png">
   <link rel="preload" href="fonts/fira-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="fonts/fira-sans-latin-900-normal.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="css/tokens.css?v=20261126-f">
-  <link rel="stylesheet" href="css/stile.css?v=20261126-f">
+  <link rel="stylesheet" href="css/tokens.css?v=20261126-g">
+  <link rel="stylesheet" href="css/stile.css?v=20261126-g">
   <script src="js/config.js" defer></script>
   <script src="js/unione.js" defer></script>
   <script src="js/archivio.js" defer></script>
@@ -33,7 +33,6 @@
           <p class="occhiello">Attività · Diario · Bilancio · Curriculum</p>
           <h1>Cosa vuoi fare oggi?</h1>
           <p class="home__sottotitolo">Scegli da dove partire.</p>
-          <p class="home__testo misura">Quattro strumenti per raccontare quello che impari, durante gli anni di formazione. Ognuno salva il tuo lavoro su questo dispositivo e puoi riprenderlo quando vuoi. Le attività e il diario raccolgono le prove; il bilancio e il curriculum le usano.</p>
         </div>
       </div>
 
@@ -41,39 +40,38 @@
         <ul class="percorsi" aria-label="I percorsi">
           <li>
             <a class="percorso" href="portfolio/">
-              <span class="meta percorso__num">01 · Tutto l'anno</span>
+              <span class="meta percorso__num">01</span>
               <span class="percorso__titolo">Le mie attività</span>
-              <span class="percorso__testo">Fotografa quello che fai in laboratorio e in tirocinio e scrivi due righe: le prove di quello che sai fare.</span>
+              <span class="percorso__testo">Una foto e due righe per ogni lavoro.</span>
               <span class="percorso__apri">Apri le attività</span>
             </a>
           </li>
           <li>
             <a class="percorso" href="diario/">
-              <span class="meta percorso__num">02 · Una scheda a settimana</span>
+              <span class="meta percorso__num">02</span>
               <span class="percorso__titolo">Diario di bordo</span>
-              <span class="percorso__testo">Durante il tirocinio scrivi che cosa hai fatto, che cosa hai imparato e che cosa è stato difficile.</span>
+              <span class="percorso__testo">Una scheda per ogni settimana di tirocinio.</span>
               <span class="percorso__apri">Apri il diario</span>
             </a>
           </li>
           <li>
             <a class="percorso" href="bilancio/">
-              <span class="meta percorso__num">03 · Circa tre ore</span>
+              <span class="meta percorso__num">03</span>
               <span class="percorso__titolo">Bilancio di competenze</span>
-              <span class="percorso__testo">Ricostruisci le tue esperienze, riconosci quello che sai fare e quello che devi ancora imparare.</span>
+              <span class="percorso__testo">Che cosa sai fare e che cosa devi ancora imparare.</span>
               <span class="percorso__apri">Apri il bilancio</span>
             </a>
           </li>
           <li>
             <a class="percorso" href="cv/">
-              <span class="meta percorso__num">04 · Circa mezz'ora</span>
+              <span class="meta percorso__num">04</span>
               <span class="percorso__titolo">Curriculum</span>
-              <span class="percorso__testo">Il foglio da consegnare a un'azienda, da scaricare in Word o in PDF.</span>
+              <span class="percorso__testo">Il foglio per le aziende, in Word o PDF.</span>
               <span class="percorso__apri">Apri il curriculum</span>
             </a>
           </li>
         </ul>
 
-        <p class="nota">Se usi un computer condiviso, al termine scarica una copia del tuo lavoro e cancellalo da questo browser.</p>
       </div>
     </div>
   </main>
@@ -81,10 +79,10 @@
   <footer class="piede">
     <div class="piede__riga">
       <span class="catena catena--bianca" aria-hidden="true"></span>
-      <p>Il tuo lavoro resta su questo dispositivo finché non decidi tu di scaricarlo o di inviarlo.</p>
+      <button type="button" class="pulsante pulsante--testo piede__info" data-informativa>Dove va il mio lavoro?</button>
     </div>
   </footer>
 
-  <noscript><p style="padding:20px">Questa pagina funziona anche senza JavaScript, ma i tre percorsi ne hanno bisogno per essere compilati.</p></noscript>
+  <noscript><p style="padding:20px">Per usare i percorsi serve JavaScript attivo nel browser.</p></noscript>
 </body>
 </html>

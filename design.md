@@ -13,7 +13,14 @@
 
 Tono verbale invariato rispetto alla V1: diretto, rispettoso, non enfatico, domande concrete («Che cosa hai imparato finora?»), niente slogan motivazionali.
 
-**Chi legge vede i siti per la prima volta** (26/11/2026): nessun testo a schermo parla di versioni precedenti, di cose spostate o cambiate. Le prove con pochi studenti non lasciano tracce nell'interfaccia: i loro dati si recuperano in silenzio. I testi su dove sta il lavoro dicono sempre il vero: «solo su questo dispositivo» senza accesso, «anche sul server della scuola» da entrati (attributo `data-con-accesso`).
+**Chi legge vede i siti per la prima volta** (26/11/2026): nessun testo a schermo parla di versioni precedenti, di cose spostate o cambiate. Le prove con pochi studenti non lasciano tracce nell'interfaccia: i loro dati si recuperano in silenzio.
+
+**Testi per chi fa fatica a leggere** (26/11/2026). Si scrive pensando a uno studente di 15 anni con difficoltà di lettura o di linguaggio:
+- ogni schermata: un titolo, **una frase** d'introduzione, poi le domande; l'aiuto solo se aggiunge qualcosa, e di una frase;
+- frasi brevi, una cosa per frase, parole di tutti i giorni, niente incisi né due punti a catena;
+- suggerimenti sotto i campi di poche parole; gli esempi sempre nascosti dietro «Vedi un esempio»;
+- niente scritte su dove si salva il lavoro nelle pagine: tutto sta in **«Dove va il mio lavoro?»** (pulsante nel riquadro «Salva» di ogni sito e nel piè di pagina della pagina iniziale), che cambia se lo studente è entrato o no;
+- lo stato di una sezione nell'indice si legge dall'anello, non da una scritta.
 
 ## 2. Colori
 

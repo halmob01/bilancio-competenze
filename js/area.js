@@ -44,7 +44,7 @@
     riga.appendChild(inp); riga.appendChild(btn);
     const errore = el('p', 'accesso__errore', messaggio || '');
     errore.id = 'accesso-errore'; errore.setAttribute('role', 'alert'); errore.hidden = !messaggio;
-    const nota = el('p', 'nota', 'Dal telefono basta inquadrare il QR del cartellino con la fotocamera. Senza entrare puoi lavorare lo stesso: il lavoro resta solo su questo dispositivo.');
+    const nota = el('p', 'nota', 'Dal telefono: inquadra il QR del cartellino.');
     nota.id = 'accesso-nota';
     form.appendChild(lab); form.appendChild(riga); form.appendChild(errore); form.appendChild(nota);
     form.addEventListener('submit', function (e) {
@@ -57,8 +57,8 @@
         if (r.ok) { dopoAccesso(); return; }
         errore.hidden = false;
         errore.textContent = r.errore === 'tentativi' ? 'Troppi tentativi da questo dispositivo: riprova tra 10 minuti.'
-          : r.errore === 'rete' ? 'Il server della scuola non risponde. Controlla la connessione e riprova.'
-            : 'Codice non riconosciuto. Controlla il cartellino: ricopia lettere e numeri, i trattini non servono.';
+          : r.errore === 'rete' ? 'Il server non risponde. Riprova tra poco.'
+            : 'Codice sbagliato. Ricopialo dal cartellino.';
         inp.focus();
       });
     });
@@ -70,8 +70,7 @@
     ARCH.lavoroSenzaAccesso().then(function (tipi) {
       if (!tipi.length) return null;
       const elenco = tipi.map(function (t) { return NOMI[t]; });
-      const testo = 'Su questo dispositivo c\'è del lavoro salvato prima di entrare: ' + elenco.join(', ').replace(/, ([^,]*)$/, ' e $1') +
-        '. È tuo? Se sì, lo copio nel tuo spazio sul server. Se l\'ha fatto qualcun altro su questo dispositivo, rispondi di no: resta dov\'è.';
+      const testo = 'Qui c\'è già del lavoro: ' + elenco.join(', ').replace(/, ([^,]*)$/, ' e $1') + '. È tuo?';
       return ARCH.domanda(testo, 'Sì, è mio', 'No').then(function (mio) { return mio ? ARCH.adotta(tipi) : null; });
     }).then(function () { return ARCH.avvio(); }).then(mostraArea);
   }
@@ -90,24 +89,13 @@
     fascia.textContent = '';
     const occhiello = el('p', 'occhiello', [p.classe, INDIRIZZI[p.indirizzo] || '', p.anno ? p.anno + '° anno' : ''].filter(Boolean).join(' · ') || 'Il tuo spazio');
     const h1 = el('h1', '', 'Ciao, ' + p.nome);
-    const sotto = el('p', 'home__sottotitolo', 'Il tuo lavoro è salvato sul server della scuola.');
-    const testo = el('p', 'home__testo misura', s.metodo === 'qr'
-      ? 'Su questo telefono resti collegato fino al 31 agosto. Puoi lavorare anche senza rete: quando torna, le modifiche partono da sole.'
-      : 'Stai usando il codice del cartellino: quando hai finito premi «Esci», così il tuo lavoro viene tolto da questo computer. Dopo 30 minuti senza usarlo esci da solo.');
+    const sotto = el('p', 'home__sottotitolo', 'Da dove riparti oggi?');
     const az = el('div', 'home__azioni');
     const esci = el('button', 'pulsante pulsante--secondario', 'Esci');
     esci.type = 'button';
     esci.addEventListener('click', function () { ARCH.esci(location.href.split('#')[0]); });
     az.appendChild(esci);
-    const chi = el('p', 'nota', 'Chi vede il tuo lavoro: tu e i docenti del CFP. Le correzioni dei docenti restano firmate e puoi sempre ritrovare la versione di prima.');
-    [occhiello, h1, sotto, testo, az, chi].forEach(function (n) { fascia.appendChild(n); });
-    // I testi pensati per chi lavora senza accesso qui non valgono più.
-    const notaPC = document.querySelector('.home__sotto > .nota');
-    if (notaPC) notaPC.textContent = s.metodo === 'qr'
-      ? 'Il lavoro è sul server e anche su questo telefono, così puoi continuare senza rete.'
-      : 'Su un computer della scuola premi «Esci» quando hai finito.';
-    const piede = document.querySelector('.piede p');
-    if (piede) piede.textContent = 'Il tuo lavoro è salvato sul server della scuola. Lo vedono solo tu e i docenti del CFP.';
+    [occhiello, h1, sotto, az].forEach(function (n) { fascia.appendChild(n); });
     statoPercorsi();
   }
 
@@ -122,8 +110,8 @@
         if (!riga) { riga = el('span', 'meta percorso__stato'); a.insertBefore(riga, a.querySelector('.percorso__apri')); }
         const d = docs[tipo];
         if (!d) { riga.textContent = 'Da iniziare'; return; }
-        riga.textContent = 'Ultima modifica: ' + quando(d.aggiornato) +
-          (d.autore && d.autore.tipo === 'docente' ? ', corretto da ' + (d.autore.nome || 'un docente') : '');
+        riga.textContent = 'Modificato il ' + quando(d.aggiornato) +
+          (d.autore && d.autore.tipo === 'docente' ? ' da ' + (d.autore.nome || 'un docente') : '');
         const apri = a.querySelector('.percorso__apri');
         if (apri && !apri.dataset.continua) { apri.dataset.continua = '1'; apri.textContent = 'Continua'; }
       });
@@ -136,12 +124,12 @@
     history.replaceState(null, '', location.pathname + location.search);
     ARCH.entra({ qr: qr[1] }).then(function (r) {
       if (r.ok) dopoAccesso();
-      else mostraAccesso(r.errore === 'rete' ? 'Il server della scuola non risponde. Riprova quando c\'è rete.' : 'Questo QR non vale più: chiedi al docente un cartellino nuovo, oppure scrivi il codice.');
+      else mostraAccesso(r.errore === 'rete' ? 'Il server non risponde. Riprova tra poco.' : 'Questo QR non vale più. Chiedi un cartellino nuovo al docente.');
     });
   } else if (ARCH.sessione()) {
     mostraArea();
     ARCH.avvio().then(function (s) {
-      if (!s) mostraAccesso('Non sei più collegato. Entra di nuovo con il tuo cartellino.');
+      if (!s) mostraAccesso('Entra di nuovo con il tuo cartellino.');
       else { mostraArea(); }
     });
   } else {

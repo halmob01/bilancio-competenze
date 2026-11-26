@@ -376,15 +376,12 @@
       h('a', { class: 'home__tutti', href: '../', text: 'Tutti i percorsi' }),
       h('h1', { text: 'Bilancio di competenze' }),
       h('p', { class: 'home__sottotitolo', text: 'Che cosa hai imparato finora?' }),
-      h('p', { class: 'home__testo misura', text: 'Ricostruisci le esperienze del tuo percorso, riconosci ciò che sai fare e individua quello che devi ancora imparare. Alla fine avrai un bilancio scritto con le tue parole e un breve testo per presentarti agli open day.' }),
+      h('p', { class: 'home__testo misura', text: 'Racconta che cosa hai fatto e che cosa sai fare. Alla fine hai il tuo bilancio.' }),
       h('div', { class: 'home__azioni' },
         h('button', { type: 'button', class: 'pulsante', onclick: function () {
           vai(ripresa ? ripresa.s : 0, ripresa ? ripresa.k : 0);
         } }, iniziato && ripresa ? 'Riprendi da dove eri' : 'Inizia'),
         iniziato ? h('button', { type: 'button', class: 'pulsante pulsante--secondario', onclick: function () { vaiA('bilancio', 'dossier'); } }, 'Vai al bilancio') : null),
-      h('p', { class: 'nota', text: URL_INVIO
-        ? 'Puoi tornare sulle risposte per correggerle, anche dopo averle inviate al docente: un nuovo invio sostituisce il precedente.'
-        : 'Puoi tornare sulle risposte per correggerle. Le risposte restano su questo dispositivo finché non scarichi una copia.' }),
       )),
       h('section', { class: 'home__indice', 'aria-labelledby': 'home-indice' },
         h('h2', { id: 'home-indice', class: 'meta', text: 'Sei sezioni · circa tre ore' }),
@@ -398,9 +395,7 @@
   // ---------- 01 Il tuo percorso ----------
   function schermataChi() {
     const intro = [
-      h('p', { text: URL_INVIO
-        ? 'Indirizzo e nome servono a intestare il tuo bilancio e a inviarlo al docente. L\'indirizzo ti mostra anche esempi adatti a te.'
-        : 'Queste informazioni servono a intestare il tuo bilancio e a mostrarti esempi del tuo indirizzo. Il nome compare solo sul documento che stampi o scarichi.' })
+      h('p', { text: 'Scegli anno e indirizzo: vedrai esempi adatti a te.' })
     ];
     const risposta = [
       gruppoScelte({
@@ -433,13 +428,12 @@
     const campi = L.anniDelPercorso(stato.profilo.anno).concat('tirocinio');
     const intro = [
       h('p', { text: stato.profilo.anno === 'anno1'
-        ? 'Scrivi che cosa ricordi di questo primo anno: un laboratorio, una persona, un lavoro, un momento difficile. Bastano poche parole.'
-        : 'Per ogni anno scrivi che cosa ricordi: un laboratorio, una persona, un lavoro, un momento difficile. Bastano poche parole.' }),
-      aiuto('Non serve essere completi. Queste righe ti aiuteranno a ritrovare le esperienze nella prossima sezione.', 'Se un anno non l\'hai frequentato qui, lascia il campo vuoto.'),
+        ? 'Scrivi una cosa che ricordi di quest\'anno. Bastano poche parole.'
+        : 'Per ogni anno scrivi una cosa che ricordi. Bastano poche parole.' }),
       esempio('Vedi un esempio', h('p', { text: '«I anno: il primo circuito con il deviatore su un pannello di prova. Ho sbagliato i collegamenti e li ho rifatti due volte.»' }))
     ];
     const risposta = h('div', { class: 'anni' }, campi.map(function (k) {
-      return campo({ id: 'f-' + k, etichetta: nomi[k], suggerimento: k === 'tirocinio' ? 'Scrivi di tutti quelli che hai fatto, anche se sono più di uno o in anni diversi.' : null, area: true, righe: 3, valore: stato.anni[k], aggiorna: function (v) { stato.anni[k] = v; } });
+      return campo({ id: 'f-' + k, etichetta: nomi[k], suggerimento: k === 'tirocinio' ? 'Anche più di uno.' : null, area: true, righe: 3, valore: stato.anni[k], aggiorna: function (v) { stato.anni[k] = v; } });
     }));
     return [testa(metaSchermata(), stato.profilo.anno === 'anno1' ? 'Il tuo primo anno in poche righe' : 'Il tuo percorso in poche righe'), corpo(intro, risposta)];
   }
@@ -517,8 +511,8 @@
   }
 
   const MESSAGGI_VAGHEZZA = {
-    generica: '«Tirocinio» o «scuola» dicono dove eri, non che cosa hai fatto. Scrivi una cosa precisa, con un verbo: «Ho montato…», «Ho configurato…», «Ho accolto…».',
-    corta: 'Racconta un po\' di più: con che cosa lavoravi, con chi, come è andata?'
+    generica: 'Così dici dove eri. Scrivi che cosa hai fatto: «Ho montato…».',
+    corta: 'Aggiungi qualcosa: con che cosa? Com\'è andata?'
   };
 
   function dettaglioEsperienza(e) {
@@ -540,7 +534,7 @@
     const controllaTitolo = function () {
       const g = L.titoloGenerico(e.titolo);
       avvisoTitolo.hidden = !g;
-      avvisoTitolo.textContent = g ? '«' + e.titolo.trim() + '» dice solo dove. Dai un nome a quello che hai fatto: «Quadro elettrico in tirocinio», «Rete dell\'ufficio».' : '';
+      avvisoTitolo.textContent = g ? '«' + e.titolo.trim() + '» dice solo dove. Dai un nome alla cosa: «Quadro elettrico».' : '';
     };
 
     const dove = gruppoScelte({
@@ -561,23 +555,23 @@
       aggiorna: function (id) { e.quando = id; modificato(); aggiornaVoce(e); }
     }) : null;
     const luogo = ctx === 'tirocinio'
-      ? testoCampo('contesto', 'Dove eri e con chi?', 'L\'azienda, la città e chi ti seguiva. Per esempio: «Impianti Verdi, Milano, con il tutor Marco».', 2) : null;
+      ? testoCampo('contesto', 'Dove eri e con chi?', 'Azienda, città e tutor.', 2) : null;
 
     const esempioAzione = esempio('Vedi un esempio', esempiPerIndirizzo(Object.keys(D.ESEMPI_ESPERIENZA).reduce(function (m, k) { m[k] = '«' + D.ESEMPI_ESPERIENZA[k].azione + '»'; return m; }, {})));
 
     const forma = h('div', { class: 'ed__forma' },
       h('h3', { text: 'Una cosa che hai fatto' }),
       dove, anno, luogo,
-      testoCampo('azione', 'Che cosa hai fatto tu, di preciso?', 'Una cosa sola: un lavoro, un giorno, un compito. Comincia con un verbo: «Ho montato…», «Ho preparato…», «Ho spiegato…».', 4, controllaAzione),
+      testoCampo('azione', 'Che cosa hai fatto tu, di preciso?', 'Una cosa sola. Comincia con un verbo: «Ho montato…».', 4, controllaAzione),
       avvisoAzione,
       esempioAzione,
-      campo({ id: p + 'titolo', etichetta: 'Come la chiami? Poche parole', suggerimento: 'Serve a ritrovarla nell\'elenco: «Quadro elettrico in laboratorio».', max: 200, valore: e.titolo,
+      campo({ id: p + 'titolo', etichetta: 'Come la chiami? Poche parole', suggerimento: 'Per ritrovarla nell\'elenco.', max: 200, valore: e.titolo,
         aggiorna: function (v) { e.titolo = v; aggiornaVoce(e); controllaTitolo(); } }),
       avvisoTitolo,
       h('div', { class: 'due-colonne' },
         testoCampo('difficolta', 'Che cosa è stato difficile?', 'Che cosa non sapevi fare prima?', 3),
         testoCampo('aiuto', 'Chi o che cosa ti ha aiutato?', 'Un compagno, il tutor, un manuale, un video, un errore.', 3)),
-      testoCampo('prova', 'Come potresti dimostrarlo?', 'Una foto, un lavoro finito, una relazione, il giudizio del tutor o del docente.', 3),
+      testoCampo('prova', 'Come potresti dimostrarlo?', 'Una foto, un lavoro finito, il giudizio del tutor.', 3),
       h('details', { class: 'dettagli', open: !!e.autonomia || (ctx !== 'tirocinio' && pieno(e.contesto)) },
         h('summary', { text: 'Altri dettagli' }),
         h('div', { class: 'dettagli__corpo' },
@@ -633,7 +627,7 @@
       return h('details', { class: 'esempio' },
         h('summary', { text: 'Hai scritto un diario di bordo dei tirocini?' }),
         h('div', { class: 'esempio__corpo' },
-          h('p', { text: 'Se l\'hai compilato su questo dispositivo comparirà qui da solo. Se l\'hai scritto su un altro dispositivo scarica una copia dal diario e caricala qui.' }),
+          h('p', { text: 'Se il diario è su questo dispositivo, compare qui. Altrimenti carica la sua copia.' }),
           h('p', null, carica)));
     }
     return aiuto(
@@ -680,7 +674,7 @@
     const altre = proposte.slice(5);
     return aiuto(
       h('p', { class: 'meta', text: 'Dalle tue attività' }),
-      h('p', { text: 'Hai già raccolto ' + (proposte.length === 1 ? 'un\'attività' : proposte.length + ' attività') + ' con le foto. Scegli quelle da raccontare qui: il testo viene copiato, poi aggiungi difficoltà, aiuto e quanto sai farlo da solo.' }),
+      h('p', { text: 'Puoi usare le tue attività.' }),
       h('ul', { class: 'elenco-proposte' }, prime.map(riga)),
       altre.length ? h('details', null, h('summary', { text: 'Mostra le altre ' + altre.length }), h('ul', { class: 'elenco-proposte' }, altre.map(riga))) : null);
   }
@@ -689,14 +683,13 @@
     const anni = Object.keys(stato.anni).filter(function (k) { return pieno(stato.anni[k]); });
     const pieneAbbastanza = stato.esperienze.length >= L.MAX_ESPERIENZE;
     const intro = [
-      h('p', { text: 'Racconta le cose che hai fatto davvero, una alla volta: un lavoro, un montaggio, un trattamento, una consegna. Non «il tirocinio» in generale: una cosa precisa che hai fatto lì.' }),
-      aiuto('Bastano due o tre cose. Per ognuna dici dove, che cosa hai fatto tu e come potresti dimostrarlo. Nel bilancio entra solo quello che scrivi.'),
+      h('p', { text: 'Racconta due o tre cose che hai fatto, una alla volta.' }),
       anni.length ? esempio('I tuoi appunti sul percorso', h('dl', null, anni.map(function (k) {
         return [h('dt', { text: etichettaRicordo(k) }), h('dd', { text: stato.anni[k] })];
       }))) : null,
       riquadroAttivita(pieneAbbastanza),
       riquadroDiario({
-        intro: 'Hai scritto il diario dei tirocini. Puoi trasformarne uno alla volta in una cosa da raccontare: poi rileggila e correggila.',
+        intro: 'Puoi usare il tuo diario, un tirocinio alla volta.',
         nome: function (pr) { return pr.titolo; },
         pulsante: function (pr) { return 'Crea la scheda: ' + pr.titolo; },
         gia: function (pr) { return pieneAbbastanza || stato.esperienze.some(function (x) { return x.titolo === pr.titolo; }); },
@@ -738,7 +731,7 @@
       apri: function (id) { esperienzaAperta = id; ridisegna('f-esp-' + id + '-azione'); },
       chiudi: function () { const id = esperienzaAperta; esperienzaAperta = null; ridisegna('esp-voce-' + id); },
       dettaglio: aperta ? dettaglioEsperienza(aperta) : null,
-      vuoto: 'Scegli dove è successa una cosa e premi «+ Aggiungi». Poi racconta che cosa hai fatto tu.'
+      vuoto: 'Premi «+ Aggiungi» per raccontare una cosa.'
     });
     return [testa(metaSchermata(), 'Che cosa hai fatto'), corpoLargo(intro, risposta)];
   }
@@ -776,15 +769,14 @@
     }));
     return h('div', { class: 'livelli__riga', role: 'group', 'aria-labelledby': 'blocco-' + sit.id },
       h('h3', { id: 'blocco-' + sit.id, tabindex: '-1', text: sit.domanda }),
-      esempio('Che cosa conta · un esempio', [h('p', { text: sit.anche })].concat(esempiPerIndirizzo(sit.esempi))),
+      esempio('Vedi un esempio', [h('p', { text: sit.anche })].concat(esempiPerIndirizzo(sit.esempi))),
       radio);
   }
 
   function schermataLivelli() {
     const fatte = D.SITUAZIONI.filter(function (s) { return stato.sofare[s.id].livello; }).length;
     const intro = [
-      h('p', { text: 'Sei situazioni di lavoro tra le più comuni. Per ognuna scegli la frase più vicina alla verità di oggi.' }),
-      aiuto('Non c\'è una risposta giusta: «non l\'ho mai affrontato» è una risposta come le altre. Se dici di saperlo fare, nel passo dopo ti chiediamo un esempio: senza esempio la voce resta in sospeso nel bilancio.'),
+      h('p', { text: 'Per ogni situazione scegli la frase più vera per te. Non c\'è una risposta giusta.' }),
       h('p', { class: 'meta livelli__conta', role: 'status', text: fatte + ' situazioni su ' + D.SITUAZIONI.length + ' con una risposta' })
     ];
     const risposta = h('div', { class: 'livelli' }, D.SITUAZIONI.map(rigaLivello));
@@ -812,7 +804,7 @@
     ];
     if (l && l.dichiara) {
       const avviso = h('p', { class: 'avviso', id: p + 'avviso', role: 'note', hidden: L.haProva(stato, sit.id) },
-        'Manca ancora un esempio: collega una cosa che hai raccontato o scrivilo qui sotto. Per ora nel bilancio la voce resta in sospeso.');
+        'Manca un esempio.');
       const aggiornaAvviso = function () {
         avviso.hidden = L.haProva(stato, sit.id);
         const b = $('sf-voce-' + sit.id);
@@ -822,7 +814,7 @@
         avviso,
         stato.esperienze.length
           ? gruppoScelte({
-            legenda: 'Dove l\'hai fatto? Collega una o più delle cose che hai raccontato', nome: p + 'esperienze', multipla: true,
+            legenda: 'Quando l\'hai fatto? Scegli tra le cose che hai raccontato', nome: p + 'esperienze', multipla: true,
             opzioni: stato.esperienze.map(function (e) { return { id: e.id, testo: titoloVoce(e) }; }),
             valore: r.esperienze,
             aggiorna: function (id, attiva) {
@@ -833,7 +825,7 @@
           })
           : h('p', { class: 'nota' }, 'Non hai ancora raccontato cose che hai fatto. ',
             h('button', { type: 'button', class: 'pulsante pulsante--testo', onclick: function () { vaiA('esperienze', 'elenco'); } }, 'Vai a «Che cosa hai fatto»')),
-        campo({ id: p + 'esempio', etichetta: 'Oppure scrivi un esempio: quando l\'hai fatto e che cosa hai fatto?', area: true, righe: 3, valore: r.esempio,
+        campo({ id: p + 'esempio', etichetta: 'Oppure scrivi un esempio', area: true, righe: 3, valore: r.esempio,
           aggiorna: function (v) { r.esempio = v; aggiornaAvviso(); } }),
         campo({ id: p + 'come', etichetta: 'Come l\'hai imparato? Chi o che cosa ti ha aiutato?', area: true, righe: 3, valore: r.come, aggiorna: function (v) { r.come = v; } }));
     } else if (l && l.id === 'non_ancora') {
@@ -851,11 +843,9 @@
     const dichiarate = D.SITUAZIONI.filter(function (s) { const l = livelloDi(s); return l && l.dichiara; });
     const senzaProva = dichiarate.filter(function (s) { return !L.haProva(stato, s.id); });
     const intro = [
-      h('p', { text: 'Per ogni cosa che dici di saper fare serve un esempio: collega una delle cose che hai raccontato oppure scrivilo con parole tue.' }),
-      aiuto(dichiarate.length
-        ? (senzaProva.length ? 'Ti manca l\'esempio per ' + senzaProva.length + (senzaProva.length === 1 ? ' situazione' : ' situazioni') + '. Per le altre puoi aggiungere, se vuoi, come hai imparato o che cosa ti servirebbe.'
-          : 'Hai un esempio per tutte le situazioni che dichiari di saper fare. Per le altre puoi aggiungere, se vuoi, una riga.')
-        : 'Non hai dichiarato di saper fare nessuna situazione: non serve nessun esempio. Puoi aggiungere una riga alle altre, se vuoi.')
+      h('p', { text: dichiarate.length
+        ? (senzaProva.length ? 'Per quello che sai fare serve un esempio. Ne mancano ' + senzaProva.length + '.' : 'Hai tutti gli esempi.')
+        : 'Qui non serve nessun esempio. Puoi andare avanti.' })
     ];
     if (!situazioneAperta && largo()) situazioneAperta = (senzaProva[0] || dichiarate[0] || D.SITUAZIONI[0]).id;
     const aperta = D.SITUAZIONI.find(function (s) { return s.id === situazioneAperta; }) || null;
@@ -875,8 +865,7 @@
   // Le tre domande stanno insieme: gli id delle risposte (scuola, tirocinio, ancora) restano quelli di sempre.
   function schermataSguardo() {
     const intro = [
-      h('p', { text: 'Tre domande per guardare il tuo percorso con occhio critico. Puoi essere critico: questo bilancio non è una valutazione della scuola su di te.' }),
-      aiuto('Bastano poche righe. Un episodio preciso vale più di un elenco di aggettivi.')
+      h('p', { text: 'Tre domande sul tuo percorso. Puoi dire anche quello che non va.' })
     ];
     const risposta = h('div', { class: 'blocchi blocchi--tre' }, D.SGUARDO.map(function (g) {
       return h('section', { class: 'blocco', 'aria-labelledby': 'blocco-sg-' + g.id },
@@ -927,7 +916,7 @@
     const devo = b.devoImparare.map(function (x) { return voce(x.testo, x.fonte + (x.rif.sezione === 'sofare' ? ' — non lo so ancora fare' : ''), x.rif, interattivo); });
     const mai = b.maiAffrontato.length ? [
       h('h4', { text: 'Non l\'ho mai affrontato' }),
-      h('p', { class: 'nota', text: 'Situazioni che il percorso non ti ha ancora proposto: non è la stessa cosa di «non lo so fare».' }),
+      h('p', { class: 'nota', text: 'Cose che non hai ancora provato.' }),
       h('ul', { class: 'voci' }, b.maiAffrontato.map(function (x) { return voce(x.nota, x.situazione, x.rif, interattivo); }))
     ] : [];
 
@@ -936,13 +925,13 @@
         h('p', { class: 'meta', text: 'Bilancio di competenze' }),
         h('p', { class: 'dossier__titolo', text: pieno(stato.profilo.nome) ? stato.profilo.nome : 'Il mio bilancio' }),
         intestazione ? h('p', { class: 'meta', text: intestazione }) : null),
-      parte('So fare', (soFare.length ? [h('ul', { class: 'voci' }, soFare)] : []).concat(daDoc), 'Ancora nulla: compila la sezione «Che cosa so fare».'),
+      parte('So fare', (soFare.length ? [h('ul', { class: 'voci' }, soFare)] : []).concat(daDoc), 'Ancora nulla.'),
       parte('Ho imparato così', b.hoImparato.length ? h('ul', { class: 'voci' }, b.hoImparato.map(function (x) { return voce(x.testo, x.fonte, x.rif, interattivo); })) : null,
-        'Ancora nulla: racconta le difficoltà e gli aiuti nelle esperienze e come hai imparato nella sezione «Che cosa so fare».'),
+        'Ancora nulla.'),
       parte('Posso dimostrarlo', b.possoDimostrarlo.length ? h('ul', { class: 'voci' }, b.possoDimostrarlo.map(function (x) { return voce(x.testo, x.fonte, x.rif, interattivo); })) : null,
-        'Ancora nulla: indica le prove nelle schede esperienza o gli esempi nella sezione «Che cosa so fare».'),
+        'Ancora nulla.'),
       parte('Devo ancora imparare', (devo.length ? [h('ul', { class: 'voci' }, devo)] : []).concat(mai),
-        'Ancora nulla: rispondi alla domanda «Che cosa devi ancora imparare?» nella sezione «Uno sguardo critico».'),
+        'Ancora nulla.'),
       pieno(stato.orientamento.testo) ? h('section', { class: 'dossier__parte' },
         h('h3', { text: 'Per l\'open day' }),
         h('p', { class: 'libro orientamento-anteprima', text: stato.orientamento.testo })) : null);
@@ -951,7 +940,7 @@
   function schermataBilancio() {
     const intro = null;
     const risposta = [
-      h('p', { class: 'misura', text: 'Questo documento raccoglie soltanto le tue parole. Non è un voto: serve a te, al docente e a chi ti accompagnerà nelle scelte. Da ogni voce puoi tornare alla risposta per correggerla.' }),
+      h('p', { class: 'misura', text: 'Qui ci sono solo le tue parole. Non è un voto.' }),
       h('div', { class: 'home__azioni' },
         URL_INVIO ? h('button', { type: 'button', class: 'pulsante', onclick: inviaAlDocente }, 'Invia al docente') : null,
         h('button', { type: 'button', class: 'pulsante pulsante--secondario', onclick: stampa }, 'Stampa o salva in PDF')),
@@ -964,8 +953,7 @@
   // ---------- 07 Orientamento ----------
   function schermataOrientamentoDomande() {
     const intro = [
-      h('p', { text: 'Agli open day ti ascolteranno ragazzi e ragazze di terza media e le loro famiglie. Rispondi con parole tue: anche le difficoltà fanno parte del racconto.' }),
-      aiuto('Frasi brevi, cose vere. Meglio un episodio preciso che un elenco di aggettivi.')
+      h('p', { text: 'All\'open day parlerai a ragazzi di terza media. Rispondi con parole tue.' })
     ];
     const risposta = D.ORIENTAMENTO.map(function (o) {
       return campo({ id: 'f-or-' + o.id, etichetta: o.etichetta, suggerimento: 'Per esempio: ' + o.esempio, area: true, valore: stato.orientamento[o.id],
@@ -976,18 +964,14 @@
 
   function schermataOrientamentoTesto() {
     const intro = [
-      h('p', { text: 'Puoi partire da una bozza che mette in fila le tue risposte, senza cambiarle. Poi correggi, taglia, aggiungi.' }),
-      aiuto('Nessuna correzione automatica: il testo resta tuo. Rileggilo ad alta voce prima di considerarlo finito.'),
-      h('p', { class: 'nota', text: URL_INVIO
-        ? 'Quando hai finito, premi «Invia al docente». Se correggi qualcosa dopo l\'invio, invia di nuovo: la tua riga verrà aggiornata.'
-        : 'Quando hai finito, scarica una copia e consegnala come indicato dal docente. Puoi anche stampare il bilancio insieme a questo testo.' }),
+      h('p', { text: '«Componi una bozza» mette in fila le tue risposte. Poi correggi tu.' }),
       notaInvio()
     ];
     const risposta = [
       h('div', { class: 'home__azioni' },
         h('button', { type: 'button', class: 'pulsante pulsante--secondario', onclick: function () {
           const bozza = L.componiOrientamento(stato);
-          if (!bozza) { avvisa('Rispondi prima ad almeno una domanda della schermata precedente.'); return; }
+          if (!bozza) { avvisa('Prima rispondi ad almeno una domanda.'); return; }
           const applica = function () { stato.orientamento.testo = bozza; modificato(); ridisegna('f-or-testo'); };
           if (pieno(stato.orientamento.testo)) chiedi('Sostituire il testo attuale con la bozza delle tue risposte?', 'Sostituisci', applica);
           else applica();
@@ -1063,13 +1047,13 @@
   function inviaAlDocente() {
     if (!URL_INVIO || invioInCorso) return;
     if (!pieno(stato.profilo.nome) || !stato.profilo.indirizzo) {
-      chiedi('Per inviare le risposte al docente servono il tuo nome e l\'indirizzo. Li trovi nella prima schermata.', 'Vai alla prima schermata', function () {
+      chiedi('Per inviare servono nome e indirizzo. Sono nella prima schermata.', 'Vai alla prima schermata', function () {
         if ($('dialogo-risposte').open) $('dialogo-risposte').close();
         vaiA('percorso', 'chi');
       }, 'Più tardi');
       return;
     }
-    chiedi('Inviare le risposte al foglio del docente? Potrai correggerle e inviarle di nuovo: la tua riga verrà aggiornata.', 'Invia', eseguiInvio);
+    chiedi('Inviare le risposte al docente? Potrai correggerle e inviarle di nuovo.', 'Invia', eseguiInvio);
   }
 
   // Il contenuto e il modo dell'invio sono quelli di sempre: lo script del docente non cambia.
@@ -1100,7 +1084,7 @@
         $('salvato').textContent = 'Invio non riuscito';
         avvisa(err && err.message === 'nome'
           ? 'Invio non riuscito: manca il nome.'
-          : 'Invio non riuscito. Controlla la connessione e riprova; se non funziona, scarica una copia e consegnala al docente.');
+          : 'Invio non riuscito. Riprova. Se non va, scarica una copia.');
       })
       .then(function () { invioInCorso = false; });
   }
@@ -1168,7 +1152,7 @@
   }
 
   function cancellaTutto() {
-    chiedi('Cancellare tutte le risposte da questo browser? Se non hai scaricato una copia, andranno perse.', 'Cancella tutto', function () {
+    chiedi('Cancellare tutte le risposte? Se non hai una copia, le perdi.', 'Cancella tutto', function () {
       clearTimeout(timerSalva);
       timerSalva = null;
       try { M.removeItem(CHIAVE); M.removeItem(CHIAVE_POSIZIONE); } catch (e) { /* niente da fare */ }
@@ -1192,7 +1176,7 @@
     $('invia').hidden = false;
     $('invia').addEventListener('click', inviaAlDocente);
     $('scarica').className = 'pulsante pulsante--secondario';
-    $('testo-dialogo').textContent = 'Sono salvate su questo dispositivo, in questo browser e arrivano al docente solo quando premi «Invia al docente». Puoi inviarle più volte: conta l\'ultimo invio.';
+    $('testo-dialogo').textContent = 'Arrivano al docente quando premi «Invia al docente».';
   }
   $('chiudi-risposte').addEventListener('click', function () { $('dialogo-risposte').close(); });
   $('apri-indice').addEventListener('click', function () { $('dialogo-indice').showModal(); });

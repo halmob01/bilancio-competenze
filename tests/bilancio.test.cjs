@@ -247,7 +247,7 @@ test('i tirocini sono un solo campo libero: nessun numero fisso per anno', () =>
   const app = fs.readFileSync(path.join(__dirname, '../js/app.js'), 'utf8');
   assert.ok(!/tirociniPlurali|tirocinio2|Primo tirocinio|Secondo tirocinio/.test(app));
   const g = D.SGUARDO.find((x) => x.id === 'tirocinio');
-  assert.ok(/alternanza e i tirocini/.test(g.domanda) && !g.domandaPlurale);
+  assert.ok(/alternanza o in tirocinio/.test(g.domanda) && !g.domandaPlurale);
 });
 
 test('i testi d\'esempio non parlano di anni che lo studente può non aver ancora vissuto', () => {

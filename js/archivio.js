@@ -146,10 +146,8 @@
     const chi = r.autore && r.autore.tipo === 'docente' ? 'un docente (' + (r.autore.nome || '') + ')' : 'un altro dispositivo';
     const nome = { bilancio: 'il bilancio', cv: 'il curriculum', diario: 'il diario', portfolio: 'le attività' }[tipo];
     return domanda(
-      'Mentre lavoravi qui, ' + chi + ' ha cambiato ' + nome + '. ' +
-      (u.conflitti.length === 1 ? 'Una parte è stata cambiata' : u.conflitti.length + ' parti sono state cambiate') +
-      ' da tutte e due le parti. Quale versione tieni per ' + (u.conflitti.length === 1 ? 'questa parte' : 'queste parti') + '? Il resto viene unito, e l\'altra versione resta tra quelle precedenti sul server.',
-      'Quella di questo dispositivo', 'L\'altra versione'
+      'Anche ' + chi + ' ha cambiato ' + nome + '. Quale versione tieni?',
+      'Questa', 'L\'altra'
     ).then(function (tieniQuesta) {
       if (!tieniQuesta) u = U.unisci(base, locale, server, 'server');
       fatto(u);
@@ -256,7 +254,7 @@
     return inviaTutto().then(function () {
       const mancano = inSospeso();
       if (!mancano.length) return true;
-      return domanda('Alcune modifiche non sono ancora arrivate al server (forse manca la rete). Se esci adesso andranno perse.', 'Resta e riprova', 'Esci comunque')
+      return domanda('Alcune modifiche non sono ancora sul server. Se esci, le perdi.', 'Resta e riprova', 'Esci comunque')
         .then(function (resta) { return !resta; });
     }).then(function (procedi) {
       if (!procedi) return;
@@ -276,7 +274,7 @@
     const casa = document.querySelector('a.testata__tutti');
     const p = document.createElement('p');
     p.id = 'avviso-sessione'; p.className = 'avviso-sessione'; p.setAttribute('role', 'status');
-    p.textContent = 'Non sei più collegato al server: il lavoro resta su questo dispositivo. ';
+    p.textContent = 'Non sei più collegato. ';
     const a = document.createElement('a');
     a.href = casa ? casa.getAttribute('href') : './';
     a.textContent = 'Entra di nuovo';
@@ -307,8 +305,6 @@
   // ---------- Nome e «Esci» nella testata dei siti ----------
   function mostraUtente() {
     if (!sessione) return;
-    // I testi che parlano di dove sta il lavoro cambiano quando lo studente è entrato (attributo data-con-accesso).
-    document.querySelectorAll('[data-con-accesso]').forEach(function (el) { el.textContent = el.getAttribute('data-con-accesso'); });
     const riga = document.querySelector('.testata__riga');
     const casa = document.querySelector('a.testata__tutti');
     if (!riga || !casa || document.getElementById('utente-portale')) return;
@@ -326,6 +322,39 @@
   }
 
   function suffisso() { return sessione ? '-u' + sessione.profilo.id : ''; }
+
+  // ---------- «Dove va il mio lavoro?» ----------
+  // Tutto quello che riguarda salvataggio e privacy sta qui, in frasi brevi: le pagine non lo ripetono.
+  function informativa() {
+    const dentro = !!sessione;
+    const righe = dentro ? [
+      'Il tuo lavoro è salvato sul server della scuola.',
+      'Lo vedete solo tu e i docenti del CFP.',
+      'Lo ritrovi su ogni telefono o computer in cui entri con il cartellino.',
+      'Su un computer della scuola, alla fine premi «Esci».',
+      'Le foto delle attività restano su questo dispositivo.'
+    ] : [
+      'Il tuo lavoro resta su questo telefono o computer.',
+      'Non lo vede nessun altro.',
+      'Per spostarlo: «Scarica una copia», poi «Carica una copia» sull\'altro dispositivo.',
+      'Su un computer della scuola, alla fine scarica la copia e cancella il lavoro.'
+    ];
+    const d = document.createElement('dialog');
+    d.className = 'informativa';
+    d.setAttribute('aria-labelledby', 'informativa-titolo');
+    const h = document.createElement('h2'); h.id = 'informativa-titolo'; h.textContent = 'Dove va il mio lavoro?';
+    const ul = document.createElement('ul'); ul.className = 'informativa__elenco';
+    righe.forEach(function (t) { const li = document.createElement('li'); li.textContent = t; ul.appendChild(li); });
+    const az = document.createElement('div'); az.className = 'dialogo__azioni';
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'pulsante'; b.textContent = 'Ho capito';
+    b.onclick = function () { d.close(); };
+    az.appendChild(b);
+    d.appendChild(h); d.appendChild(ul); d.appendChild(az);
+    d.addEventListener('close', function () { d.remove(); });
+    document.body.appendChild(d);
+    d.showModal();
+  }
+  document.querySelectorAll('[data-informativa]').forEach(function (b) { b.addEventListener('click', informativa); });
 
   // Senza rete i salvataggi aspettano: si riprova quando torna e ogni 30 secondi.
   if (API) {
@@ -362,6 +391,7 @@
     inSospeso: inSospeso,
     elencoDocumenti: function () { return sessione ? richiesta('GET', 'documenti') : Promise.resolve({ stato: 0, json: {} }); },
     mostraUtente: mostraUtente,
-    domanda: domanda
+    domanda: domanda,
+    informativa: informativa
   };
 })();

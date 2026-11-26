@@ -121,21 +121,21 @@
   const SGUARDO = [
     {
       id: 'scuola',
-      domanda: 'Che cosa ti è servito davvero della scuola? Che cosa avresti cambiato?',
-      aiuto: 'Pensa a un laboratorio, una materia, un docente, un modo di lavorare. Puoi essere critico: questo bilancio non è una valutazione della scuola su di te.',
+      domanda: 'Che cosa ti è servito della scuola? Che cosa cambieresti?',
+      aiuto: 'Un laboratorio, una materia, un docente.',
       esempio: '«Nell\'azienda in cui ho fatto il tirocinio ho imparato più che in aula, perché facevo lavori veri e se sbagliavo dovevo rifare. A scuola avrei voluto meno teoria ripetuta e più casi veri.»'
     },
     {
       id: 'tirocinio',
       // Parole che valgono per qualunque percorso: alternanza simulata, uno o più tirocini, in anni diversi.
-      domanda: 'Che cosa ti hanno insegnato l\'alternanza e i tirocini che a scuola non avevi visto? Che cosa non ha funzionato?',
-      aiuto: 'Se non hai ancora fatto un tirocinio, racconta un\'altra esperienza di lavoro o scrivi che cosa ti aspetti. Se ne hai fatti più di uno puoi anche confrontarli.',
+      domanda: 'Che cosa hai imparato in alternanza o in tirocinio che a scuola non avevi visto?',
+      aiuto: 'Non hai fatto tirocini? Racconta un altro lavoro.',
       esempio: '«In azienda i tempi erano molto più stretti. Il tutor all\'inizio non aveva tempo per me; ho imparato a fare domande precise.»'
     },
     {
       id: 'ancora',
-      domanda: 'Che cosa devi ancora imparare per lavorare bene? Come pensi di farlo?',
-      aiuto: 'Scegli una o due cose concrete. Indica anche da chi o da che cosa potresti farti aiutare.',
+      domanda: 'Che cosa devi ancora imparare? Come puoi farlo?',
+      aiuto: 'Una o due cose. Chi ti può aiutare?',
       esempio: '«Devo imparare a preventivare i tempi di un lavoro. Posso chiedere al tutor di farmi provare a stimarli prima di iniziare.»'
     }
   ];
@@ -195,7 +195,7 @@
     },
     {
       id: 'racconto',
-      etichetta: 'Un\'esperienza che racconteresti a un ragazzo o una ragazza di terza media.',
+      etichetta: 'Un\'esperienza da raccontare a chi è in terza media.',
       esempio: '«In un progetto di laboratorio abbiamo rimesso in funzione i computer di un\'associazione del quartiere…»'
     },
     {

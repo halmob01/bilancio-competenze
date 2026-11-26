@@ -303,12 +303,11 @@
       h('a', { class: 'home__tutti', href: '../', text: 'Tutti i percorsi' }),
       h('h1', { text: 'Il tuo curriculum' }),
       h('p', { class: 'home__sottotitolo', text: 'Il foglio da consegnare a un\'azienda.' }),
-      h('p', { class: 'home__testo misura', text: 'Scrivi i tuoi dati, la formazione, i tirocini e le competenze con parole tue. Alla fine scarichi il curriculum in Word o in PDF, oppure lo stampi. Se hai già compilato il bilancio di competenze o il diario di bordo su questo dispositivo, puoi prenderne nome, esperienze e competenze senza riscriverli.' }),
+      h('p', { class: 'home__testo misura', text: 'Scrivi i tuoi dati e le tue esperienze. Alla fine lo scarichi in Word o PDF.' }),
       h('div', { class: 'home__azioni' },
         h('button', { type: 'button', class: 'pulsante', onclick: function () { vai(ripresa ? ripresa.k : 0); } },
           iniziato && ripresa ? 'Riprendi da dove eri' : 'Inizia'),
         iniziato ? h('button', { type: 'button', class: 'pulsante pulsante--secondario', onclick: function () { vai(PASSI.length - 1); } }, 'Vai al curriculum') : null),
-      h('p', { class: 'nota', text: 'Il curriculum contiene recapiti personali: resta su questo dispositivo e non viene inviato a nessuno. Per riprenderlo su un altro dispositivo scarica una copia da «Salva e stampa».' }),
       )),
       h('section', { class: 'home__indice', 'aria-labelledby': 'home-indice' },
         h('h2', { id: 'home-indice', class: 'meta', text: 'Sei passi · circa mezz\'ora' }),
@@ -354,7 +353,7 @@
       return h('details', { class: 'esempio' },
         h('summary', { text: 'Hai compilato il bilancio di competenze?' }),
         h('div', { class: 'esempio__corpo' },
-          h('p', { text: 'Se l\'hai compilato su questo dispositivo comparirà qui da solo. Se l\'hai scritto su un altro dispositivo scarica una copia dal bilancio e caricala qui. Il bilancio non viene modificato.' }),
+          h('p', { text: 'Se il bilancio è su questo dispositivo, compare qui. Altrimenti carica la sua copia.' }),
           h('p', null, carica)));
     }
     const nomeNuovo = b.nome && b.nome !== (stato.profilo.nome || '').trim();
@@ -367,7 +366,7 @@
     };
     return aiuto(
       h('p', { class: 'meta', text: 'Dal tuo bilancio di competenze' }),
-      h('p', { text: 'Ho trovato il tuo bilancio' + (b.nome ? ' («' + b.nome + '»)' : '') + '. Puoi prenderne il nome e l\'indirizzo; le esperienze e le competenze le trovi nei passi «Le esperienze di lavoro» e «Competenze, lingue e altro».' }),
+      h('p', { text: 'Ho trovato il tuo bilancio' + (b.nome ? ' («' + b.nome + '»)' : '') + '. Puoi prendere nome e indirizzo.' }),
       h('p', null,
         h('button', { type: 'button', class: 'pulsante pulsante--secondario pulsante--piccolo', disabled: !(nomeNuovo || indirizzoNuovo), onclick: function () {
           if (pieno(stato.profilo.nome) && nomeNuovo) chiedi('Sostituire il nome già scritto con quello del bilancio?', 'Sostituisci', prendi);
@@ -418,7 +417,7 @@
       return h('details', { class: 'esempio' },
         h('summary', { text: 'Hai scritto un diario di bordo dei tirocini?' }),
         h('div', { class: 'esempio__corpo' },
-          h('p', { text: 'Se l\'hai compilato su questo dispositivo comparirà qui da solo. Se l\'hai scritto su un altro dispositivo scarica una copia dal diario e caricala qui.' }),
+          h('p', { text: 'Se il diario è su questo dispositivo, compare qui. Altrimenti carica la sua copia.' }),
           h('p', null, carica)));
     }
     return aiuto(
@@ -481,8 +480,7 @@
   function schermataCVContatti() {
     const c = stato.cv;
     const intro = [
-      h('p', { text: 'Il curriculum è il foglio che consegni a un\'azienda o a un tutor. Qui scrivi i tuoi dati: servono solo per stamparlo.' }),
-      aiuto('I dati del curriculum, foto compresa, restano su questo dispositivo: il sito non li invia a nessuno. Compila solo ciò che vuoi far comparire sul foglio.'),
+      h('p', { text: 'I tuoi dati, in cima al foglio. Scrivi solo quelli che vuoi mostrare.' }),
       riquadroBilancio()
     ];
     const risposta = [
@@ -501,7 +499,7 @@
       campo({ id: 'f-cv-patente', etichetta: 'Patente', max: 40, suggerimento: 'Per esempio AM, oppure «in corso».', valore: c.patente, aggiorna: function (v) { c.patente = v; } }),
       h('div', { class: 'campo' },
         h('label', { for: 'f-cv-foto', text: 'Foto' }),
-        h('p', { class: 'campo__suggerimento', text: 'Una foto nitida, con sfondo semplice e un abbigliamento da colloquio. Resta su questo dispositivo.' }),
+        h('p', { class: 'campo__suggerimento', text: 'Una foto nitida, con sfondo semplice.' }),
         c.foto ? h('img', { class: 'cv__anteprima-foto', src: c.foto, alt: 'La tua foto' }) : null,
         h('input', { type: 'file', id: 'f-cv-foto', accept: 'image/*', onchange: function (e) { caricaFoto(e.target.files[0]); e.target.value = ''; } }),
         c.foto ? h('div', null, h('button', { type: 'button', class: 'pulsante pulsante--testo', onclick: function () { c.foto = ''; modificato(); ridisegna('f-cv-foto'); } }, 'Togli la foto')) : null)
@@ -512,14 +510,13 @@
   function schermataCVProfilo() {
     const c = stato.cv;
     const intro = [
-      h('p', { text: 'Chi legge il curriculum guarda prima di tutto qui: che lavoro cerchi e che persona sei.' }),
-      aiuto('Nel profilo scrivi i tuoi obiettivi e al massimo tre qualità, con parole tue e senza aggettivi generici.'),
+      h('p', { text: 'Che lavoro cerchi e chi sei. È la prima cosa che si legge.' }),
       esempio('Vedi un esempio di profilo', esempiPerIndirizzo(PROFILO_ESEMPI))
     ];
     const risposta = [
-      campo({ id: 'f-cv-occupazione', etichetta: 'Occupazione desiderata', max: 120, suggerimento: 'Il lavoro che cerchi, in poche parole. Per esempio: Tecnico elettricista, Addetta ai trattamenti estetici.', valore: c.occupazione, aggiorna: function (v) { c.occupazione = v; } }),
+      campo({ id: 'f-cv-occupazione', etichetta: 'Occupazione desiderata', max: 120, suggerimento: 'Per esempio: Tecnico elettricista.', valore: c.occupazione, aggiorna: function (v) { c.occupazione = v; } }),
       campo({ id: 'f-cv-profilo', etichetta: 'Profilo: obiettivi e qualità', area: true, righe: 5, max: C.MAX_PROFILO,
-        suggerimento: 'Massimo ' + C.MAX_PROFILO + ' caratteri. Per mettere una parola in grassetto scrivila tra due asterischi: **così**.', valore: c.profilo, aggiorna: function (v) { c.profilo = v; } })
+        suggerimento: 'Massimo ' + C.MAX_PROFILO + ' caratteri. Grassetto: **così**.', valore: c.profilo, aggiorna: function (v) { c.profilo = v; } })
     ];
     return [testa(metaSchermata(), 'Che lavoro cerchi'), corpo(intro, risposta)];
   }
@@ -528,8 +525,7 @@
     const c = stato.cv;
     if (!c.formazione.length) c.formazione.push(C.formazioneVuota());
     const intro = [
-      h('p', { text: 'Elenca i percorsi di studio e i corsi che hai fatto, dal più recente.' }),
-      aiuto('Scrivi il nome del corso come lo conosci e dove lo stai frequentando. Se hai fatto corsi di sicurezza o altri attestati, aggiungili come voci separate.'),
+      h('p', { text: 'Scuole e corsi, dal più recente. Anche i corsi sulla sicurezza.' }),
       esempio('Vedi un esempio', h('dl', null,
         h('dt', { text: 'Periodo' }), h('dd', { text: '2023 – oggi' }),
         h('dt', { text: 'Titolo' }), h('dd', { text: 'Percorso di formazione professionale, indirizzo Elettrico' }),
@@ -568,9 +564,7 @@
     const c = stato.cv;
     if (!c.lavoro.length) c.lavoro.push(C.lavoroVuoto('tirocinio'));
     const intro = [
-      h('p', { text: 'Scrivi i tirocini, gli apprendistati e i lavori che hai fatto, dal più recente. Se ne hai fatti più di uno, aggiungili uno alla volta.' }),
-      aiuto('Per ogni esperienza servono l\'azienda, il periodo, la tua mansione e i compiti che svolgevi. Per i compiti usa dei verbi («Cablare…», «Configurare…», «Accogliere…») e metti in grassetto le competenze scrivendole tra due asterischi: **così**.',
-        'Se hai già raccontato l\'esperienza nel bilancio di competenze, puoi riprendere il testo da lì e poi accorciarlo.'),
+      h('p', { text: 'Tirocini e lavori, dal più recente. Uno alla volta.' }),
       esempio('Vedi un esempio', h('dl', null,
         h('dt', { text: 'Tipo' }), h('dd', { text: 'Tirocinio' }),
         h('dt', { text: 'Azienda' }), h('dd', { text: 'Impianti Verdi, Milano' }),
@@ -581,7 +575,7 @@
     const dalBilancio = bilancio();
     const conAzione = dalBilancio ? dalBilancio.esperienze : [];
     intro.push(riquadroDiario({
-      intro: 'Puoi aggiungere al curriculum i tirocini del diario, uno alla volta: azienda, città, periodo e i compiti presi dalle tue settimane. La mansione nel diario non c\'è: scrivila tu. Poi accorcia i compiti.',
+      intro: 'Puoi prendere i tirocini dal diario. Poi scrivi la mansione.',
       nome: function (pr) { return pr.titolo.replace(/^Tirocinio presso /, ''); },
       pulsante: function (pr) { return 'Aggiungi al curriculum: ' + pr.titolo.replace(/^Tirocinio presso /, ''); },
       // Lo stesso tirocinio è la stessa azienda con lo stesso inizio: due tirocini nella stessa azienda in anni diversi sono due voci.
@@ -645,7 +639,6 @@
           c.lavoro.push(l);
           modificato(); ridisegna('f-cv-la-' + l.id + '-azienda');
         } }, 'Aggiungi un\'altra esperienza')),
-      h('p', { class: 'nota', text: 'Nel curriculum compaiono dalla più recente alla più vecchia, se per ogni esperienza hai scelto le date dal calendario. Una voce senza azienda né mansione viene ignorata.' })
     ];
     return [testa(metaSchermata(), 'Le esperienze di lavoro'), corpo(intro, risposta)];
   }
@@ -707,8 +700,7 @@
   function schermataCVCompetenze() {
     const c = stato.cv;
     const intro = [
-      h('p', { text: 'Una riga per ogni voce. Evita gli aggettivi generici: meglio quello che sai fare davvero.' }),
-      aiuto('«Proponi dalle mie risposte» aggiunge una frase per ogni situazione che hai dichiarato di saper fare e documentato con un esempio nel bilancio di competenze. Poi correggi come vuoi.'),
+      h('p', { text: 'Una riga per ogni cosa che sai fare davvero.' }),
       esempio('Vedi un esempio', h('dl', null,
         h('dt', { text: 'Lingue' }), h('dd', { text: 'Italiano: madrelingua · Inglese: intermedio' }),
         h('dt', { text: 'Digitali' }), h('dd', { text: 'Word buono, Excel base, programmi del mio settore' }),
@@ -718,9 +710,9 @@
       campo({ id: 'f-cv-competenze', etichetta: 'Competenze professionali', area: true, righe: 5, suggerimento: 'Una per riga.', valore: c.competenze, aggiorna: function (v) { c.competenze = v; } }),
       h('div', null, h('button', { type: 'button', class: 'pulsante pulsante--secondario pulsante--piccolo', onclick: function () {
         const b = bilancio();
-        if (!b) { avvisa('Non trovo il bilancio di competenze su questo dispositivo. Nel primo passo («I tuoi dati») puoi caricarne una copia; oppure scrivi tu le competenze qui sotto.'); return; }
+        if (!b) { avvisa('Il bilancio non è su questo dispositivo. Scrivi tu le competenze.'); return; }
         const sug = b.competenze;
-        if (!sug.length) { avvisa('Nel bilancio non ci sono ancora competenze dichiarate e documentate con un esempio. Scrivile tu qui sotto.'); return; }
+        if (!sug.length) { avvisa('Nel bilancio non ci sono ancora competenze con un esempio. Scrivile tu.'); return; }
         const gia = c.competenze.split('\n').map(function (x) { return x.trim(); });
         const nuove = sug.filter(function (x) { return gia.indexOf(x) === -1; });
         if (nuove.length) c.competenze = (pieno(c.competenze) ? c.competenze.replace(/\s+$/, '') + '\n' : '') + nuove.join('\n');
@@ -728,7 +720,7 @@
       } }, 'Proponi dalle mie risposte')),
       sezioneLingue(),
       campo({ id: 'f-cv-digitali', etichetta: 'Software e capacità digitali', area: true, righe: 3, suggerimento: 'Per esempio: Word buono, Excel base, programmi usati in azienda.', valore: c.digitali, aggiorna: function (v) { c.digitali = v; } }),
-      campo({ id: 'f-cv-altro', etichetta: 'Interessi', area: true, righe: 3, suggerimento: 'Interessi e competenze maturate fuori da scuola: passioni, progetti, associazioni, volontariato.', valore: c.altro, aggiorna: function (v) { c.altro = v; } }),
+      campo({ id: 'f-cv-altro', etichetta: 'Interessi', area: true, righe: 3, suggerimento: 'Passioni, sport, volontariato.', valore: c.altro, aggiorna: function (v) { c.altro = v; } }),
       casella({ id: 'f-cv-consenso', testo: 'Aggiungi in fondo la frase sul trattamento dei dati personali', valore: c.consenso,
         aggiorna: function (v) { c.consenso = v; modificato(); } })
     ];
@@ -940,8 +932,8 @@
     const risposta = [
       d.mancanti.length
         ? h('p', { class: 'avviso' }, 'Per un curriculum completo manca ancora: ' + d.mancanti.join(', ') + '.')
-        : h('p', { class: 'nota', text: 'Il curriculum ha le informazioni essenziali. Rileggilo prima di stamparlo.' }),
-      aiuto('Clicca sul foglio per correggere una parola o una riga direttamente nel curriculum. Queste correzioni valgono solo per la stampa e restano finché non cambi i dati: per modifiche definitive usa «Modifica i dati».'),
+        : null,
+      h('p', { class: 'nota', text: 'Puoi correggere una parola cliccando sul foglio.' }),
       pannelloAspetto(doc),
       h('div', { class: 'home__azioni' },
         h('button', { type: 'button', class: 'pulsante', onclick: scaricaWord }, 'Scarica in Word'),
@@ -950,7 +942,6 @@
         riuso ? h('button', { type: 'button', class: 'pulsante pulsante--testo', onclick: function () {
           chiedi('Annullare le correzioni scritte a mano sul foglio?', 'Annulla le correzioni', function () { cvManuale = null; ridisegna(); }, 'Tieni le correzioni');
         } }, 'Annulla le correzioni sul foglio') : null),
-      h('p', { class: 'nota', text: 'Il curriculum resta su questo dispositivo e non viene inviato al docente.' }),
       doc
     ];
     return [testa(metaSchermata(), 'Il tuo curriculum'), corpo(null, risposta, true)];
@@ -1246,7 +1237,7 @@
   }
 
   function cancellaTutto() {
-    chiedi('Cancellare il curriculum da questo browser? Se non hai scaricato una copia, andrà perso. Il bilancio e il diario non vengono toccati.', 'Cancella tutto', function () {
+    chiedi('Cancellare il curriculum? Se non hai una copia, lo perdi.', 'Cancella tutto', function () {
       clearTimeout(timerSalva);
       timerSalva = null;
       try { M.removeItem(C.CHIAVE); M.removeItem(CHIAVE_POSIZIONE); } catch (e) { /* niente da fare */ }

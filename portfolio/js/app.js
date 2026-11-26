@@ -258,8 +258,9 @@
   function avvisoFoto() {
     const ind = stato.profilo.indirizzo;
     return aiuto(
-      h('p', null, h('strong', { text: 'Fotografa il lavoro, non le persone.' }), ' Niente volti, documenti o schermi con dati di clienti o colleghi. In azienda chiedi prima al tutor se puoi fotografare.'),
-      ind === 'estetica' || !ind ? 'Per un trattamento inquadra solo la zona trattata (le mani, un dettaglio della pelle), mai il viso.' : null);
+      h('p', null, h('strong', { text: 'Fotografa il lavoro, non le persone.' })),
+      ind === 'estetica' || !ind ? 'Per un trattamento: solo la zona trattata, mai il viso.' : null,
+      'In azienda chiedi prima al tutor.');
   }
 
   // ---------- Home ----------
@@ -280,12 +281,11 @@
         h('a', { class: 'home__tutti', href: '../', text: 'Tutti i percorsi' }),
         h('h1', { text: 'Le mie attività' }),
         h('p', { class: 'home__sottotitolo', text: 'Fotografa quello che fai. Scrivi due righe.' }),
-        h('p', { class: 'home__testo misura', text: 'Ogni volta che finisci un lavoro in laboratorio o in tirocinio, aggiungi un\'attività: una o più foto e che cosa hai fatto, con le tue parole. Ci vuole un minuto. Così, quando farai il bilancio di competenze o il curriculum, le prove sono già qui.' }),
         h('div', { class: 'home__azioni' },
           h('button', { type: 'button', class: 'pulsante pulsante--grande', id: 'nuova', disabled: n >= A.MAX_ATTIVITA, onclick: function () { nuovaAttivita(); } }, '+ Nuova attività'),
           dalDiario ? h('button', { type: 'button', class: 'pulsante pulsante--secondario', onclick: function () { vai({ modo: 'diario' }); } },
             'Prendi dal diario (' + dalDiario + ')') : null),
-        h('p', { class: 'nota', text: 'Le attività e le foto restano su questo dispositivo. Fotografa il lavoro, non le persone.' }))),
+        )),
       h('section', { class: 'home__sotto', 'aria-labelledby': 'titolo-galleria' },
         h('h2', { id: 'titolo-galleria', class: 'meta occhiello', text: n ? (n === 1 ? 'Un\'attività' : n + ' attività') : 'Ancora nessuna attività' }),
         n ? galleria() : h('div', { class: 'galleria-vuota' },
@@ -334,11 +334,11 @@
       input.click();
     };
     const intro = [
-      h('p', { text: 'Da una a quattro foto del lavoro finito o di un passaggio importante. Se non hai una foto puoi andare avanti e aggiungerla dopo.' }),
+      h('p', { text: 'Fino a quattro foto. Puoi aggiungerle anche dopo.' }),
       avvisoFoto()
     ];
     const risposta = [
-      fotoDisponibili ? null : h('p', { class: 'avviso', text: 'Questo browser non permette di salvare le foto (per esempio in una finestra anonima). Puoi scrivere l\'attività e aggiungere le foto da un altro browser.' }),
+      fotoDisponibili ? null : h('p', { class: 'avviso', text: 'Qui non si possono salvare foto. Scrivi l\'attività e aggiungile da un altro browser.' }),
       h('div', { class: 'home__azioni' },
         h('button', { type: 'button', class: 'pulsante', id: 'scatta', disabled: piene || !fotoDisponibili, onclick: function () { scegli(true); } }, 'Scatta una foto'),
         h('button', { type: 'button', class: 'pulsante pulsante--secondario', id: 'galleria', disabled: piene || !fotoDisponibili, onclick: function () { scegli(false); } }, 'Scegli dalla galleria')),
@@ -368,14 +368,14 @@
           if (a.foto.length < A.MAX_FOTO) a.foto.push(id);
           modificato();
         }).catch(function () {
-          avvisa('Non sono riuscito a usare una delle foto. Prova a scattarla di nuovo o a sceglierne un\'altra.');
+          avvisa('Una foto non va. Prova con un\'altra.');
         }).then(function () { inLavorazione--; ridisegna(); });
       });
     }, Promise.resolve()).then(function () { scriviArchivio(); });
   }
 
   function togliFoto(a, id) {
-    chiedi('Togliere questa foto dall\'attività? Verrà cancellata da questo dispositivo.', 'Togli', function () {
+    chiedi('Togliere questa foto?', 'Togli', function () {
       a.foto = a.foto.filter(function (x) { return x !== id; });
       scriviArchivio();
       F.elimina(id).catch(function () { /* resta un avanzo, lo toglie la pulizia */ });
@@ -393,14 +393,14 @@
       const c = L.vaghezza(a.fatto);
       avviso.hidden = !c;
       avviso.textContent = c === 'generica'
-        ? 'Così dice dove eri, non che cosa hai fatto. Prova a cominciare con un verbo: «Ho cablato…», «Ho installato…», «Ho eseguito…».'
-        : c === 'corta' ? 'Aggiungi un dettaglio: con che cosa, per chi, come hai controllato il risultato.' : '';
+        ? 'Così dici dove eri. Scrivi che cosa hai fatto: «Ho cablato…».'
+        : c === 'corta' ? 'Aggiungi qualcosa: con che cosa? Com\'è andata?' : '';
     };
     const intro = [
-      h('p', { text: 'Racconta quello che hai fatto tu, in una o due frasi. Comincia con un verbo e di\' che cosa, con che cosa e come è andata.' }),
+      h('p', { text: 'Una o due frasi. Comincia con un verbo.' }),
       h('details', { class: 'esempio' }, h('summary', { text: esempi.length > 1 ? 'Vedi degli esempi' : 'Vedi un esempio' }),
         h('div', { class: 'esempio__corpo' }, esempi.map(function (e) { return h('p', { text: e }); }))),
-      h('p', { class: 'nota', text: 'Puoi dettare: tocca il microfono sulla tastiera del telefono e poi controlla quello che ha scritto.' })
+      h('p', { class: 'nota', text: 'Puoi dettare con il microfono della tastiera.' })
     ];
     const risposta = [
       campo({ id: 'f-fatto', etichetta: 'Che cosa hai fatto?', area: true, classe: 'lungo', valore: a.fatto, max: 4000,
@@ -425,7 +425,7 @@
       aziende.length ? h('datalist', { id: 'aziende-diario' }, aziende.map(function (x) { return h('option', { value: x }); })) : null,
       campo({ id: 'f-data', etichetta: 'Quando?', tipo: 'date', valore: a.data, max: 10, aggiorna: function (v) { a.data = v; } })
     ];
-    return [testa('03 / 04', 'Dove e quando'), corpo([h('p', { text: 'Dove eri e in che giorno. Se non ricordi la data esatta, scegli un giorno di quella settimana.' })], risposta)];
+    return [testa('03 / 04', 'Dove e quando'), corpo([h('p', { text: 'Dove eri e quando.' })], risposta)];
   }
 
   // ---------- Passo 4: che cosa sai fare ----------
@@ -436,13 +436,13 @@
       ? { indirizzo: bilancio.profilo.indirizzo, anno: A.ANNI.some(function (x) { return x.id === bilancio.profilo.anno; }) ? bilancio.profilo.anno : '' } : null;
     const profiloCompleto = p.indirizzo && p.anno;
     const intro = [
-      h('p', { text: 'Che cosa sai fare, secondo questa attività? Scegli da una a tre voci. Sono le competenze del tuo percorso, dette in modo semplice.' }),
-      h('p', { class: 'nota', text: 'Puoi anche saltare questo passo e tornarci dopo.' })
+      h('p', { text: 'Che cosa sai fare? Scegline da una a tre.' }),
+      h('p', { class: 'nota', text: 'Puoi anche saltare questo passo.' })
     ];
     const profilo = h('div', { class: 'profilo-breve' },
       profiloCompleto ? h('p', { class: 'meta' }, 'Competenze di: ', h('strong', { text: C.figuraPer(p.indirizzo, p.anno) }), ' · ',
         h('button', { type: 'button', class: 'pulsante pulsante--testo', onclick: function () { p.anno = ''; p.indirizzo = ''; modificato(); ridisegna(); } }, 'Cambia')) : [
-        h('p', { text: 'Per mostrarti le competenze giuste dimmi indirizzo e anno. Lo chiedo una volta sola.' }),
+        h('p', { text: 'Indirizzo e anno? Te lo chiedo una volta sola.' }),
         dalBilancio && !p.indirizzo ? h('button', { type: 'button', class: 'pulsante pulsante--secondario pulsante--piccolo', onclick: function () {
           p.indirizzo = dalBilancio.indirizzo; if (dalBilancio.anno) p.anno = dalBilancio.anno; modificato(); ridisegna();
         } }, 'Prendi dal bilancio di competenze') : null,
@@ -537,8 +537,7 @@
       h('button', { type: 'button', class: 'pulsante pulsante--testo ed__torna-sempre', onclick: function () { vai(null); } }, '← Tutte le attività'),
       testa('Dal tuo diario di bordo', 'Prendi una settimana dal diario'),
       corpo([
-        h('p', { text: 'Ogni settimana del diario in cui hai scritto che cosa hai fatto può diventare un\'attività. Il testo, la data e l\'azienda vengono copiati: poi aggiungi le foto e scegli che cosa sai fare.' }),
-        h('p', { class: 'nota', text: 'Il diario non viene modificato. Se lo compili su un altro dispositivo, qui vedi solo quello salvato in questo browser.' })
+        h('p', { text: 'Ogni settimana del diario può diventare un\'attività. Poi aggiungi le foto.' })
       ], proposte.length ? h('ul', { class: 'schede' }, proposte.map(function (p) {
         return h('li', { class: 'scheda' },
           h('div', { class: 'scheda__testa' },
@@ -548,7 +547,7 @@
           h('div', { class: 'scheda__azioni' },
             h('button', { type: 'button', class: 'pulsante pulsante--piccolo' + (p.gia ? ' pulsante--secondario' : ''), onclick: function () { nuovaAttivita(p); } },
               p.gia ? 'Aggiungi di nuovo' : 'Aggiungi alle attività')));
-      })) : h('p', { class: 'vuoto', text: 'Nel diario di questo browser non ci sono settimane con «Che cosa hai fatto» compilato.' })));
+      })) : h('p', { class: 'vuoto', text: 'Nel diario non ci sono settimane da usare.' })));
   }
 
   // ---------- Disegno ----------
@@ -605,7 +604,7 @@
           vista = null; vai(null);
         });
       };
-      if (stato.attivita.length) chiedi('Sostituire le tue attività con quelle del file? Quelle di adesso, con le foto, verranno cancellate da questo dispositivo.', 'Sostituisci', applica);
+      if (stato.attivita.length) chiedi('Sostituire le tue attività con quelle del file? Quelle di adesso si cancellano.', 'Sostituisci', applica);
       else applica();
     };
     lettore.readAsText(file);
@@ -638,12 +637,12 @@
       $('salvato').textContent = 'PDF scaricato';
     }).catch(function () {
       $('salvato').textContent = '';
-      avvisa('Non sono riuscito a creare il PDF. Riprova; se non funziona, scarica una copia delle attività.');
+      avvisa('Il PDF non è riuscito. Riprova.');
     });
   }
 
   function cancellaTutto() {
-    chiedi('Cancellare tutte le attività e le foto da questo browser? Se non hai scaricato una copia andranno perse.', 'Cancella tutto', function () {
+    chiedi('Cancellare tutte le attività e le foto? Se non hai una copia, le perdi.', 'Cancella tutto', function () {
       clearTimeout(timerSalva); timerSalva = null;
       try { M.removeItem(A.CHIAVE); } catch (e) { /* niente da fare */ }
       F.svuota().catch(function () {});

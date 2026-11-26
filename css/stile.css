@@ -52,7 +52,6 @@ a { color: var(--c-rosso); text-underline-offset: 3px; }
   display: inline-block; flex: none; width: 14px; height: 14px; margin-right: 10px; vertical-align: -1px;
   border: 4px solid var(--c-rosso); border-radius: 50%; background: transparent;
 }
-.chiave { color: var(--c-rosso); }
 .misura { max-width: var(--measure); }
 .libro { font-size: 1.125em; line-height: 1.55; }
 
@@ -171,7 +170,6 @@ body:has(.home) .avanzamento { display: none; }
   font-weight: 900; font-size: var(--t-h1); line-height: 1.02; letter-spacing: -.01em;
   margin: 0 0 22px; max-width: 14ch;
 }
-.home__fascia h1 .chiave { color: var(--c-nero); }
 .home__fascia h1::after { content: none; }
 .home__fascia .occhiello { color: var(--c-bianco); margin-bottom: 14px; }
 .home__sottotitolo { font-size: var(--t-domanda); font-weight: 800; line-height: 1.15; margin-bottom: 18px; max-width: 24ch; }

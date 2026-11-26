@@ -275,7 +275,7 @@
     return h('div', { class: 'home' },
       h('div', { class: 'home__fascia' }, h('div', { class: 'home__fascia-dentro' },
         h('a', { class: 'home__tutti', href: '../', text: 'Tutti i percorsi' }),
-        h('h1', null, 'Le mie ', h('span', { class: 'chiave', text: 'attività' })),
+        h('h1', { text: 'Le mie attività' }),
         h('p', { class: 'home__sottotitolo', text: 'Fotografa quello che fai. Scrivi due righe.' }),
         h('p', { class: 'home__testo misura', text: 'Ogni volta che finisci un lavoro in laboratorio o in tirocinio, aggiungi un\'attività: una o più foto e che cosa hai fatto, con le tue parole. Ci vuole un minuto. Così, quando farai il bilancio di competenze o il curriculum, le prove sono già qui.' }),
         h('div', { class: 'home__azioni' },

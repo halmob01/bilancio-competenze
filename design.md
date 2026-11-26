@@ -29,7 +29,7 @@ Tono verbale invariato rispetto alla V1: diretto, rispettoso, non enfatico, doma
 | Fondo dei blocchi di aiuto | `--afol-fondo-rosato` | `#FCF3F4` | Osservato |
 | Superfici | `--afol-bianco` | `#FFFFFF` | Ufficiale |
 
-Regole: **un solo rosso** e molti neutri; il rosso per pulsanti, occhielli, parola chiave dei titoli, linee e anelli; mai rosso su rosso; nessun secondo colore saturo, nemmeno per distinguere Elettrico, Informatica ed Estetica. Uno stato non dipende mai dal solo colore (la scelta attiva è anche in grassetto, il passo corrente ha anche il testo «Passo 2 di 6»).
+Regole: **un solo rosso** e molti neutri; il rosso per pulsanti, occhielli, linee e anelli; mai rosso su rosso; nessun secondo colore saturo, nemmeno per distinguere Elettrico, Informatica ed Estetica. Uno stato non dipende mai dal solo colore (la scelta attiva è anche in grassetto, il passo corrente ha anche il testo «Passo 2 di 6»).
 
 ## 3. Carattere
 
@@ -44,7 +44,7 @@ Regole: **un solo rosso** e molti neutri; il rosso per pulsanti, occhielli, paro
 | Testo | 400, interlinea 1,55 | 16–17 px |
 | Note | 400, `#666` | 14–15 px |
 
-Titoli in minuscolo con **una** parola chiave in evidenza («Bilancio di *competenze*», «Diario di *bordo*», «Il tuo *curriculum*»): in rosso sul bianco, in `#1A1A1A` sulla fascia rossa. Le citazioni dello studente nel dossier restano in Fira Sans, con un filetto rosso a sinistra.
+Titoli in minuscolo, di un solo colore: **nessuna parola evidenziata** con un colore diverso (deciso il 26/11/2026: l'effetto risultava artificioso). La gerarchia la fanno peso e dimensione. Le citazioni dello studente nel dossier restano in Fira Sans, con un filetto rosso a sinistra.
 
 **Eccezione: il foglio del curriculum.** È il documento dello studente, non un materiale AFOL: conserva i suoi modelli (Contemporaneo con Anton, Classico con EB Garamond, Europass) perché l'anteprima deve coincidere con il Word e il PDF generati in `js/docx.js` e `js/pdf.js`. Anton ed EB Garamond restano caricati solo per quello (`--f-cv-display`, `--f-cv-libro`).
 
@@ -63,7 +63,7 @@ Le sei regole di `reference/cerchi.md`: tratto uniforme (la parete dell'anello �
 ## 5. Sfondo e impaginazione
 
 - **Fondo bianco** ovunque. Il grigio chiaro `#F5F5F5` segna ciò che spiega (la colonna di introduzione, la fascia di spiegazione sopra il lavoro, le schede della pagina iniziale); il bianco è il posto dove si scrive.
-- **Home di ogni sito e pagina iniziale**: si apre con una **fascia rossa a tutta larghezza** (titolo bianco 900 con la parola chiave in `#1A1A1A`, sottotitolo, testo, pulsanti invertiti: bianco pieno con testo rosso, o bordo bianco). Sotto, sul bianco, l'indice come linea con le fermate (o le tre schede dei percorsi).
+- **Home di ogni sito e pagina iniziale**: si apre con una **fascia rossa a tutta larghezza** (titolo bianco 900, sottotitolo, testo, pulsanti invertiti: bianco pieno con testo rosso, o bordo bianco). Sotto, sul bianco, l'indice come linea con le fermate (o le tre schede dei percorsi).
 - **Schermate di lavoro**: da 1100 px due colonne, indice laterale fisso a sinistra (232 px) e lavoro a destra; dentro il lavoro, da 1000 px, pannello grigio di spiegazione a sinistra (fisso mentre si scorre) e risposte a destra. Sotto, una colonna sola con l'avanzamento in testata e «Avanti» sempre raggiungibile in basso.
 - **Piè di pagina** (pagina iniziale): scuro `#1A1A1A`, catena dei cerchi in bianco, una frase sulla privacy.
 - Margini 20 px sul telefono (16 sotto i 360), da 28 a 72 px oltre; contenitore di 1240 px; testo fino a circa 66 caratteri. Movimento sobrio (200 ms), `prefers-reduced-motion` rispettato.

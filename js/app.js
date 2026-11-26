@@ -861,6 +861,74 @@
     return [testa(metaSchermata(), 'Un esempio per ogni «so fare»'), corpoLargo(intro, risposta)];
   }
 
+  // ---------- Le competenze del tuo indirizzo (catalogo regionale) ----------
+  // Lo studente legge frasi semplici; il documento tiene l'identificativo della competenza del catalogo regionale (js/competenze.js).
+  // La prova di una competenza viene dalle attività di «Le mie attività» collegate a quella competenza, oppure da una frase.
+  function portfolioGrezzo() {
+    try { return JSON.parse(M.getItem('portfolio-attivita-v1') || 'null'); } catch (e) { return null; }
+  }
+  function regionale(id) { return stato.regionali[id] || (stato.regionali[id] = { livello: '', nota: '' }); }
+
+  function cartaRegionale(x) {
+    const r = stato.regionali[x.id] || { livello: '', nota: '' };
+    const l = D.AUTONOMIA.find(function (a) { return a.id === r.livello; }) || null;
+    const p = 'f-rg-' + x.id + '-';
+    const att = L.attivitaPer(portfolioGrezzo(), x.id);
+    const parti = [
+      h('h4', { class: 'regionale__frase', id: 'blocco-rg-' + x.id, text: x.semplice }),
+      h('div', { class: 'livelli__scelte', role: 'radiogroup', 'aria-labelledby': 'blocco-rg-' + x.id }, D.AUTONOMIA.map(function (a) {
+        const id = p + 'livello-' + a.id;
+        return h('label', { class: 'livello', for: id },
+          h('input', { type: 'radio', name: p + 'livello', id: id, value: a.id, checked: r.livello === a.id,
+            onchange: function () { regionale(x.id).livello = a.id; modificato(); ridisegna(id); } }),
+          h('span', { text: a.testo }));
+      }))
+    ];
+    if (l && l.dichiara) {
+      parti.push(att.length
+        ? h('div', { class: 'aiuto' }, h('p', { class: 'meta', text: att.length === 1 ? 'Lo mostra questa attività:' : 'Lo mostrano queste attività:' }),
+          h('ul', { class: 'voci' }, att.map(function (t) { return h('li', { class: 'voce', text: t }); })))
+        : h('p', { class: 'nota', text: 'Nessuna attività lo mostra ancora. Scrivi un esempio, oppure collega la competenza a un\'attività in «Le mie attività».' }));
+      parti.push(campo({ id: p + 'nota', etichetta: att.length ? 'Se vuoi, aggiungi un esempio' : 'Scrivi un esempio', area: true, righe: 3, valore: r.nota, aggiorna: function (v) { regionale(x.id).nota = v; } }));
+    } else if (l && l.id === 'non_ancora') {
+      parti.push(campo({ id: p + 'nota', etichetta: 'Che cosa ti servirebbe per impararlo?', area: true, righe: 3, valore: r.nota, aggiorna: function (v) { regionale(x.id).nota = v; } }));
+    } else if (l && l.id === 'mai') {
+      parti.push(campo({ id: p + 'nota', etichetta: 'Ti piacerebbe affrontarlo? In quale occasione?', area: true, righe: 3, valore: r.nota, aggiorna: function (v) { regionale(x.id).nota = v; } }));
+    }
+    return h('li', { class: 'regionale' }, parti);
+  }
+
+  function schermataRegionali() {
+    const p = stato.profilo;
+    if (!p.indirizzo || !p.anno) {
+      return [testa(metaSchermata(), 'Le competenze del tuo indirizzo'), corpoLargo([h('p', { text: 'Per vedere le competenze del tuo indirizzo serve sapere indirizzo e anno.' })],
+        h('div', null, h('button', { type: 'button', class: 'pulsante', onclick: function () { vaiA('percorso', 'chi'); } }, 'Scegli indirizzo e anno')))];
+    }
+    const info = window.BC_COMPETENZE ? window.BC_COMPETENZE.infoPer(p.indirizzo, p.anno) : null;
+    const tutte = L.regionaliPer(stato);
+    const fatte = tutte.filter(function (x) { return stato.regionali[x.id] && stato.regionali[x.id].livello; }).length;
+    const intro = [
+      h('p', { text: 'Queste sono le cose che si imparano nel tuo percorso. Per ognuna scegli la frase più vera per te.' }),
+      info ? h('p', { class: 'meta', text: info.figura + ' · ' + info.titolo }) : null,
+      h('p', { class: 'meta livelli__conta', role: 'status', text: fatte + ' su ' + tutte.length + ' con una risposta' })
+    ];
+    const gruppi = [];
+    tutte.forEach(function (x) {
+      let g = gruppi.find(function (y) { return y.id === x.gruppo + '|' + x.gruppoTitolo; });
+      if (!g) { g = { id: x.gruppo + '|' + x.gruppoTitolo, titolo: x.gruppoTitolo, voci: [] }; gruppi.push(g); }
+      g.voci.push(x);
+    });
+    const risposta = gruppi.map(function (g) {
+      const toccato = g.voci.some(function (x) { return stato.regionali[x.id] && stato.regionali[x.id].livello; });
+      const elenco = h('ul', { class: 'regionali' }, g.voci.map(cartaRegionale));
+      // «Se lavori su…»: un gruppo che non ti riguarda resta chiuso.
+      return /^Se /.test(g.titolo)
+        ? h('details', { class: 'dettagli', open: toccato ? 'open' : null }, h('summary', { text: g.titolo }), h('div', { class: 'dettagli__corpo' }, elenco))
+        : h('section', { class: 'regionali__gruppo' }, h('h3', { text: g.titolo }), elenco);
+    });
+    return [testa(metaSchermata(), 'Le competenze del tuo indirizzo'), corpoLargo(intro, risposta)];
+  }
+
   // ---------- 04 Uno sguardo critico ----------
   // Le tre domande stanno insieme: gli id delle risposte (scuola, tirocinio, ancora) restano quelli di sempre.
   function schermataSguardo() {
@@ -894,7 +962,7 @@
   }
 
   function dossier(interattivo) {
-    const b = L.componiBilancio(stato);
+    const b = L.componiBilancio(stato, portfolioGrezzo());
     const ind = D.INDIRIZZI.find(function (x) { return x.id === stato.profilo.indirizzo; });
     const data = stato.aggiornato ? new Date(stato.aggiornato).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
     const annoScelto = D.ANNI.find(function (x) { return x.id === stato.profilo.anno; });
@@ -934,7 +1002,22 @@
         'Ancora nulla.'),
       pieno(stato.orientamento.testo) ? h('section', { class: 'dossier__parte' },
         h('h3', { text: 'Per l\'open day' }),
-        h('p', { class: 'libro orientamento-anteprima', text: stato.orientamento.testo })) : null);
+        h('p', { class: 'libro orientamento-anteprima', text: stato.orientamento.testo })) : null,
+      riferimentiRegionali(interattivo));
+  }
+
+  // In fondo: a quali competenze regionali corrispondono le frasi del bilancio, con il testo ufficiale. Nella stampa è aperto.
+  function riferimentiRegionali(interattivo) {
+    const r = L.riferimentiRegionali(stato);
+    if (!r.voci.length) return null;
+    const elenco = h('ul', { class: 'voci' }, r.voci.map(function (v) {
+      return h('li', { class: 'voce' }, h('p', null, h('strong', { text: v.semplice })), h('p', { class: 'meta', text: 'Competenza regionale: ' + v.ufficiale }));
+    }));
+    const titolo = 'Le competenze regionali' + (r.info ? ' · ' + r.info.figura + ' (' + r.info.titolo + ', EQF ' + r.info.eqf + ')' : '');
+    const nota = r.info ? h('p', { class: 'meta', text: 'Fonte: Regione Lombardia, Repertorio IeFP, ' + r.info.fonte + '.' }) : null;
+    return interattivo
+      ? h('details', { class: 'dossier__parte dettagli' }, h('summary', { text: titolo }), h('div', { class: 'dettagli__corpo' }, nota, elenco))
+      : h('section', { class: 'dossier__parte' }, h('h3', { text: titolo }), nota, elenco);
   }
 
   function schermataBilancio() {
@@ -990,7 +1073,7 @@
     switch (sez.id) {
       case 'percorso': return sch.id === 'chi' ? schermataChi() : schermataAnni();
       case 'esperienze': return schermataEsperienze();
-      case 'sofare': return sch.id === 'livelli' ? schermataLivelli() : schermataEsempi();
+      case 'sofare': return sch.id === 'livelli' ? schermataLivelli() : sch.id === 'regionali' ? schermataRegionali() : schermataEsempi();
       case 'sguardo': return schermataSguardo();
       case 'bilancio': return schermataBilancio();
       case 'orientamento': return sch.id === 'domande' ? schermataOrientamentoDomande() : schermataOrientamentoTesto();

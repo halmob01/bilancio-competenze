@@ -1046,3 +1046,10 @@ dialog p:empty { display: none; }
 .strada__cambi ul { list-style: none; padding: 0; display: grid; gap: 6px; }
 .strada__cambi li { font-size: 16px; line-height: 1.4; }
 .note-strada { list-style: none; padding: 0; display: grid; gap: 10px; margin-top: 8px; }
+
+/* Competenze regionali nel bilancio: una scheda per competenza, con la frase semplice. */
+.regionali { list-style: none; padding: 0; display: grid; gap: 22px; }
+.regionali__gruppo { display: grid; gap: 14px; }
+.regionale { display: grid; gap: 12px; padding-bottom: 22px; border-bottom: 1px solid var(--c-filetto); }
+.regionale:last-child { border-bottom: 0; }
+.regionale__frase { font-size: 18px; font-weight: 700; line-height: 1.35; color: var(--c-titolo); }

@@ -163,7 +163,8 @@
       // Gli id delle situazioni restano quelli di sempre (li legge lo script del docente).
       schermate: [
         { id: 'livelli', titolo: 'Quanto lo sai fare' },
-        { id: 'esempi', titolo: 'Un esempio per ogni «so fare»' }
+        { id: 'esempi', titolo: 'Un esempio per ogni «so fare»' },
+        { id: 'regionali', titolo: 'Le competenze del tuo indirizzo' }
       ]
     },
     {

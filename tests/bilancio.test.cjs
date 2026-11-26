@@ -19,7 +19,7 @@ test('sei sezioni, schermate con un solo compito (il curriculum è un sito a par
   D.SEZIONI.forEach((s) => assert.ok(s.schermate.length >= 1, s.id));
   // «Che cosa so fare» è in due tempi (livello, poi esempio); lo sguardo critico ha le tre domande insieme.
   // Gli id delle sei situazioni e delle tre risposte non cambiano mai (li legge lo script del docente).
-  assert.deepEqual(D.SEZIONI[2].schermate.map((x) => x.id), ['livelli', 'esempi']);
+  assert.deepEqual(D.SEZIONI[2].schermate.map((x) => x.id), ['livelli', 'esempi', 'regionali']);
   assert.deepEqual(D.SEZIONI[3].schermate.map((x) => x.id), ['domande']);
   assert.deepEqual(D.SGUARDO.map((x) => x.id), ['scuola', 'tirocinio', 'ancora']);
   assert.deepEqual(D.SITUAZIONI.map((x) => x.id), ['capire', 'fare', 'collaborare', 'verificare', 'spiegare', 'migliorare']);
@@ -322,4 +322,54 @@ test('l\'interfaccia delle esperienze non chiede più otto campi in fila e non s
   assert.ok(!/e\.(azione|titolo)\s*=[^=]/.test(controlli));
   // le esperienze scritte con la versione precedente (anche senza periodo) restano raggiungibili
   assert.ok(app.includes("'Da collocare'"));
+});
+
+test('competenze regionali: lo studente legge frasi semplici, il bilancio tiene gli id del catalogo e li capisce', () => {
+  const C = require('../js/competenze.js');
+  const s = L.statoVuoto();
+  s.profilo = { nome: 'Sara', classe: '3ELE', indirizzo: 'elettrico', anno: 'anno3' };
+  const lista = L.regionaliPer(s);
+  assert.ok(lista.length >= 6, 'ci sono le competenze dell\'indirizzo');
+  assert.ok(lista.every((x) => C.esiste(x.id) && x.semplice && x.ufficiale), 'ognuna ha frase semplice e testo ufficiale');
+  assert.equal(new Set(lista.map((x) => x.id)).size, lista.length, 'nessun doppione');
+  assert.deepEqual(L.regionaliPer(Object.assign(L.statoVuoto(), { profilo: { indirizzo: '', anno: '' } })), []);
+  // Una risposta con un id inventato o un livello strano si scarta; quelle vere restano
+  const grezzo = JSON.parse(JSON.stringify(s));
+  grezzo.regionali = { 'el-verifiche': { livello: 'autonomo_noto', nota: 'Ho misurato la terra.' }, inventata: { livello: 'mai' }, 'el-manutenzione': { livello: 'boh', nota: '' }, 'el-civili': 'x' };
+  const n = L.normalizza(grezzo);
+  assert.deepEqual(Object.keys(n.regionali), ['el-verifiche']);
+  assert.deepEqual(L.normalizza(JSON.parse(JSON.stringify(n))).regionali, n.regionali, 'normalizzare due volte non cambia niente');
+  // La prova: una frase, oppure un'attività del portfolio collegata a quella competenza
+  const portfolio = { attivita: [{ id: 'a1abcd', fatto: 'Ho verificato un impianto con il tester.\nPoi ho compilato la scheda.', competenze: ['el-verifiche'] }, { id: 'a2abcd', fatto: 'Altro', competenze: [] }] };
+  n.regionali['el-manutenzione'] = { livello: 'autonomo_nuovo', nota: '' };
+  n.regionali['el-verifiche'].nota = '';
+  assert.deepEqual(L.attivitaPer(portfolio, 'el-verifiche'), ['Ho verificato un impianto con il tester.']);
+  assert.equal(L.haProvaRegionale(n, 'el-verifiche', portfolio), true, 'prova dall\'attività');
+  assert.equal(L.haProvaRegionale(n, 'el-verifiche', null), false, 'senza attività e senza frase non c\'è prova');
+  assert.equal(L.haProvaRegionale(n, 'el-manutenzione', portfolio), false);
+  const b = L.componiBilancio(n, portfolio);
+  const sf = b.soFare.find((x) => x.regionale === 'el-verifiche');
+  assert.ok(sf && /Controllare che un impianto funzioni/.test(sf.situazione) && sf.esperienze.length === 1, 'nel «so fare» con la frase semplice');
+  assert.ok(b.daDocumentare.some((x) => x.regionale === 'el-manutenzione'), 'dichiarata senza prova: da documentare');
+  n.regionali['el-civili'] = { livello: 'non_ancora', nota: 'Mi servono più schemi.' };
+  assert.ok(L.componiBilancio(n, portfolio).devoImparare.some((x) => x.testo === 'Mi servono più schemi.'));
+  // Il «motore»: per documenti e docenti, id, frase semplice e testo ufficiale con la figura regionale
+  const rif = L.riferimentiRegionali(n);
+  assert.equal(rif.info.figura, 'Operatore elettrico'); assert.equal(rif.info.eqf, 3);
+  const v = rif.voci.find((x) => x.id === 'el-verifiche');
+  assert.ok(v.ufficiale.startsWith('Effettuare le verifiche di funzionamento'), 'testo ufficiale');
+  // Senza il catalogo (pagine che non lo caricano) il bilancio funziona come prima
+  assert.doesNotThrow(() => L.componiBilancio(L.statoVuoto()));
+});
+
+test('la schermata «Le competenze del tuo indirizzo» usa solo frasi semplici e non cambia le regole del bilancio', () => {
+  const app = fs.readFileSync(path.join(__dirname, '../js/app.js'), 'utf8');
+  assert.match(app, /function schermataRegionali/);
+  assert.ok(!/x\.ufficiale/.test(app.slice(app.indexOf('function cartaRegionale'), app.indexOf('function schermataRegionali'))), 'la scheda della competenza non mostra il testo ufficiale');
+  const sez = D.SEZIONI.find((x) => x.id === 'sofare');
+  const s = L.statoVuoto();
+  assert.equal(L.statoSezione(s, 'sofare'), 'vuota');
+  s.regionali['el-verifiche'] = { livello: 'mai', nota: '' };
+  assert.equal(L.statoSezione(s, 'sofare'), 'vuota', 'le regionali sono un secondo livello: non cambiano lo stato della sezione');
+  assert.equal(sez.schermate.length, 3);
 });

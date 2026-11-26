@@ -190,7 +190,15 @@
   function trova(id) { return PER_ID[id] || null; }
   function esiste(id) { return Object.prototype.hasOwnProperty.call(PER_ID, id); }
 
-  const COMPETENZE = { RIVISTO: RIVISTO, FIGURE: FIGURE, gruppiPer: gruppiPer, figuraPer: figuraPer, trova: trova, esiste: esiste };
+  // La figura regionale di riferimento: nome, livello europeo (EQF) e allegato da cui viene. Per documenti e docenti, non per lo studente.
+  function infoPer(indirizzo, anno) {
+    const f = FIGURE[indirizzo];
+    if (!f) return null;
+    const x = anno === 'anno4' ? f.diploma : f.qualifica;
+    return { figura: x.figura, eqf: x.eqf, fonte: x.fonte, titolo: anno === 'anno4' ? 'diploma professionale (IV anno)' : 'qualifica (III anno)' };
+  }
+
+  const COMPETENZE = { RIVISTO: RIVISTO, FIGURE: FIGURE, gruppiPer: gruppiPer, figuraPer: figuraPer, infoPer: infoPer, trova: trova, esiste: esiste };
   if (typeof module !== 'undefined' && module.exports) module.exports = COMPETENZE;
   else radice.BC_COMPETENZE = COMPETENZE;
 })(typeof window !== 'undefined' ? window : globalThis);

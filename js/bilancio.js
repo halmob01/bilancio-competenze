@@ -7,6 +7,11 @@
     ? require('./dati.js')
     : radice.BC_DATI;
 
+  // Le competenze regionali del catalogo (js/competenze.js): si leggono solo quando servono, così le pagine che non le caricano restano com'erano.
+  function catalogo() {
+    return (typeof module !== 'undefined' && module.exports) ? require('./competenze.js') : (radice.BC_COMPETENZE || null);
+  }
+
   const VERSIONE = 1;
   const MAX_BREVE = 200;
   const MAX_LUNGO = 4000;
@@ -32,6 +37,7 @@
       anni: { anno1: '', anno2: '', anno3: '', anno4: '', tirocinio: '' },
       esperienze: [],
       sofare: sofare,
+      regionali: {},
       sguardo: sguardo,
       orientamento: orientamento
     };
@@ -117,6 +123,16 @@
           .filter(function (id) { return visti[id]; }),
         come: testo(g.come, MAX_LUNGO)
       };
+    });
+
+    // Competenze regionali: lo studente vede una frase semplice, qui resta solo l'identificativo del catalogo con la sua risposta.
+    const C = catalogo();
+    const rg = grezzo.regionali && typeof grezzo.regionali === 'object' && !Array.isArray(grezzo.regionali) ? grezzo.regionali : {};
+    Object.keys(rg).slice(0, 80).forEach(function (id) {
+      const g = rg[id];
+      if (!g || typeof g !== 'object' || (C && !C.esiste(id)) || !/^[a-z0-9-]{2,40}$/.test(id)) return;
+      const n = { livello: inElenco(g.livello, DATI.AUTONOMIA), nota: testo(g.nota, MAX_LUNGO) };
+      if (n.livello || n.nota) s.regionali[id] = n;
     });
 
     const sg = grezzo.sguardo || {};
@@ -247,7 +263,48 @@
   // Dossier non valutativo (design.md §7 «Bilancio»): So fare / Ho imparato così /
   // Posso dimostrarlo / Devo ancora imparare. Riporta soltanto le parole dello
   // studente; ogni voce ha un rimando («rif») alla schermata di origine.
-  function componiBilancio(stato) {
+  // Le competenze del catalogo per questo studente (indirizzo e anno), senza doppioni, poi quelle già risposte e non più in elenco.
+  function regionaliPer(stato) {
+    const C = catalogo();
+    if (!C) return [];
+    const viste = {};
+    const out = [];
+    C.gruppiPer(stato.profilo.indirizzo, stato.profilo.anno).forEach(function (g) {
+      g.competenze.forEach(function (x) { if (!viste[x.id]) { viste[x.id] = true; out.push({ id: x.id, semplice: x.semplice, ufficiale: x.ufficiale, gruppo: g.id, gruppoTitolo: g.titolo }); } });
+    });
+    Object.keys(stato.regionali || {}).forEach(function (id) {
+      const x = !viste[id] && C.trova(id);
+      if (x) { viste[id] = true; out.push({ id: x.id, semplice: x.semplice, ufficiale: x.ufficiale, gruppo: '', gruppoTitolo: 'Già scelte prima' }); }
+    });
+    return out;
+  }
+
+  // Le attività del portfolio (come salvato) che lo studente ha collegato a una competenza: la prova arriva da lì, senza doppio lavoro.
+  function attivitaPer(portfolio, id) {
+    if (!portfolio || typeof portfolio !== 'object' || !Array.isArray(portfolio.attivita)) return [];
+    return portfolio.attivita.filter(function (a) { return a && typeof a === 'object' && Array.isArray(a.competenze) && a.competenze.indexOf(id) !== -1; })
+      .slice(0, 50).map(function (a) {
+        const prima = testo(a.fatto, MAX_LUNGO).trim().split('\n')[0];
+        return prima ? (prima.length > 80 ? prima.slice(0, 78).replace(/\s+\S*$/, '') + '…' : prima) : 'Attività senza descrizione';
+      });
+  }
+  function haProvaRegionale(stato, id, portfolio) {
+    const r = stato.regionali[id];
+    if (!r) return false;
+    return pieno(r.nota) || attivitaPer(portfolio, id).length > 0;
+  }
+
+  // Che cosa dire ai documenti e ai docenti: per ogni competenza con una risposta, la frase semplice e il testo ufficiale della Regione.
+  function riferimentiRegionali(stato) {
+    const C = catalogo();
+    const info = C ? C.infoPer(stato.profilo.indirizzo, stato.profilo.anno) : null;
+    const voci = regionaliPer(stato).filter(function (x) { return stato.regionali[x.id] && stato.regionali[x.id].livello; }).map(function (x) {
+      return { id: x.id, semplice: x.semplice, ufficiale: x.ufficiale, livello: livello(stato.regionali[x.id].livello).breve };
+    });
+    return { info: info, voci: voci };
+  }
+
+  function componiBilancio(stato, portfolio) {
     const b = {
       soFare: [],
       daDocumentare: [],
@@ -276,6 +333,25 @@
         b.devoImparare.push({ testo: pieno(r.come) ? r.come.trim() : '', fonte: sit.verbo, rif: rif });
       } else if (l && l.id === 'mai') {
         b.maiAffrontato.push({ situazione: sit.verbo, nota: r.come.trim(), rif: rif });
+      }
+    });
+
+    // Le competenze regionali stanno negli stessi quattro elenchi: lo studente legge la sua frase semplice.
+    regionaliPer(stato).forEach(function (x) {
+      const r = stato.regionali[x.id];
+      const l = r ? livello(r.livello) : null;
+      if (!l) return;
+      const rif = { sezione: 'sofare', schermata: 'regionali' };
+      const attivita = attivitaPer(portfolio, x.id);
+      if (l.dichiara) {
+        if (haProvaRegionale(stato, x.id, portfolio)) {
+          b.soFare.push({ situazione: x.semplice, livello: l.breve, esempio: r.nota.trim(), esperienze: attivita, rif: rif, regionale: x.id });
+          if (pieno(r.nota)) b.possoDimostrarlo.push({ testo: r.nota.trim(), fonte: x.semplice, rif: rif });
+        } else b.daDocumentare.push({ situazione: x.semplice, livello: l.breve, rif: rif, regionale: x.id });
+      } else if (l.id === 'non_ancora') {
+        b.devoImparare.push({ testo: pieno(r.nota) ? r.nota.trim() : '', fonte: x.semplice, rif: rif });
+      } else if (l.id === 'mai') {
+        b.maiAffrontato.push({ situazione: x.semplice, nota: r.nota.trim(), rif: rif });
       }
     });
 
@@ -422,6 +498,10 @@
     titoloGenerico: titoloGenerico,
     statoSezione: statoSezione,
     componiBilancio: componiBilancio,
+    regionaliPer: regionaliPer,
+    attivitaPer: attivitaPer,
+    haProvaRegionale: haProvaRegionale,
+    riferimentiRegionali: riferimentiRegionali,
     componiOrientamento: componiOrientamento,
     suggerisciCompetenze: suggerisciCompetenze,
     anniDelPercorso: anniDelPercorso,

@@ -248,3 +248,11 @@ Il docente scrive in italiano semplice e non vuole emoji. Il piano completo è `
 - **Mappa**: percorso 3+1 oppure quattro anni (`PERCORSO_QUADRIENNALE`, oggi Informatica I e II; da aggiornare ogni settembre). Tutti i fatti hanno la fonte in `docs/FILIERA.md`, con l'elenco di quello che resta da verificare.
 - **Pannello docenti**: quinta colonna «Orientamento» nell'avanzamento e nel CSV (6 passi). **Cestino**: i passi e le strade tolti si recuperano come ogni altra voce.
 - **Non fatto**: «Racconto il CFP» (orientamento in entrata: le quattro domande e il testo per l'open day oggi nel bilancio, più le domande dei ragazzi delle medie). Quando si sposta, la sezione 07 si toglie dal bilancio.
+
+### 4.12 Bilancio agganciato alle competenze regionali (26 novembre 2026)
+- **Principio**: lo studente vede solo la frase semplice (`semplice` in `js/competenze.js`); il documento salva l'identificativo della competenza del catalogo con la sua risposta; il «motore» (`riferimentiRegionali`) sa tornare al testo ufficiale, alla figura (es. Operatore elettrico) e al livello EQF.
+- **Dati**: `bilancio.regionali = { <id competenza>: { livello, nota } }`, stessa scala di autonomia delle sei situazioni. Gli id non presenti nel catalogo si scartano. Le sei situazioni restano la base comune a tutti gli indirizzi: le regionali sono un **secondo livello** e non cambiano lo stato della sezione.
+- **Prova**: per chi dichiara «da solo» basta una frase (`nota`) oppure almeno un'attività del portfolio con quella competenza (`attivitaPer`, letta in sola lettura). Senza prova la voce resta «da documentare», come per le situazioni.
+- **Dossier**: le competenze regionali entrano negli stessi quattro elenchi (so fare, ho imparato, devo ancora imparare, mai affrontato); in fondo un riquadro con il testo ufficiale (aperto nella stampa, chiuso sullo schermo).
+- **Pagine**: `bilancio/` e `orientamento/` caricano `js/competenze.js`; il curriculum no (non cambia).
+- **Non fatto**: le frasi regionali non entrano ancora nel campo «competenze» del curriculum (solo le sei situazioni); la vista dei docenti per competenza (blocco 8).

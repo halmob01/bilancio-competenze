@@ -44,11 +44,11 @@ test('i siti hanno il link alla pagina iniziale e si riconoscono tra loro solo d
 test('gli script di ogni sito si caricano nell\'ordine giusto', () => {
   const ordine = (f) => [...leggi(f).matchAll(/<script src="([^"]+)"/g)].map((m) => m[1]);
   const comuni = ['../js/config.js', '../js/unione.js', '../js/archivio.js'];
-  assert.deepEqual(ordine('bilancio/index.html'), ['../js/config.js', '../js/unione.js', '../js/archivio.js', '../js/dati.js', '../js/bilancio.js', '../js/cv.js', '../js/app.js']);
+  assert.deepEqual(ordine('bilancio/index.html'), ['../js/config.js', '../js/unione.js', '../js/archivio.js', '../js/dati.js', '../js/competenze.js', '../js/bilancio.js', '../js/cv.js', '../js/app.js']);
   assert.deepEqual(ordine('cv/index.html'), comuni.concat(['../js/dati.js', '../js/bilancio.js', '../js/cv.js', '../js/docx.js', '../js/pdf.js', 'js/app.js']));
   assert.deepEqual(ordine('portfolio/index.html'), comuni.concat(['../js/dati.js', '../js/bilancio.js', '../js/competenze.js', '../js/pdf.js', 'js/attivita.js', 'js/foto.js', 'js/file.js', 'js/app.js']));
   assert.deepEqual(ordine('diario/index.html'), comuni.concat(['js/diario.js', 'js/app.js']));
-  assert.deepEqual(ordine('orientamento/index.html'), comuni.concat(['../js/dati.js', '../js/bilancio.js', 'js/orientamento.js', 'js/app.js']));
+  assert.deepEqual(ordine('orientamento/index.html'), comuni.concat(['../js/dati.js', '../js/competenze.js', '../js/bilancio.js', 'js/orientamento.js', 'js/app.js']));
   assert.ok(!ordine('bilancio/index.html').some((s) => /docx|pdf/.test(s)), 'Word e PDF non sono del bilancio');
 });
 

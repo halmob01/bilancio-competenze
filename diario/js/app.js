@@ -44,6 +44,9 @@
     el.appendChild(typeof c === 'string' ? document.createTextNode(c) : c);
   }
   const pieno = D.pieno;
+  // M: come localStorage, ma separato per studente e copiato sul server quando lo studente è entrato (js/archivio.js).
+  const ARCH = window.BC_ARCHIVIO;
+  const M = ARCH.memoria;
 
   // ---------- Messaggi e conferme ----------
   function messaggio(testoMsg, o) {
@@ -69,14 +72,14 @@
   // ---------- Archivio locale ----------
   function caricaArchivio() {
     try {
-      const grezzo = localStorage.getItem(D.CHIAVE);
+      const grezzo = M.getItem(D.CHIAVE);
       if (grezzo) stato = D.normalizza(JSON.parse(grezzo));
     } catch (e) { archivioDisponibile = false; }
   }
   function scriviArchivio() {
     stato.aggiornato = new Date().toISOString();
     try {
-      localStorage.setItem(D.CHIAVE, JSON.stringify(stato));
+      M.setItem(D.CHIAVE, JSON.stringify(stato));
       archivioDisponibile = true;
       $('salvato').textContent = 'Salvato alle ' + new Date().toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
     } catch (e) {
@@ -479,7 +482,7 @@
   function cancellaTutto() {
     chiedi('Cancellare tutto il diario da questo browser? Se non hai scaricato una copia andrà perso.', 'Cancella tutto', function () {
       clearTimeout(timerSalva); timerSalva = null;
-      try { localStorage.removeItem(D.CHIAVE); } catch (e) { /* niente da fare */ }
+      try { M.removeItem(D.CHIAVE); } catch (e) { /* niente da fare */ }
       stato = D.statoVuoto(); $('salvato').textContent = 'Diario cancellato'; $('dialogo-salva').close(); vai(null);
     });
   }
@@ -500,4 +503,12 @@
   $('stampa-dialogo').addEventListener('click', function () { $('dialogo-salva').close(); stampa(); });
   $('cancella').addEventListener('click', cancellaTutto);
   window.addEventListener('beforeprint', preparaStampa);
+
+  // Dal server può arrivare una versione più nuova (altro dispositivo, correzione di un docente): si ricarica.
+  ARCH.quandoCambia(function (tipo) {
+    if (tipo === 'diario') { stato = D.statoVuoto(); caricaArchivio(); }
+    ridisegna();
+  });
+  ARCH.mostraUtente();
+  ARCH.avvio();
 })();

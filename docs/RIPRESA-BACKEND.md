@@ -1,6 +1,6 @@
 # Ripresa del lavoro: backend del portale dello studente
 
-Stato al **18 novembre 2026**. Questo file serve a chi riprende il lavoro in una nuova sessione: dice che cosa è stato deciso, che cosa è stato fatto, che cosa manca e da dove ripartire.
+Stato al **18 novembre 2026**, aggiornato il **26 novembre 2026** (§4.6: siti collegati). Questo file serve a chi riprende il lavoro in una nuova sessione: dice che cosa è stato deciso, che cosa è stato fatto, che cosa manca e da dove ripartire.
 
 ---
 
@@ -133,11 +133,29 @@ Avviano davvero il server su una porta locale con un database temporaneo. Copron
 
 La CI (`.github/workflows/test.yml`) controlla anche la sintassi di `server/*.js` e degli script in `deploy/`.
 
+### 4.6 Siti collegati al server (F1, blocco 1, 26 novembre 2026)
+
+Decisioni del 26/11: si fa F1 a blocchi, uno alla volta, provandoli prima di andare avanti; l'accesso e la mia area stanno **nella pagina iniziale**; per i QR dei cartellini (blocco del pannello docente) si userà una libreria MIT copiata nel progetto.
+
+| File | Che cosa fa |
+|---|---|
+| `js/config.js` | `urlApi`: indirizzo dell'API (per esempio `/gcatalfamo/api/`). **Vuoto = tutto come prima**: nessun accesso, salvataggio solo sul dispositivo. `deploy/prepara-siti.sh` lo imposta con `PORTALE_PERCORSO` (predefinito `/gcatalfamo/`). |
+| `js/archivio.js` | `BC_ARCHIVIO.memoria` sostituisce `localStorage` in tutti i siti (stessi comandi). Da entrati: chiavi con il prefisso dello studente (`u12:…`); con il QR `localStorage`, con il codice scritto `sessionStorage` (sparisce chiudendo il browser); ogni documento salvato parte verso il server dopo 2 secondi (`PUT` con `base`); senza rete riprova al ritorno della rete e ogni 30 secondi; uscendo dalla pagina prova con `keepalive`; a ogni apertura di pagina legge dal server i quattro documenti e applica le versioni più nuove; al 409 unisce e, se la stessa voce è cambiata dalle due parti, chiede quale tenere; nome e «Esci» in testata; avviso se la sessione è finita (il lavoro resta). |
+| `js/unione.js` | unione a tre vie (ultima versione comune, questo dispositivo, server): elenchi con `id` voce per voce, il resto campo per campo; voce cancellata da una parte e cambiata dall'altra: resta; `aggiornato`: il più recente. |
+| `js/area.js` | pagina iniziale: campo «Entra con il codice del tuo cartellino»; QR con `#qr=…` (tolto subito dall'indirizzo); al primo accesso «questo lavoro è tuo?» per il lavoro salvato prima di entrare; la mia area (saluto, classe, stato dei percorsi con ultima modifica e correzioni dei docenti, chi vede il lavoro, «Esci»). |
+| `server/api.js` | tipo di documento `portfolio` (solo i testi, ricontrollati con `portfolio/js/attivita.js`). |
+
+**«Esci»** manda prima quello che manca (se non ci riesce chiede conferma), chiude la sessione e toglie dal browser **tutte** le chiavi dello studente e il suo archivio delle foto (`portfolio-foto-u12`).
+
+**Provato** (26/11) in Chromium con il server vero avviato nello script di prova: telefono con QR e PC con codice sulla stessa studentessa, diario scritto sul telefono e ritrovato sul PC, stessa voce cambiata sui due dispositivi (domanda e unione: restano la città scritta dal telefono e l'azienda scelta sul PC), «Esci» che svuota il browser, lavoro fatto senza accesso adottato al primo ingresso, cartellino rigenerato (avviso, lavoro conservato). Test automatici: `tests/unione.test.cjs`, tipo `portfolio` in `tests/server.test.cjs`.
+
+**Sul server**, in `/opt/portale/app` oltre a `server/` servono: `js/dati.js`, `js/bilancio.js`, `js/cv.js`, `js/competenze.js`, `diario/js/diario.js`, `portfolio/js/attivita.js`.
+
 ---
 
 ## 5. Che cosa manca (in ordine consigliato)
 
-1. **Collegare i tre siti al server** (`js/archivio.js` e `urlApi` in `js/config.js`; se `urlApi` è vuoto tutto resta come oggi):
+1. ~~Collegare i siti al server~~: **fatto il 26/11/2026** (§4.6). Restano da fare: modalità senza rete con service worker (oggi senza rete la pagina deve essere già aperta o nella cache del browser); QR sullo schermo del PC; correzioni sul foglio del curriculum salvate nel documento. Era:
    - salvataggio locale **separato per studente** (oggi le chiavi `bilancio-competenze-v1`, `cv-v1`, `diario-tirocinio-v1` sono uguali per tutti; su un PC condiviso lo studente dopo caricherebbe il lavoro di quello prima);
    - invio al server con `base`, coda quando non c'è rete;
    - gestione del 409 con **unione per voce** (tirocini, settimane ed esperienze hanno già un `id`), chiedendo allo studente solo se la stessa voce è cambiata da tutte e due le parti;
@@ -150,7 +168,7 @@ La CI (`.github/workflows/test.yml`) controlla anche la sintassi di `server/*.js
 5. **Sicurezza da completare**: secondo fattore (TOTP) per i docenti o pannello solo dalla rete della scuola; service worker per l'uso senza rete; correzioni sul foglio del curriculum salvate nel documento.
 6. **`deploy/LEGGIMI.md`**, la guida passo per passo per il server (già citata dagli script ma non ancora scritta), e la configurazione Apache per il **nome di dominio dedicato** (`deploy/apache-portale-vhost.conf`, citata ma non scritta).
 7. **`deploy/aggiorna.sh`** (piano §3 bis, da scrivere e provare): pubblicazione dal repository clonato sul server, con test prima di pubblicare, versione precedente da ripristinare, cartella di prova, registro delle pubblicazioni. Sostituisce il pacchetto caricato a mano con FileZilla (`deploy/prepara-siti.sh` resta come alternativa senza git).
-8. **Spostamento sul server** (ultimo, per decisione del docente): `apt install git` (con il collega) → installa-portale → clonare il repository in `/opt/portale/sorgente/` → `aggiorna.sh` (copia `server/`, `js/{dati,bilancio,cv}.js` e `diario/js/diario.js` in `/opt/portale/app`, i siti in `gcatalfamo/`) → servizio → backup → Apache.
+8. **Spostamento sul server** (ultimo, per decisione del docente): `apt install git` (con il collega) → installa-portale → clonare il repository in `/opt/portale/sorgente/` → `aggiorna.sh` (copia `server/`, `js/{dati,bilancio,cv,competenze}.js`, `diario/js/diario.js` e `portfolio/js/attivita.js` in `/opt/portale/app`, i siti in `gcatalfamo/`) → servizio → backup → Apache.
 9. Copia notturna nelle cartelle di rete degli studenti (piano §14 bis), dopo tutto il resto.
 
 ## 6. Decisioni ancora aperte

@@ -74,10 +74,13 @@
   function pieno(v) { return typeof v === 'string' && v.trim() !== ''; }
 
   // ---------- Archivio locale ----------
+  // M: come localStorage, ma separato per studente e copiato sul server quando lo studente è entrato (js/archivio.js).
+  const ARCH = window.BC_ARCHIVIO;
+  const M = ARCH.memoria;
   function scriviArchivio() {
     stato.aggiornato = new Date().toISOString();
     try {
-      localStorage.setItem(C.CHIAVE, JSON.stringify(stato));
+      M.setItem(C.CHIAVE, JSON.stringify(stato));
       archivioDisponibile = true;
       const ora = new Date().toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
       $('salvato').textContent = 'Salvato alle ' + ora;
@@ -89,15 +92,15 @@
 
   function caricaArchivio() {
     try {
-      const grezzo = localStorage.getItem(C.CHIAVE);
+      const grezzo = M.getItem(C.CHIAVE);
       if (grezzo) {
         stato = C.normalizza(JSON.parse(grezzo));
       } else {
         // Una versione precedente del bilancio conservava qui il curriculum: lo riprendo una volta sola.
-        const vecchio = C.daBilancioVecchio(JSON.parse(localStorage.getItem(C.CHIAVE_BILANCIO) || 'null'));
+        const vecchio = C.daBilancioVecchio(JSON.parse(M.getItem(C.CHIAVE_BILANCIO) || 'null'));
         if (vecchio) { stato = vecchio; ripresoDalBilancio = true; }
       }
-      const pos = JSON.parse(localStorage.getItem(CHIAVE_POSIZIONE) || 'null');
+      const pos = JSON.parse(M.getItem(CHIAVE_POSIZIONE) || 'null');
       if (pos && PASSI[pos.k]) ripresa = { k: pos.k };
     } catch (e) {
       archivioDisponibile = false;
@@ -115,7 +118,7 @@
   }
 
   function salvaPosizione() {
-    try { localStorage.setItem(CHIAVE_POSIZIONE, JSON.stringify(ripresa)); } catch (e) { /* facoltativo */ }
+    try { M.setItem(CHIAVE_POSIZIONE, JSON.stringify(ripresa)); } catch (e) { /* facoltativo */ }
   }
 
   window.addEventListener('pagehide', function () {
@@ -318,7 +321,7 @@
 
   // ---------- Dal bilancio di competenze (lettura soltanto) ----------
   function bilancioLocale() {
-    try { return C.leggiBilancio(JSON.parse(localStorage.getItem(C.CHIAVE_BILANCIO) || 'null')); } catch (e) { return null; }
+    try { return C.leggiBilancio(JSON.parse(M.getItem(C.CHIAVE_BILANCIO) || 'null')); } catch (e) { return null; }
   }
   // Il file caricato ha la precedenza sul salvataggio di questo dispositivo.
   function bilancio() { return bilancioCaricato || bilancioLocale(); }
@@ -383,7 +386,7 @@
 
   function proposteDalDiario() {
     try {
-      const g = diarioCaricato || JSON.parse(localStorage.getItem('diario-tirocinio-v1') || 'null');
+      const g = diarioCaricato || JSON.parse(M.getItem('diario-tirocinio-v1') || 'null');
       return C.esperienzeDalDiario(g);
     } catch (e) { return []; }
   }
@@ -1246,7 +1249,7 @@
     chiedi('Cancellare il curriculum da questo browser? Se non hai scaricato una copia, andrà perso. Il bilancio e il diario non vengono toccati.', 'Cancella tutto', function () {
       clearTimeout(timerSalva);
       timerSalva = null;
-      try { localStorage.removeItem(C.CHIAVE); localStorage.removeItem(CHIAVE_POSIZIONE); } catch (e) { /* niente da fare */ }
+      try { M.removeItem(C.CHIAVE); M.removeItem(CHIAVE_POSIZIONE); } catch (e) { /* niente da fare */ }
       stato = C.statoVuoto();
       cvManuale = null;
       ripresa = null;
@@ -1278,4 +1281,12 @@
   $('stampa-dialogo').addEventListener('click', function () { $('dialogo-risposte').close(); stampa(); });
   $('cancella').addEventListener('click', cancellaTutto);
   window.addEventListener('beforeprint', preparaStampa);
+
+  // Dal server può arrivare una versione più nuova (altro dispositivo, correzione di un docente): si ricarica.
+  ARCH.quandoCambia(function (tipo) {
+    if (tipo === 'cv') { stato = C.statoVuoto(); caricaArchivio(); cvVersione++; }
+    ridisegna();
+  });
+  ARCH.mostraUtente();
+  ARCH.avvio();
 })();

@@ -14,12 +14,14 @@ const DB = require('./db.js');
 const BILANCIO = require('../js/bilancio.js');
 const CV = require('../js/cv.js');
 const DIARIO = require('../diario/js/diario.js');
+const ATTIVITA = require('../portfolio/js/attivita.js');
 
 // I documenti che il server conosce e la funzione che li ricontrolla (la stessa usata dai siti).
 const TIPI = {
   diario: DIARIO.normalizza,
   bilancio: BILANCIO.normalizza,
-  cv: CV.normalizza
+  cv: CV.normalizza,
+  portfolio: ATTIVITA.normalizza // solo i testi; le foto arrivano con il blocco 2 di F1
 };
 const INDIRIZZI = ['elettrico', 'estetica', 'informatica'];
 

@@ -316,5 +316,5 @@ test('il bilancio mette al sicuro il curriculum prima di salvarsi senza', () => 
   assert.ok(/portaIlCurriculum\(dati\);\s*stato = L\.normalizza\(dati\)/.test(app));
   assert.equal((app.match(/portaIlCurriculum\(dati\);/g) || []).length, 2);
   // e non sovrascrive un curriculum già scritto nel nuovo sito
-  assert.ok(/localStorage\.getItem\(window\.BC_CV\.CHIAVE\)\) return/.test(app));
+  assert.ok(/M\.getItem\(window\.BC_CV\.CHIAVE\)\) return/.test(app), "legge dall'archivio comune (per studente)");
 });

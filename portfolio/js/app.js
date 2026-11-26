@@ -38,6 +38,9 @@
   const $ = function (id) { return document.getElementById(id); };
   const principale = $('principale');
   const pieno = A.pieno;
+  // M: come localStorage, ma separato per studente e copiato sul server quando lo studente è entrato (js/archivio.js).
+  const ARCH = window.BC_ARCHIVIO;
+  const M = ARCH.memoria;
 
   // ---------- Costruzione del DOM ----------
   function h(tag, props) {
@@ -86,7 +89,7 @@
   // ---------- Archivio locale (testi nel localStorage, foto in IndexedDB) ----------
   function caricaArchivio() {
     try {
-      const grezzo = localStorage.getItem(A.CHIAVE);
+      const grezzo = M.getItem(A.CHIAVE);
       if (grezzo) stato = A.normalizza(JSON.parse(grezzo));
     } catch (e) { archivioDisponibile = false; }
   }
@@ -94,7 +97,7 @@
     timerSalva = null;
     stato.aggiornato = new Date().toISOString();
     try {
-      localStorage.setItem(A.CHIAVE, JSON.stringify(stato));
+      M.setItem(A.CHIAVE, JSON.stringify(stato));
       archivioDisponibile = true;
       $('salvato').textContent = 'Salvato alle ' + new Date().toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
     } catch (e) {
@@ -111,7 +114,7 @@
   window.addEventListener('pagehide', function () { if (timerSalva) { clearTimeout(timerSalva); scriviArchivio(); } });
 
   function leggiAltro(chiave) {
-    try { const g = localStorage.getItem(chiave); return g ? JSON.parse(g) : null; } catch (e) { return null; }
+    try { const g = M.getItem(chiave); return g ? JSON.parse(g) : null; } catch (e) { return null; }
   }
 
   // ---------- Foto: URL per le immagini ----------
@@ -642,7 +645,7 @@
   function cancellaTutto() {
     chiedi('Cancellare tutte le attività e le foto da questo browser? Se non hai scaricato una copia andranno perse.', 'Cancella tutto', function () {
       clearTimeout(timerSalva); timerSalva = null;
-      try { localStorage.removeItem(A.CHIAVE); } catch (e) { /* niente da fare */ }
+      try { M.removeItem(A.CHIAVE); } catch (e) { /* niente da fare */ }
       F.svuota().catch(function () {});
       Object.keys(urlFoto).forEach(dimentica);
       stato = A.statoVuoto(); $('salvato').textContent = 'Attività cancellate';
@@ -667,4 +670,12 @@
   $('carica').addEventListener('click', function () { $('file-copia').click(); });
   $('file-copia').addEventListener('change', function (e) { if (e.target.files[0]) caricaCopia(e.target.files[0]); e.target.value = ''; });
   $('cancella').addEventListener('click', cancellaTutto);
+
+  // Dal server può arrivare una versione più nuova (altro dispositivo): si ricarica.
+  ARCH.quandoCambia(function (tipo) {
+    if (tipo === 'portfolio') { stato = A.statoVuoto(); caricaArchivio(); }
+    ridisegna();
+  });
+  ARCH.mostraUtente();
+  ARCH.avvio();
 })();

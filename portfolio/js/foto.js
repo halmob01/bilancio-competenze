@@ -17,7 +17,9 @@
     if (aperto) return aperto;
     aperto = new Promise(function (ok, ko) {
       if (!radice.indexedDB) { ko(new Error('IndexedDB non disponibile')); return; }
-      const r = radice.indexedDB.open(DB, 1);
+      // Da entrati ogni studente ha il suo archivio di foto («portfolio-foto-u12»): su un PC condiviso non si mescolano.
+      const nome = DB + (radice.BC_ARCHIVIO ? radice.BC_ARCHIVIO.suffisso() : '');
+      const r = radice.indexedDB.open(nome, 1);
       r.onupgradeneeded = function () { r.result.createObjectStore(STORE, { keyPath: 'id' }); };
       r.onsuccess = function () { ok(r.result); };
       r.onerror = function () { ko(r.error); };

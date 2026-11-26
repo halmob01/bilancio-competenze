@@ -26,7 +26,8 @@ test('ogni pagina trova i suoi file: stili, script, caratteri e link', () => {
 test('la pagina iniziale ha quattro card: attività, diario, bilancio, curriculum', () => {
   const html = leggi('index.html');
   assert.deepEqual([...html.matchAll(/<a class="percorso" href="([^"]+)"/g)].map((m) => m[1]), ['portfolio/', 'diario/', 'bilancio/', 'cv/']);
-  assert.ok(!/<script/i.test(html), 'la pagina iniziale non ha script');
+  // Gli unici script servono all'accesso con il cartellino e alla mia area; senza server configurato non fanno niente.
+  assert.deepEqual([...html.matchAll(/<script src="([^"]+)"/g)].map((m) => m[1]), ['js/config.js', 'js/unione.js', 'js/archivio.js', 'js/area.js']);
   assert.ok(!/https?:\/\//.test(html), 'nessuna risorsa esterna');
 });
 
@@ -42,9 +43,11 @@ test('i siti hanno il link alla pagina iniziale e si riconoscono tra loro solo d
 
 test('gli script di ogni sito si caricano nell\'ordine giusto', () => {
   const ordine = (f) => [...leggi(f).matchAll(/<script src="([^"]+)"/g)].map((m) => m[1]);
-  assert.deepEqual(ordine('bilancio/index.html'), ['../js/config.js', '../js/dati.js', '../js/bilancio.js', '../js/cv.js', '../js/app.js']);
-  assert.deepEqual(ordine('cv/index.html'), ['../js/dati.js', '../js/bilancio.js', '../js/cv.js', '../js/docx.js', '../js/pdf.js', 'js/app.js']);
-  assert.deepEqual(ordine('portfolio/index.html'), ['../js/dati.js', '../js/bilancio.js', '../js/competenze.js', '../js/pdf.js', 'js/attivita.js', 'js/foto.js', 'js/app.js']);
+  const comuni = ['../js/config.js', '../js/unione.js', '../js/archivio.js'];
+  assert.deepEqual(ordine('bilancio/index.html'), ['../js/config.js', '../js/unione.js', '../js/archivio.js', '../js/dati.js', '../js/bilancio.js', '../js/cv.js', '../js/app.js']);
+  assert.deepEqual(ordine('cv/index.html'), comuni.concat(['../js/dati.js', '../js/bilancio.js', '../js/cv.js', '../js/docx.js', '../js/pdf.js', 'js/app.js']));
+  assert.deepEqual(ordine('portfolio/index.html'), comuni.concat(['../js/dati.js', '../js/bilancio.js', '../js/competenze.js', '../js/pdf.js', 'js/attivita.js', 'js/foto.js', 'js/app.js']));
+  assert.deepEqual(ordine('diario/index.html'), comuni.concat(['js/diario.js', 'js/app.js']));
   assert.ok(!ordine('bilancio/index.html').some((s) => /docx|pdf/.test(s)), 'Word e PDF non sono del bilancio');
 });
 

@@ -245,6 +245,21 @@ test('documenti: salvataggio con revisione, conflitto se un altro ha salvato pri
   } finally { await p.chiudi(); }
 });
 
+test('le mie attività si salvano come gli altri documenti, ricontrollate con le regole del sito', async () => {
+  const p = await avvia();
+  try {
+    const k = await preparaClasse(p);
+    const st = (await p.chiedi('POST', '/api/accesso/studente', { codice: k.studenti[0].codice })).cookie;
+    const dati = { versione: 1, profilo: { indirizzo: 'elettrico', anno: 'anno3' }, attivita: [
+      { id: 'a1x2y3', fatto: 'Ho cablato un quadro.', luogo: 'scuola', data: '2026-03-10', competenze: ['el-verifiche', 'inventata'], foto: ['fabc1234', '../x'] }] };
+    const s1 = await p.chiedi('PUT', '/api/documenti/portfolio', { base: 0, dati: dati }, { cookie: st });
+    assert.equal(s1.stato, 200);
+    const letto = await p.chiedi('GET', '/api/documenti/portfolio', undefined, { cookie: st });
+    assert.deepEqual(letto.json.dati.attivita[0].competenze, ['el-verifiche'], 'solo competenze del catalogo');
+    assert.deepEqual(letto.json.dati.attivita[0].foto, ['fabc1234'], 'solo identificativi di foto validi');
+  } finally { await p.chiudi(); }
+});
+
 test('il docente legge e corregge: tutto finisce nel registro e lo studente vede chi ha cambiato', async () => {
   const p = await avvia();
   try {

@@ -790,3 +790,23 @@ dialog > * + * { margin-top: 14px; }
 .elenco-proposte { list-style: none; padding: 0; display: grid; gap: 8px; }
 .elenco-proposte .pulsante { height: auto; min-height: 44px; padding-block: 8px; text-align: left; white-space: normal; }
 .aiuto details summary { cursor: pointer; font-weight: 600; min-height: 44px; display: flex; align-items: center; color: var(--c-titolo); }
+
+/* ---------- Portale: accesso, nome in testata, avvisi ---------- */
+.accesso { display: grid; gap: 10px; max-width: 520px; margin-top: 8px; }
+.accesso__etichetta { font-weight: 800; font-size: 18px; color: var(--c-bianco); }
+.accesso__riga { display: flex; flex-wrap: wrap; gap: 10px; }
+.accesso__codice {
+  flex: 1 1 220px; min-height: 52px; padding: 0 16px; border: 2px solid var(--c-bianco); border-radius: var(--radius-control);
+  background: var(--c-bianco); color: var(--c-titolo); font-size: 20px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase;
+}
+.accesso__codice::placeholder { color: var(--c-testo-2); letter-spacing: .08em; }
+.accesso .pulsante { min-height: 52px; }
+.accesso__errore { background: var(--c-bianco); color: var(--c-rosso); border-radius: var(--radius-card); padding: 10px 14px; font-weight: 600; }
+.testata__utente { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.testata__utente .pulsante--testo { min-height: 44px; padding: 0 4px; font-size: 14px; }
+.avviso-sessione {
+  margin: 0; padding: 8px var(--m); background: var(--c-rosato); border-top: 1px solid var(--c-filetto);
+  font-size: 15px; text-align: center; color: var(--c-titolo);
+}
+.percorso__stato { color: var(--c-titolo); font-weight: 600; }
+@media (max-width: 639px) { .testata__utente { display: none; } }

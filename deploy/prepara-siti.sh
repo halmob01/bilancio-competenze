@@ -10,16 +10,19 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 DIST="dist"
+# Cartella dei siti nell'indirizzo (la stessa di PORTALE_PERCORSO sul server).
+PERCORSO="${PORTALE_PERCORSO:-/gcatalfamo/}"
 rm -rf "$DIST/siti"
 mkdir -p "$DIST/siti"
 
 cp -R index.html bilancio cv diario portfolio js css fonts img "$DIST/siti/"
 
 # Il Foglio Google non si usa più: senza indirizzo il pulsante «Invia al docente» non compare.
-cat > "$DIST/siti/js/config.js" <<'EOF'
+cat > "$DIST/siti/js/config.js" <<EOF
 /* Configurazione dei siti sul server della scuola.
    urlInvio: vuoto, il Foglio Google non si usa più (il pulsante «Invia al docente» non compare). */
 window.BC_CONFIG = {
+  urlApi: '${PERCORSO}api/',
   urlInvio: ''
 };
 EOF

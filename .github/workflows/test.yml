@@ -25,6 +25,9 @@ jobs:
           node --check diario/js/diario.js
           node --check diario/js/app.js
           node --check js/competenze.js
+          node --check js/unione.js
+          node --check js/archivio.js
+          node --check js/area.js
           node --check portfolio/js/attivita.js
           node --check portfolio/js/foto.js
           node --check portfolio/js/app.js

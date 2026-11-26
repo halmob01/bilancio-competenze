@@ -155,6 +155,7 @@
       return h('li', null, h('button', {
         type: 'button', class: classe,
         'aria-current': vista && vista.k === i ? 'step' : null,
+        'data-stato': av.stati[i],
         onclick: function () { if ($('dialogo-indice').open) $('dialogo-indice').close(); vai(i); }
       },
         h('span', { class: 'meta rail__num', text: String(i + 1).padStart(2, '0') }),
@@ -295,6 +296,7 @@
   function disegnaHome() {
     const iniziato = !!stato.aggiornato;
     return h('div', { class: 'home' },
+      h('div', { class: 'home__fascia' }, h('div', { class: 'home__fascia-dentro' },
       h('a', { class: 'home__tutti', href: '../', text: 'Tutti i percorsi' }),
       h('h1', null, 'Il tuo ', h('span', { class: 'chiave', text: 'curriculum' })),
       h('p', { class: 'home__sottotitolo', text: 'Il foglio da consegnare a un\'azienda.' }),
@@ -304,6 +306,7 @@
           iniziato && ripresa ? 'Riprendi da dove eri' : 'Inizia'),
         iniziato ? h('button', { type: 'button', class: 'pulsante pulsante--secondario', onclick: function () { vai(PASSI.length - 1); } }, 'Vai al curriculum') : null),
       h('p', { class: 'nota', text: 'Il curriculum contiene recapiti personali: resta su questo dispositivo e non viene inviato a nessuno. Per riprenderlo su un altro dispositivo scarica una copia da «Salva e stampa».' }),
+      )),
       h('section', { class: 'home__indice', 'aria-labelledby': 'home-indice' },
         h('h2', { id: 'home-indice', class: 'meta', text: 'Sei passi · circa mezz\'ora' }),
         h('ol', null, PASSI.map(function (p, i) {

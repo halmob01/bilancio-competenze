@@ -218,6 +218,7 @@
   function disegnaHome() {
     const iniziato = !!stato.aggiornato;
     return h('div', { class: 'home' },
+      h('div', { class: 'home__fascia' }, h('div', { class: 'home__fascia-dentro' },
       h('a', { class: 'home__tutti', href: '../', text: 'Tutti i percorsi' }),
       h('h1', null, 'Diario di ', h('span', { class: 'chiave', text: 'bordo' })),
       h('p', { class: 'home__sottotitolo', text: 'Che cosa hai fatto e imparato questa settimana?' }),
@@ -226,6 +227,7 @@
         h('button', { type: 'button', class: 'pulsante', onclick: function () { vai(stato.tirocini.length ? 1 : 0); } }, iniziato ? 'Riprendi da dove eri' : 'Inizia'),
         iniziato ? h('button', { type: 'button', class: 'pulsante pulsante--secondario', onclick: function () { vai(2); } }, 'Rileggi il diario') : null),
       h('p', { class: 'nota', text: 'Il diario resta su questo dispositivo finché non scarichi una copia. Puoi dettare i testi con il microfono della tastiera del telefono.' }),
+      )),
       h('section', { class: 'home__indice', 'aria-labelledby': 'home-indice' },
         h('h2', { id: 'home-indice', class: 'meta', text: 'Tre passi' }),
         h('ol', null, SEZIONI.map(function (s, i) {

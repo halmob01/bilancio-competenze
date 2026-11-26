@@ -1,19 +1,17 @@
 # Percorsi per gli studenti — Identità visiva
 
-**Stato:** V2, 26 novembre 2026. Sostituisce la V1 (palette Babel e tipografia di sito-filosofia).
+**Stato:** V3, 26 novembre 2026 (senza logo AFOL, nuovo sfondo e nuova impaginazione). Sostituisce la V1 (palette Babel e tipografia di sito-filosofia).
 **Fonte del brand:** skill `afol-brand`, copiata dalla repo `halmob01/cfp-news` in [`.claude/skills/afol-brand/`](.claude/skills/afol-brand/SKILL.md). Ogni valore lì è marcato come **Ufficiale** (linee guida AFOL), **Osservato** (misurato su sito e social) o **Proposta**. Qui non si inventano valori: si applicano quelli.
 **Vale per:** pagina iniziale, bilancio (`/bilancio/`), curriculum (`/cv/`), diario (`/diario/`) e la pagina Apps Script (`apps-script/Index.html`).
 
 ## 1. Architettura di marca
 
-Modello **con garante** (`reference/identita.md`): gli strumenti hanno nome proprio (Diario di bordo, Bilancio di competenze, Curriculum) ed ereditano da AFOL Metropolitana rosso, Fira Sans e sistema dei cerchi.
+**Senza il logo AFOL** (decisione del 26 novembre 2026): gli strumenti hanno nome proprio (Diario di bordo, Bilancio di competenze, Curriculum) e dal brand AFOL prendono soltanto rosso, Fira Sans e sistema dei cerchi. Nessun logo AFOL in testate, pagine, piè di pagina o favicon.
 
-- Pagina iniziale: logo AFOL a colori in testata (almeno 120 px di larghezza), piè di pagina rosso con il logo negativo.
-- Testate dei tre siti: icona quadrata AFOL (bianco su rosso) da 40 px, perché il logo intero sotto i 120 px non si legge (`reference/logo.md`).
-- Favicon: l'icona quadrata (`img/favicon-32.png`, `img/favicon-180.png`).
-- I loghi sono la **ricostruzione vettoriale non ufficiale** della skill (`img/afol_logo_colore.svg`, `img/afol_logo_negativo.svg`). Se AFOL fornisce i file originali, vanno sostituiti.
+- Segno dei siti: un tratto di linea che finisce in un anello, rosso, accanto al nome in testata (disegnato in CSS).
+- Favicon: lo stesso segno in bianco su un quadrato rosso (`img/icona.svg`, `img/favicon-32.png`, `img/favicon-180.png`).
 
-Tono verbale invariato rispetto alla V1: diretto, rispettoso, non enfatico, domande concrete («Che cosa hai imparato finora?»), niente slogan motivazionali. È coerente con la voce AFOL (diretta, concreta, «tu» e «noi», senza gergo).
+Tono verbale invariato rispetto alla V1: diretto, rispettoso, non enfatico, domande concrete («Che cosa hai imparato finora?»), niente slogan motivazionali.
 
 ## 2. Colori
 
@@ -24,7 +22,8 @@ Tono verbale invariato rispetto alla V1: diretto, rispettoso, non enfatico, doma
 | Titoli | `--afol-nero` | `#1A1A1A` | Proposta |
 | Testo | `--afol-grigio-scuro` | `#333333` | Ufficiale |
 | Note, metadati | `--afol-grigio-medio` | `#666666` | Ufficiale |
-| Fondo della pagina | `--afol-grigio-chiaro` | `#F5F5F5` | Ufficiale |
+| Fondo della pagina | `--afol-bianco` | `#FFFFFF` | Ufficiale |
+| Pannelli di spiegazione, schede della pagina iniziale | `--afol-grigio-chiaro` | `#F5F5F5` | Ufficiale |
 | Filetti e bordi delle schede | `--afol-grigio-bordo` | `#CCCCCC` | Ufficiale |
 | Bordo dei campi e delle scelte | `--c-bordo-campo` | `#8A8A8A` | Proposta (3,4:1, WCAG 1.4.11) |
 | Fondo dei blocchi di aiuto | `--afol-fondo-rosato` | `#FCF3F4` | Osservato |
@@ -45,7 +44,7 @@ Regole: **un solo rosso** e molti neutri; il rosso per pulsanti, occhielli, paro
 | Testo | 400, interlinea 1,55 | 16–17 px |
 | Note | 400, `#666` | 14–15 px |
 
-Titoli in minuscolo con **una** parola chiave in rosso («Bilancio di *competenze*», «Diario di *bordo*», «Il tuo *curriculum*»). Le citazioni dello studente nel dossier restano in Fira Sans, con un filetto rosso a sinistra.
+Titoli in minuscolo con **una** parola chiave in evidenza («Bilancio di *competenze*», «Diario di *bordo*», «Il tuo *curriculum*»): in rosso sul bianco, in `#1A1A1A` sulla fascia rossa. Le citazioni dello studente nel dossier restano in Fira Sans, con un filetto rosso a sinistra.
 
 **Eccezione: il foglio del curriculum.** È il documento dello studente, non un materiale AFOL: conserva i suoi modelli (Contemporaneo con Anton, Classico con EB Garamond, Europass) perché l'anteprima deve coincidere con il Word e il PDF generati in `js/docx.js` e `js/pdf.js`. Anton ed EB Garamond restano caricati solo per quello (`--f-cv-display`, `--f-cv-libro`).
 
@@ -53,28 +52,34 @@ Titoli in minuscolo con **una** parola chiave in rosso («Bilancio di *competenz
 
 Le sei regole di `reference/cerchi.md`: tratto uniforme (la parete dell'anello è spessa quanto la linea), rosso su chiaro e bianco su rosso, solo orizzontale e verticale, la linea entra dal bordo e finisce in un anello. Usi nell'interfaccia:
 
-- **Firma**: la catena dei quattro cerchi (`img/catena.svg`, proporzioni misurate: fori 0,40 D, passo 1,3 D e 2,9 D) sotto l'H1 delle pagine iniziali e sotto il titolo del dossier. Solo lì, non a ogni titolo.
-- **Percorso**: la barra di avanzamento è una linea con un anello per sezione; anello grigio da fare, anello rosso vuoto completato, anello rosso pieno corrente.
-- **Tappe**: nella pagina iniziale una linea entra dal bordo sinistro dello schermo e attraversa le tre schede, ciascuna con il suo anello; sul telefono la linea diventa verticale.
-- **Segni piccoli**: l'anello prima del numero di sezione, l'anello sulle voci che mancano di qualcosa, i «+» degli esempi apribili.
+- **Fascia d'apertura**: sul rosso, da 900 px, un grande anello bianco (diametro ≈ 3,9 t, foro vuoto) su cui arriva una linea bianca che sale dal bordo basso della fascia.
+- **Indice della home di ogni sito**: una linea della metropolitana che entra dal bordo sinistro dello schermo e finisce nell'ultima fermata; un anello per sezione con numero e nome sotto. Sul telefono la linea è verticale.
+- **Indice laterale delle schermate di lavoro** (da 1100 px): linea verticale grigia con un anello per sezione; grigio da iniziare, rosso vuoto in corso o completa, rosso pieno la sezione aperta.
+- **Avanzamento** (sotto i 1100 px): linea orizzontale con anelli in testata.
+- **Pagina iniziale**: una linea attraversa le tre schede, ciascuna con il suo anello.
+- **Firma**: la catena dei quattro cerchi (`img/catena.svg`, fori 0,40 D, passo 1,3 D e 2,9 D) sotto il titolo del dossier e, in bianco, nel piè di pagina.
+- **Segni piccoli**: l'anello prima del numero di sezione, il segno della testata, i «+» degli esempi apribili.
 
-## 5. Componenti
+## 5. Sfondo e impaginazione
 
-- **Pulsante principale**: fondo rosso, testo bianco 600, angoli 6 px, altezza 48 px; hover `#A30000`.
+- **Fondo bianco** ovunque. Il grigio chiaro `#F5F5F5` segna ciò che spiega (la colonna di introduzione, la fascia di spiegazione sopra il lavoro, le schede della pagina iniziale); il bianco è il posto dove si scrive.
+- **Home di ogni sito e pagina iniziale**: si apre con una **fascia rossa a tutta larghezza** (titolo bianco 900 con la parola chiave in `#1A1A1A`, sottotitolo, testo, pulsanti invertiti: bianco pieno con testo rosso, o bordo bianco). Sotto, sul bianco, l'indice come linea con le fermate (o le tre schede dei percorsi).
+- **Schermate di lavoro**: da 1100 px due colonne, indice laterale fisso a sinistra (232 px) e lavoro a destra; dentro il lavoro, da 1000 px, pannello grigio di spiegazione a sinistra (fisso mentre si scorre) e risposte a destra. Sotto, una colonna sola con l'avanzamento in testata e «Avanti» sempre raggiungibile in basso.
+- **Piè di pagina** (pagina iniziale): scuro `#1A1A1A`, catena dei cerchi in bianco, una frase sulla privacy.
+- Margini 20 px sul telefono (16 sotto i 360), da 28 a 72 px oltre; contenitore di 1240 px; testo fino a circa 66 caratteri. Movimento sobrio (200 ms), `prefers-reduced-motion` rispettato.
+
+## 6. Componenti
+
+- **Pulsante principale**: fondo rosso, testo bianco 600, angoli 6 px, altezza 48 px; hover `#A30000`. Sul rosso è invertito.
 - **Pulsante secondario**: bordo 2 px rosso, testo rosso, fondo trasparente; hover fondo rosato.
-- **Fuoco da tastiera**: contorno 3 px `#1A1A1A` staccato di 2 px, su tutto.
-- **Testata**: bianca, filetto rosso di 4 px in alto, icona AFOL, «← Tutti i percorsi», nome del sito in 800.
-- **Schede**: bianche su fondo grigio chiaro, bordo 1 px `#CCCCCC`, angoli 6 px; quella aperta o l'indice della home hanno il filetto rosso in alto di 6 px.
+- **Fuoco da tastiera**: contorno 3 px `#1A1A1A` staccato di 2 px (bianco sulla fascia rossa).
+- **Testata**: bianca, filetto rosso di 4 px in alto, «← Tutti i percorsi», segno e nome del sito in 800.
+- **Schede**: bianche con bordo 1 px `#CCCCCC`, angoli 6 px; la scheda aperta e il dossier hanno il filetto rosso in alto di 6 px.
 - **Aiuto e suggerimenti**: fondo rosato con filetto rosso di 4 px a sinistra.
 - **Scelte**: righe bianche con bordo grigio; scelta attiva con bordo rosso, testo in grassetto, radio come anello rosso pieno.
 - **Dialoghi**: bianchi con filetto rosso in alto, fondo scurito dietro.
-- **Piè di pagina** (pagina iniziale): rosso pieno, logo negativo bianco, testo bianco.
 
 Restano esclusi: badge, punteggi, confetti, mascotte, foto stock, sfumature, ombre pesanti, colori per indirizzo.
-
-## 6. Layout e movimento
-
-Invariati rispetto alla V1: contenitore di lavoro di 1240 px, margini 20 px sul telefono (16 sotto i 360) e da 28 a 72 px oltre; colonna di testo fino a circa 66 caratteri; da 1000 px home a due colonne e schermate con introduzione e risposta affiancate; da 1200 px indice delle sezioni come striscia orizzontale. Movimento sobrio (200 ms), `prefers-reduced-motion` rispettato.
 
 ## 7. Accessibilità (verificata sui contrasti della skill)
 
@@ -88,5 +93,5 @@ Invariati rispetto alla V1: contenitore di lavoro di 1240 px, margini 20 px sul 
 
 - `css/tokens.css`: token AFOL e ruoli (`--c-*`) usati dall'interfaccia, `@font-face`.
 - `css/stile.css`: componenti, stampa del dossier e del curriculum.
-- `img/`: loghi, icona, catena dei cerchi.
+- `img/`: icona dei siti, catena dei cerchi (rossa e bianca), logo Europass del curriculum.
 - `.claude/skills/afol-brand/`: il brand kit completo, da consultare per qualsiasi nuovo materiale (anche social, video, slide).

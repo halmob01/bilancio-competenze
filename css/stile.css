@@ -74,11 +74,16 @@ a { color: var(--c-rosso); text-underline-offset: 3px; }
   max-width: var(--max-lavoro); margin: 0 auto; padding: 6px var(--m);
   min-height: 60px;
 }
-.testata__logo { display: inline-flex; align-items: center; flex: none; min-height: 44px; }
-.testata__logo img { display: block; height: 40px; width: auto; }
 .testata__nome {
   font-family: var(--f-sans); font-weight: 800; font-size: 17px; letter-spacing: 0; color: var(--c-titolo);
   background: none; border: 0; padding: 10px 0; cursor: pointer; min-height: 44px; text-align: left;
+}
+.testata__nome { display: inline-flex; align-items: center; gap: 10px; }
+/* Il segno dei siti: un tratto di linea che finisce in un anello. */
+.testata__nome::before {
+  content: ""; flex: none; width: 28px; height: 14px;
+  background: radial-gradient(circle at 21px 7px, transparent 3px, var(--c-rosso) 3.5px, var(--c-rosso) 7px, transparent 7.5px),
+    linear-gradient(var(--c-rosso), var(--c-rosso)) 0 4.5px / 16px 5px no-repeat;
 }
 .testata__nome:hover { color: var(--c-rosso); }
 .testata__nome--fermo { cursor: default; display: inline-flex; align-items: center; }
@@ -106,6 +111,7 @@ a { color: var(--c-rosso); text-underline-offset: 3px; }
 }
 .avanzamento__nodo--completato { border-color: var(--c-rosso); background: var(--c-bianco); }
 .avanzamento__nodo--attivo { border-color: var(--c-rosso); background: var(--c-rosso); box-shadow: 0 0 0 4px var(--c-bianco); }
+body:has(.home) .avanzamento { display: none; }
 .tappa-mobile { display: flex; align-items: center; gap: 10px; max-width: var(--max-lavoro); margin: 0 auto; padding: 0 var(--m) 10px; }
 .tappa-mobile .meta:last-child { margin-left: auto; }
 #tappa-nome { font-weight: 600; color: var(--c-titolo); }
@@ -129,48 +135,93 @@ a { color: var(--c-rosso); text-underline-offset: 3px; }
 .pulsante--testo:hover { background: transparent; border-color: transparent; color: var(--c-rosso-scuro); text-decoration-thickness: 2px; }
 .pulsante[disabled] { opacity: .45; cursor: not-allowed; }
 
-/* ---------- Home di ogni sito ---------- */
-.home {
-  max-width: var(--max-lavoro); margin: 0 auto;
-  padding: clamp(36px, 7vw, 88px) var(--m) var(--space-section);
+/* ---------- Home di ogni sito: fascia rossa d'apertura, poi l'indice come linea con le fermate ---------- */
+.home { padding: 0 0 var(--space-section); }
+.home__fascia {
+  position: relative; overflow: hidden;
+  background: var(--c-rosso); color: var(--c-bianco);
 }
-.home h1 {
+.home__fascia-dentro {
+  position: relative;
+  max-width: var(--max-lavoro); margin: 0 auto;
+  padding: clamp(40px, 7vw, 96px) var(--m) clamp(48px, 7vw, 96px);
+}
+.home__fascia-dentro > * { position: relative; z-index: 1; }
+/* Il segno dei cerchi in bianco su rosso (cerchi.md, regole 2, 4 e 5): una linea entra dal bordo basso
+   della fascia e finisce in un grande anello con il foro vuoto. Spessore t, anello ≈ 3,9 t, foro ≈ 0,51. */
+.home__fascia-dentro::before, .home__fascia-dentro::after { content: none; }
+@media (min-width: 900px) {
+  .home__fascia-dentro { --t: clamp(44px, 4vw, 60px); }
+  .home__fascia-dentro::after {
+    content: ""; position: absolute; z-index: 0;
+    right: calc(var(--m) + 2vw); top: clamp(48px, 6vw, 88px);
+    width: calc(3.9 * var(--t)); height: calc(3.9 * var(--t));
+    border: calc(.95 * var(--t)) solid var(--c-bianco); border-radius: 50%;
+  }
+  .home__fascia-dentro::before {
+    content: ""; position: absolute; z-index: 0; bottom: 0;
+    right: calc(var(--m) + 2vw + 1.45 * var(--t)); width: var(--t);
+    top: calc(clamp(48px, 6vw, 88px) + 3.3 * var(--t));
+    background: var(--c-bianco);
+  }
+  .home__fascia-dentro > * { max-width: min(640px, 62%); }
+}
+.home__fascia h1 {
+  color: var(--c-bianco);
   font-weight: 900; font-size: var(--t-h1); line-height: 1.02; letter-spacing: -.01em;
   margin: 0 0 22px; max-width: 14ch;
 }
-.home h1::after { margin-top: .3em; }
-.home__sottotitolo { font-size: var(--t-domanda); font-weight: 800; line-height: 1.15; color: var(--c-titolo); margin-bottom: 18px; max-width: 24ch; }
+.home__fascia h1 .chiave { color: var(--c-nero); }
+.home__fascia h1::after { content: none; }
+.home__fascia .occhiello { color: var(--c-bianco); margin-bottom: 14px; }
+.home__sottotitolo { font-size: var(--t-domanda); font-weight: 800; line-height: 1.15; margin-bottom: 18px; max-width: 24ch; }
 .home__testo { margin-bottom: 30px; }
+.home__fascia .home__sottotitolo { color: var(--c-bianco); }
+.home__fascia .nota { color: var(--c-bianco); }
 .home__azioni { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; margin-bottom: 16px; }
-.home__indice {
-  margin-top: var(--space-section); background: var(--c-bianco);
-  border: 1px solid var(--c-filetto); border-top: var(--filetto) solid var(--c-rosso); border-radius: var(--radius-card);
-  padding: 20px 22px 8px;
+/* Pulsanti sul rosso: invertiti. */
+.home__fascia .pulsante { background: var(--c-bianco); border-color: var(--c-bianco); color: var(--c-rosso); }
+.home__fascia .pulsante:hover { background: var(--c-rosato); border-color: var(--c-rosato); color: var(--c-rosso-scuro); }
+.home__fascia .pulsante--secondario { background: transparent; color: var(--c-bianco); }
+.home__fascia .pulsante--secondario:hover { background: rgba(255, 255, 255, .14); color: var(--c-bianco); border-color: var(--c-bianco); }
+.home__fascia :focus-visible { outline-color: var(--c-bianco); }
+
+/* L'indice della home come una linea della metropolitana: un anello per sezione, il nome sotto (cerchi.md, E). */
+.home__indice, .home__sotto { max-width: var(--max-lavoro); margin: 0 auto; padding: clamp(40px, 6vw, 72px) var(--m) 0; }
+.home__indice > h2.meta { margin-bottom: 22px; }
+.home__indice ol { list-style: none; padding: 0 0 0 40px; margin: 0; display: grid; position: relative; }
+.home__indice ol::before {
+  content: ""; position: absolute; left: 10px; top: 8px; bottom: 8px; width: var(--cerchio-t); background: var(--c-rosso);
 }
-.home__indice > h2.meta { margin-bottom: 6px; }
-.home__indice ol { list-style: none; padding: 0; display: grid; gap: 0; }
-.home__indice li { display: grid; grid-template-columns: 4ch 1fr auto; align-items: baseline; gap: 12px; padding: 12px 0; border-top: 1px solid var(--c-filetto); color: var(--c-titolo); }
-.home__indice li:first-child { border-top: 0; }
+.home__indice li { position: relative; display: grid; grid-template-columns: 3ch 1fr; align-items: baseline; gap: 10px; padding: 10px 0; color: var(--c-titolo); font-weight: 600; }
+.home__indice li::before {
+  content: ""; position: absolute; left: -40px; top: 10px; width: 25px; height: 25px; box-sizing: border-box;
+  border: var(--cerchio-t) solid var(--c-rosso); border-radius: 50%; background: var(--c-bianco);
+}
 .home__indice li > .meta:first-child { color: var(--c-rosso); font-weight: 800; }
 @media (min-width: 768px) {
-  .home__indice ol { grid-template-columns: repeat(2, 1fr); column-gap: var(--gap); }
-  .home__indice li:nth-child(2) { border-top: 0; }
+  .home__indice ol { grid-auto-flow: column; grid-auto-columns: 1fr; padding: 40px 0 0; }
+  .home__indice ol::before { left: calc(-1 * var(--m) - 100vw); right: calc(100% / var(--n, 6) - 22px); top: 10px; bottom: auto; width: auto; height: var(--cerchio-t); }
+  .home__indice ol:has(> li:nth-child(3):last-child) { --n: 3; }
+  .home__indice li { grid-template-columns: 1fr; gap: 2px; padding: 0 12px 0 0; }
+  .home__indice li::before { left: 0; top: -40px; }
+  .home { overflow-x: clip; }
 }
 
 /* ---------- Pagina iniziale: i tre percorsi ---------- */
 .home--percorsi h1 { max-width: 16ch; }
-.home__ente { display: flex; align-items: center; gap: 12px; margin-bottom: 26px; }
+.home__sotto { padding-top: clamp(48px, 6vw, 80px); }
 /* I tre siti come tappe di un percorso: una linea li attraversa e ogni scheda ha il suo anello (cerchi.md, uso 4). */
-.percorsi { list-style: none; padding: 0; display: grid; gap: var(--gap); margin: 8px 0 32px; position: relative; }
+.percorsi { list-style: none; padding: 0; display: grid; gap: var(--gap); margin: 0 0 32px; position: relative; }
 .percorsi > li { position: relative; }
 .percorso {
   position: relative;
   display: flex; flex-direction: column; gap: 10px; height: 100%;
-  background: var(--c-bianco); border: 1px solid var(--c-filetto); border-radius: var(--radius-card);
-  padding: 24px 22px 22px; text-decoration: none; color: var(--c-testo);
-  transition: border-color var(--durata), box-shadow var(--durata);
+  background: var(--c-pannello); border: 1px solid transparent; border-radius: var(--radius-card);
+  padding: 28px 24px 24px; text-decoration: none; color: var(--c-testo);
+  transition: border-color var(--durata), background var(--durata);
 }
-.percorso:hover { border-color: var(--c-rosso); box-shadow: inset 0 0 0 1px var(--c-rosso); }
+.percorso:hover { border-color: var(--c-rosso); background: var(--c-bianco); }
 .percorso__titolo { font-size: var(--t-domanda); font-weight: 900; line-height: 1.1; color: var(--c-titolo); }
 .percorso__testo { max-width: 40ch; }
 .percorso__apri { margin-top: auto; padding-top: 10px; font-weight: 600; color: var(--c-rosso); }
@@ -182,51 +233,54 @@ a { color: var(--c-rosso); text-underline-offset: 3px; }
   content: ""; position: absolute; left: 10px; top: 0; bottom: 0; width: var(--cerchio-t); background: var(--c-rosso);
 }
 .percorsi > li::before {
-  content: ""; position: absolute; left: -34px; top: 26px; width: 25px; height: 25px; z-index: 1;
-  border: var(--cerchio-t) solid var(--c-rosso); border-radius: 50%; background: var(--c-fondo);
+  content: ""; position: absolute; left: -34px; top: 26px; width: 25px; height: 25px; z-index: 1; box-sizing: border-box;
+  border: var(--cerchio-t) solid var(--c-rosso); border-radius: 50%; background: var(--c-bianco);
 }
 @media (min-width: 768px) {
-  .percorsi { grid-template-columns: repeat(3, 1fr); padding: 34px 0 0; }
-  /* La linea entra dal bordo sinistro dello schermo e attraversa le tre schede. */
+  .percorsi { grid-template-columns: repeat(3, 1fr); padding: 40px 0 0; }
+  /* La linea entra dal bordo sinistro dello schermo e finisce nell'ultimo anello. */
   .percorsi::before { left: calc(-1 * var(--m) - 100vw); right: calc((100% - 2 * var(--gap)) / 3 - 34px); top: 10px; bottom: auto; width: auto; height: var(--cerchio-t); }
-  .percorsi > li::before { left: 22px; top: -34px; }
-  #principale:has(.home--percorsi) { overflow-x: clip; }
+  .percorsi > li::before { left: 22px; top: -40px; }
 }
 
-/* Firma dell'ente in fondo alla pagina iniziale: piè di pagina rosso con il logo negativo (web.md). */
-.piede { background: var(--c-rosso); color: var(--c-bianco); }
+/* Piè di pagina della pagina iniziale: scuro, con la catena dei cerchi in bianco. */
+.piede { background: var(--c-nero); color: var(--c-bianco); }
 .piede__riga {
   max-width: var(--max-lavoro); margin: 0 auto; padding: 28px var(--m) 32px;
   display: flex; flex-wrap: wrap; align-items: center; gap: 16px 32px;
 }
-.piede__logo { display: block; height: 92px; width: auto; } /* almeno 120 px di larghezza */
 .piede p { font-size: 15px; max-width: 52ch; }
-.piede a { color: var(--c-bianco); }
-
-/* Da 1000px la home è a due colonne: presentazione a sinistra, indice delle sezioni a destra. */
-@media (min-width: 1000px) {
-  .home { display: grid; grid-template-columns: 7fr 5fr; column-gap: clamp(48px, 7vw, 112px); align-content: start; }
-  .home > * { grid-column: 1; }
-  .home > .home__indice { grid-column: 2; grid-row: 1 / span 6; margin-top: 0; align-self: start; }
-  .home__indice ol { grid-template-columns: 1fr; }
-  .home__indice li:nth-child(2) { border-top: 1px solid var(--c-filetto); }
-  .home--percorsi { display: block; }
-}
+.catena--bianca { background-image: url("../img/catena-bianca.svg"); }
 
 /* ---------- Area di lavoro ---------- */
 .lavoro { max-width: var(--max-lavoro); margin: 0 auto; padding: 0 var(--m); }
 .rail { display: none; }
-/* Da 1200px l'indice è una striscia orizzontale sopra il lavoro. */
-@media (min-width: 1200px) {
-  .rail { display: block; padding-top: 24px; }
-  .rail ol { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 0 var(--gap); }
-  .rail .rail__voce { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; border-top: 4px solid var(--c-filetto); padding: 10px 0 8px; }
+.rail ol, .indice-dialogo ol { list-style: none; padding: 0; margin: 0; }
+/* Da 1100px l'indice è una colonna a sinistra: una linea verticale con un anello per sezione,
+   come una linea della metropolitana (cerchi.md, regola 3). Sostituisce la traccia orizzontale in testata. */
+@media (min-width: 1100px) {
+  .lavoro { display: grid; grid-template-columns: 232px minmax(0, 1fr); column-gap: clamp(40px, 4vw, 64px); align-items: start; }
+  .rail {
+    display: block; position: sticky; top: 84px; align-self: start;
+    padding: 40px 0 24px; max-height: calc(100vh - 84px); overflow-y: auto;
+  }
+  .rail ol { position: relative; padding-left: 40px; }
+  .rail ol::before { content: ""; position: absolute; left: 10px; top: 22px; bottom: 22px; width: var(--cerchio-t); background: var(--c-filetto); }
+  .rail .rail__voce {
+    position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 1px;
+    border-top: 0; padding: 12px 0; min-height: 56px;
+  }
+  .rail .rail__voce::before {
+    content: ""; position: absolute; left: -40px; top: 12px; width: 25px; height: 25px; box-sizing: border-box;
+    border: var(--cerchio-t) solid var(--c-filetto); border-radius: 50%; background: var(--c-bianco);
+  }
+  .rail .rail__voce[data-stato="completa"]::before, .rail .rail__voce[data-stato="in_corso"]::before { border-color: var(--c-rosso); }
+  .rail .rail__voce[aria-current="step"]::before { border-color: var(--c-rosso); background: var(--c-rosso); box-shadow: 0 0 0 4px var(--c-bianco); }
   .rail .rail__voce:hover .rail__nome { color: var(--c-rosso); }
-  .rail .rail__voce[aria-current="step"] { border-top-color: var(--c-rosso); }
   .rail .rail__num { display: none; }
-  .tappa-mobile { display: none; }
+  .rail .rail__nome { font-size: 16px; line-height: 1.25; }
+  .tappa-mobile, .avanzamento { display: none; }
 }
-.rail ol, .indice-dialogo ol { list-style: none; padding: 0; }
 .rail__voce, .indice-dialogo__voce {
   display: grid; grid-template-columns: 4.5ch 1fr; gap: 4px 10px; width: 100%;
   text-align: left; background: none; border: 0; border-top: 1px solid var(--c-filetto);
@@ -251,8 +305,9 @@ a { color: var(--c-rosso); text-underline-offset: 3px; }
 .schermata__corpo { display: grid; gap: 28px; }
 @media (min-width: 1000px) {
   .schermata__corpo { grid-template-columns: 4fr 8fr; gap: 0; }
-  .schermata__corpo > .colonna-intro { padding-right: clamp(24px, 3vw, 48px); }
-  .schermata__corpo > .colonna-risposta { padding-left: clamp(24px, 3vw, 48px); border-left: 1px solid var(--c-filetto); }
+  /* La spiegazione sta su un pannello grigio chiaro, il lavoro sul bianco. */
+  .schermata__corpo > .colonna-intro { background: var(--c-pannello); border-radius: var(--radius-card); padding: 24px 24px 28px; position: sticky; top: 100px; }
+  .schermata__corpo > .colonna-risposta { padding-left: clamp(28px, 3.5vw, 56px); }
   .schermata__corpo--pieno { grid-template-columns: 1fr; }
   .schermata__corpo--pieno > .colonna-risposta { border-left: 0; padding-left: 0; }
 }
@@ -558,25 +613,27 @@ dialog > * + * { margin-top: 14px; }
 /* Sul telefono la testata di lavoro è piena: il link ai percorsi sta nella schermata iniziale di ogni sito. */
 .home__tutti { display: none; }
 @media (max-width: 639px) {
-  .testata__tutti, .testata__logo { display: none; }
+  .testata__tutti { display: none; }
   .home__tutti {
     display: inline-flex; align-items: center; gap: 6px; min-height: 44px; margin-bottom: 12px;
     font-size: 14px; font-weight: 600; color: var(--c-testo-2); text-decoration: none;
   }
   .home__tutti::before { content: "←"; color: var(--c-rosso); }
+  .home__fascia .home__tutti, .home__fascia .home__tutti::before { color: var(--c-bianco); }
 }
 
 @media (max-width: 479px) {
   .testata__riga { gap: 8px; }
   .testata__riga .pulsante { white-space: nowrap; }
   .testata__nome { font-size: 15px; min-width: 0; }
+  .testata__nome::before { display: none; }
   .testata__salvato { font-size: 12px; }
   #tappa-stato { display: none; }
 }
 
 /* ---------- Schermate a tutta larghezza: fascia di spiegazione in alto, lavoro sotto ---------- */
 .schermata__corpo--largo { display: grid; gap: 28px; grid-template-columns: 1fr; }
-.fascia { display: grid; gap: 16px 40px; align-items: start; }
+.fascia { display: grid; gap: 16px 40px; align-items: start; background: var(--c-pannello); border-radius: var(--radius-card); padding: 20px 22px; }
 .fascia > * { max-width: var(--measure); }
 @media (min-width: 900px) {
   .fascia { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -662,10 +719,3 @@ dialog > * + * { margin-top: 14px; }
   .dossier__parte:last-child { border-bottom: 1px solid var(--c-filetto); }
   .dossier__parte:has(.orientamento-anteprima) { grid-column: 1 / -1; }
 }
-
-/* ---------- Testata della pagina iniziale: logo a colori a sinistra (web.md, «Struttura del sito osservata») ---------- */
-.testata--ente, .testata:has(.testata__riga--ente) { position: static; }
-.testata__riga--ente { min-height: 84px; padding-block: 12px; gap: 18px; }
-.testata__marchio { display: block; width: 120px; height: auto; flex: none; } /* dimensione minima del logo: 120 px */
-.testata__riga--ente .testata__nome { padding-left: 18px; border-left: 1px solid var(--c-filetto); font-size: 16px; font-weight: 600; color: var(--c-testo-2); }
-.home--percorsi > .occhiello { margin-bottom: 12px; }

@@ -10,61 +10,66 @@
   <link rel="apple-touch-icon" href="img/favicon-180.png">
   <link rel="preload" href="fonts/fira-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="fonts/fira-sans-latin-900-normal.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="css/tokens.css?v=20261126-afol">
-  <link rel="stylesheet" href="css/stile.css?v=20261126-afol">
+  <link rel="stylesheet" href="css/tokens.css?v=20261126-b">
+  <link rel="stylesheet" href="css/stile.css?v=20261126-b">
 </head>
 <body>
   <a class="salta" href="#principale">Vai al contenuto</a>
 
   <header class="testata">
-    <div class="testata__riga testata__riga--ente">
-      <img class="testata__marchio" src="img/afol_logo_colore.svg" alt="AFOL Metropolitana" width="140" height="106">
+    <div class="testata__riga">
       <span class="testata__nome testata__nome--fermo">Percorsi per gli studenti</span>
     </div>
   </header>
 
   <main id="principale" tabindex="-1">
     <div class="home home--percorsi">
-      <p class="occhiello">Diario · Bilancio · Curriculum</p>
-      <h1>Cosa vuoi fare <span class="chiave">oggi?</span></h1>
-      <p class="home__sottotitolo">Scegli da dove partire.</p>
-      <p class="home__testo misura">Tre strumenti per raccontare quello che impari, durante gli anni di formazione. Ognuno salva il tuo lavoro su questo dispositivo e puoi riprenderlo quando vuoi. Il curriculum può prendere i dati dal bilancio e dal diario.</p>
+      <div class="home__fascia">
+        <div class="home__fascia-dentro">
+          <p class="occhiello">Diario · Bilancio · Curriculum</p>
+          <h1>Cosa vuoi fare <span class="chiave">oggi?</span></h1>
+          <p class="home__sottotitolo">Scegli da dove partire.</p>
+          <p class="home__testo misura">Tre strumenti per raccontare quello che impari, durante gli anni di formazione. Ognuno salva il tuo lavoro su questo dispositivo e puoi riprenderlo quando vuoi. Il curriculum può prendere i dati dal bilancio e dal diario.</p>
+        </div>
+      </div>
 
-      <ul class="percorsi" aria-label="I percorsi">
-        <li>
-          <a class="percorso" href="diario/">
-            <span class="meta percorso__num">01 · Una scheda a settimana</span>
-            <span class="percorso__titolo">Diario di bordo</span>
-            <span class="percorso__testo">Durante il tirocinio scrivi che cosa hai fatto, che cosa hai imparato e che cosa è stato difficile.</span>
-            <span class="percorso__apri">Apri il diario</span>
-          </a>
-        </li>
-        <li>
-          <a class="percorso" href="bilancio/">
-            <span class="meta percorso__num">02 · Circa tre ore</span>
-            <span class="percorso__titolo">Bilancio di competenze</span>
-            <span class="percorso__testo">Ricostruisci le tue esperienze, riconosci quello che sai fare e quello che devi ancora imparare.</span>
-            <span class="percorso__apri">Apri il bilancio</span>
-          </a>
-        </li>
-        <li>
-          <a class="percorso" href="cv/">
-            <span class="meta percorso__num">03 · Circa mezz'ora</span>
-            <span class="percorso__titolo">Curriculum</span>
-            <span class="percorso__testo">Il foglio da consegnare a un'azienda, da scaricare in Word o in PDF.</span>
-            <span class="percorso__apri">Apri il curriculum</span>
-          </a>
-        </li>
-      </ul>
+      <div class="home__sotto">
+        <ul class="percorsi" aria-label="I percorsi">
+          <li>
+            <a class="percorso" href="diario/">
+              <span class="meta percorso__num">01 · Una scheda a settimana</span>
+              <span class="percorso__titolo">Diario di bordo</span>
+              <span class="percorso__testo">Durante il tirocinio scrivi che cosa hai fatto, che cosa hai imparato e che cosa è stato difficile.</span>
+              <span class="percorso__apri">Apri il diario</span>
+            </a>
+          </li>
+          <li>
+            <a class="percorso" href="bilancio/">
+              <span class="meta percorso__num">02 · Circa tre ore</span>
+              <span class="percorso__titolo">Bilancio di competenze</span>
+              <span class="percorso__testo">Ricostruisci le tue esperienze, riconosci quello che sai fare e quello che devi ancora imparare.</span>
+              <span class="percorso__apri">Apri il bilancio</span>
+            </a>
+          </li>
+          <li>
+            <a class="percorso" href="cv/">
+              <span class="meta percorso__num">03 · Circa mezz'ora</span>
+              <span class="percorso__titolo">Curriculum</span>
+              <span class="percorso__testo">Il foglio da consegnare a un'azienda, da scaricare in Word o in PDF.</span>
+              <span class="percorso__apri">Apri il curriculum</span>
+            </a>
+          </li>
+        </ul>
 
-      <p class="nota">Se usi un computer condiviso, al termine scarica una copia del tuo lavoro e cancellalo da questo browser.</p>
+        <p class="nota">Se usi un computer condiviso, al termine scarica una copia del tuo lavoro e cancellalo da questo browser.</p>
+      </div>
     </div>
   </main>
 
   <footer class="piede">
     <div class="piede__riga">
-      <img class="piede__logo" src="img/afol_logo_negativo.svg" alt="AFOL Metropolitana" width="122" height="92">
-      <p>Strumenti per gli studenti dei percorsi di istruzione e formazione professionale. Il tuo lavoro resta su questo dispositivo finché non decidi tu di scaricarlo o di inviarlo.</p>
+      <span class="catena catena--bianca" aria-hidden="true"></span>
+      <p>Il tuo lavoro resta su questo dispositivo finché non decidi tu di scaricarlo o di inviarlo.</p>
     </div>
   </footer>
 

@@ -182,6 +182,7 @@
       return h('li', null, h('button', {
         type: 'button', class: classe,
         'aria-current': vista && vista.s === i ? 'step' : null,
+        'data-stato': av.stati[i],
         onclick: function () { if ($('dialogo-indice').open) $('dialogo-indice').close(); vai(i, 0); }
       },
         h('span', { class: 'meta rail__num', text: String(i + 1).padStart(2, '0') }),
@@ -368,6 +369,7 @@
   function disegnaHome() {
     const iniziato = !!stato.aggiornato;
     return h('div', { class: 'home' },
+      h('div', { class: 'home__fascia' }, h('div', { class: 'home__fascia-dentro' },
       h('a', { class: 'home__tutti', href: '../', text: 'Tutti i percorsi' }),
       h('h1', null, 'Bilancio di ', h('span', { class: 'chiave', text: 'competenze' })),
       h('p', { class: 'home__sottotitolo', text: 'Che cosa hai imparato finora?' }),
@@ -380,6 +382,7 @@
       h('p', { class: 'nota', text: URL_INVIO
         ? 'Puoi tornare sulle risposte per correggerle, anche dopo averle inviate al docente: un nuovo invio sostituisce il precedente.'
         : 'Puoi tornare sulle risposte per correggerle. Le risposte restano su questo dispositivo finché non scarichi una copia.' }),
+      )),
       h('section', { class: 'home__indice', 'aria-labelledby': 'home-indice' },
         h('h2', { id: 'home-indice', class: 'meta', text: 'Sei sezioni · circa tre ore' }),
         h('ol', null, D.SEZIONI.map(function (s, i) {

@@ -13,7 +13,7 @@ Applicazione statica per gli studenti IeFP di tutti gli anni (Elettrico, Informa
 
 Ogni sito ha il suo salvataggio sul dispositivo e la testata ha il link «Tutti i percorsi» verso la pagina iniziale (sul telefono, dove la testata è piena, il link sta nella schermata iniziale di ogni sito). I siti restano separati: si parlano solo leggendo, su richiesta dello studente, i dati salvati dagli altri nello stesso browser (o da una copia `.json` caricata), senza mai scriverci.
 
-**Prototipo V1, non ancora collaudato con studenti.** L'interfaccia segue il brand kit di AFOL Metropolitana (rosso `#CC0000`, Fira Sans, sistema dei cerchi), copiato dalla repo `cfp-news` nella skill [`.claude/skills/afol-brand/`](.claude/skills/afol-brand/SKILL.md) e applicato come descritto in [`design.md`](design.md); i contenuti didattici sono una prima stesura da rivedere con i docenti dei tre indirizzi.
+**Prototipo V1, non ancora collaudato con studenti.** L'interfaccia usa colori, carattere e sistema dei cerchi del brand kit di AFOL Metropolitana (rosso `#CC0000`, Fira Sans), senza il logo dell'ente, copiato dalla repo `cfp-news` nella skill [`.claude/skills/afol-brand/`](.claude/skills/afol-brand/SKILL.md) e applicato come descritto in [`design.md`](design.md); i contenuti didattici sono una prima stesura da rivedere con i docenti dei tre indirizzi.
 
 ## Il bilancio (`/bilancio/`)
 
@@ -78,7 +78,7 @@ Sei passi: i tuoi dati (nome, indirizzo di studio, recapiti, foto), che lavoro c
 - `css/stile.css` — componenti e stampa.
 - `apps-script/Codice.gs` — script da incollare nel Foglio Google del docente.
 - `fonts/` — Fira Sans 400, 600, 800, 900 per l'interfaccia; Anton ed EB Garamond solo per i modelli del curriculum (sottoinsieme latino, SIL Open Font License; licenze accanto ai file).
-- `img/` — logo AFOL a colori e negativo (ricostruzione vettoriale non ufficiale della skill), icona per favicon, catena dei cerchi, logo Europass.
+- `img/` — icona dei siti per favicon, catena dei cerchi, logo Europass.
 - `.claude/skills/afol-brand/` — brand kit AFOL Metropolitana (dalla repo `cfp-news`): colori, carattere, logo, cerchi, indicazioni per web, social e video.
 
 ## Prova e verifica

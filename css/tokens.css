@@ -29,7 +29,8 @@
   --afol-fondo-rosato: #FCF3F4;   /* fondo dei post (Osservato): blocchi di aiuto */
 
   /* Ruoli usati da stile.css */
-  --c-fondo: var(--afol-grigio-chiaro);
+  --c-fondo: var(--afol-bianco);
+  --c-pannello: var(--afol-grigio-chiaro);   /* colonne di spiegazione, schede della pagina iniziale */
   --c-superficie: var(--afol-bianco);
   --c-testo: var(--afol-grigio-scuro);
   --c-titolo: var(--afol-nero);

@@ -13,6 +13,8 @@
 
 Tono verbale invariato rispetto alla V1: diretto, rispettoso, non enfatico, domande concrete («Che cosa hai imparato finora?»), niente slogan motivazionali.
 
+**Chi legge vede i siti per la prima volta** (26/11/2026): nessun testo a schermo parla di versioni precedenti, di cose spostate o cambiate. Le prove con pochi studenti non lasciano tracce nell'interfaccia: i loro dati si recuperano in silenzio. I testi su dove sta il lavoro dicono sempre il vero: «solo su questo dispositivo» senza accesso, «anche sul server della scuola» da entrati (attributo `data-con-accesso`).
+
 ## 2. Colori
 
 | Ruolo | Token | Valore | Fonte |

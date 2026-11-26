@@ -376,7 +376,7 @@
       h('a', { class: 'home__tutti', href: '../', text: 'Tutti i percorsi' }),
       h('h1', { text: 'Bilancio di competenze' }),
       h('p', { class: 'home__sottotitolo', text: 'Che cosa hai imparato finora?' }),
-      h('p', { class: 'home__testo misura', text: 'Ricostruisci le esperienze del tuo percorso, riconosci ciò che sai fare e individua quello che devi ancora imparare. Alla fine avrai un bilancio scritto con le tue parole e un breve testo per presentarti agli open day. Il curriculum è un percorso a parte: lo trovi nella pagina iniziale.' }),
+      h('p', { class: 'home__testo misura', text: 'Ricostruisci le esperienze del tuo percorso, riconosci ciò che sai fare e individua quello che devi ancora imparare. Alla fine avrai un bilancio scritto con le tue parole e un breve testo per presentarti agli open day.' }),
       h('div', { class: 'home__azioni' },
         h('button', { type: 'button', class: 'pulsante', onclick: function () {
           vai(ripresa ? ripresa.s : 0, ripresa ? ripresa.k : 0);

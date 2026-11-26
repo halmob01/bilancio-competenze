@@ -1264,7 +1264,6 @@
   if (ripresoDalBilancio) scriviArchivio();
   disegna();
   if (!archivioDisponibile) $('salvato').textContent = 'Salvataggio non disponibile: scarica una copia';
-  else if (ripresoDalBilancio) $('salvato').textContent = 'Curriculum ripreso dal bilancio';
   else if (stato.aggiornato) $('salvato').textContent = 'Curriculum ritrovato';
 
   $('vai-home').addEventListener('click', function () { vai(null); });

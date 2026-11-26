@@ -307,6 +307,8 @@
   // ---------- Nome e «Esci» nella testata dei siti ----------
   function mostraUtente() {
     if (!sessione) return;
+    // I testi che parlano di dove sta il lavoro cambiano quando lo studente è entrato (attributo data-con-accesso).
+    document.querySelectorAll('[data-con-accesso]').forEach(function (el) { el.textContent = el.getAttribute('data-con-accesso'); });
     const riga = document.querySelector('.testata__riga');
     const casa = document.querySelector('a.testata__tutti');
     if (!riga || !casa || document.getElementById('utente-portale')) return;

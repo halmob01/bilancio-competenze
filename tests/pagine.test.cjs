@@ -5,7 +5,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const radice = path.join(__dirname, '..');
-const PAGINE = ['index.html', 'bilancio/index.html', 'cv/index.html', 'diario/index.html'];
+const PAGINE = ['index.html', 'bilancio/index.html', 'cv/index.html', 'diario/index.html', 'portfolio/index.html'];
 const leggi = (f) => fs.readFileSync(path.join(radice, f), 'utf8');
 
 test('ogni pagina trova i suoi file: stili, script, caratteri e link', () => {
@@ -23,19 +23,19 @@ test('ogni pagina trova i suoi file: stili, script, caratteri e link', () => {
   });
 });
 
-test('la pagina iniziale ha tre card: diario, bilancio, curriculum', () => {
+test('la pagina iniziale ha quattro card: attività, diario, bilancio, curriculum', () => {
   const html = leggi('index.html');
-  assert.deepEqual([...html.matchAll(/<a class="percorso" href="([^"]+)"/g)].map((m) => m[1]), ['diario/', 'bilancio/', 'cv/']);
+  assert.deepEqual([...html.matchAll(/<a class="percorso" href="([^"]+)"/g)].map((m) => m[1]), ['portfolio/', 'diario/', 'bilancio/', 'cv/']);
   assert.ok(!/<script/i.test(html), 'la pagina iniziale non ha script');
   assert.ok(!/https?:\/\//.test(html), 'nessuna risorsa esterna');
 });
 
-test('i tre siti hanno il link alla pagina iniziale e si riconoscono tra loro solo da lì', () => {
-  ['bilancio/index.html', 'cv/index.html', 'diario/index.html'].forEach((f) => {
+test('i siti hanno il link alla pagina iniziale e si riconoscono tra loro solo da lì', () => {
+  ['bilancio/index.html', 'cv/index.html', 'diario/index.html', 'portfolio/index.html'].forEach((f) => {
     const html = leggi(f);
     assert.equal((html.match(/<a class="testata__tutti" href="\.\.\/">Tutti i percorsi<\/a>/g) || []).length, 1, f);
   });
-  ['js/app.js', 'cv/js/app.js', 'diario/js/app.js'].forEach((f) => {
+  ['js/app.js', 'cv/js/app.js', 'diario/js/app.js', 'portfolio/js/app.js'].forEach((f) => {
     assert.ok(leggi(f).includes("h('a', { class: 'home__tutti', href: '../', text: 'Tutti i percorsi' })"), f);
   });
 });
@@ -44,7 +44,8 @@ test('gli script di ogni sito si caricano nell\'ordine giusto', () => {
   const ordine = (f) => [...leggi(f).matchAll(/<script src="([^"]+)"/g)].map((m) => m[1]);
   assert.deepEqual(ordine('bilancio/index.html'), ['../js/config.js', '../js/dati.js', '../js/bilancio.js', '../js/cv.js', '../js/app.js']);
   assert.deepEqual(ordine('cv/index.html'), ['../js/dati.js', '../js/bilancio.js', '../js/cv.js', '../js/docx.js', '../js/pdf.js', 'js/app.js']);
-  assert.ok(!ordine('bilancio/index.html').some((s) => /docx|pdf/.test(s)), 'Word e PDF sono del curriculum');
+  assert.deepEqual(ordine('portfolio/index.html'), ['../js/dati.js', '../js/bilancio.js', '../js/competenze.js', '../js/pdf.js', 'js/attivita.js', 'js/foto.js', 'js/app.js']);
+  assert.ok(!ordine('bilancio/index.html').some((s) => /docx|pdf/.test(s)), 'Word e PDF non sono del bilancio');
 });
 
 test('la versione degli stili è la stessa in tutte le pagine', () => {

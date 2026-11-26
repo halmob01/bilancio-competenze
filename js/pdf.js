@@ -259,7 +259,10 @@
     }
 
     // ---------- Intestazione ----------
-    const stNome = eu
+    // «portfolio»: documento delle attività, titolo in Fira Sans SemiBold nel colore scelto (niente Anton).
+    const stNome = m.layout === 'portfolio'
+      ? { f: famiglia.b, fb: famiglia.fbOn, s: 28 * k, c: colore }
+      : eu
       ? { f: famiglia.b, fb: famiglia.fbOn, s: 26 * k, c: '#000000' }
       : m.carattere === 'moderno'
         ? { f: 'd', s: 32 * k, c: colore, caps: true }
@@ -368,9 +371,38 @@
           paragrafo([{ t: b.testo, st: { f: famiglia.n, s: base * 0.8, c: GRIGIO } }], { prima: 4 });
         } else if (b.t === 'lingue') {
           disegnaTabellaLingue(b.righe);
+        } else if (b.t === 'foto') {
+          disegnaFoto(b.immagini || []);
         }
       });
     });
+
+    // Foto JPEG (byte), una per riga se è sola, altrimenti due per riga; mai deformate né tagliate.
+    function disegnaFoto(elenco) {
+      const imm = elenco.map(function (d) { return { d: d, dim: dimensioniJpeg(d) }; }).filter(function (x) { return x.dim && x.dim.w && x.dim.h; });
+      const per = imm.length === 1 ? 1 : 2;
+      const gapF = 8;
+      const wCella = (LARGHEZZA - gapF * (per - 1)) / per;
+      const hMax = per === 1 ? 300 : 190;
+      for (let i = 0; i < imm.length; i += per) {
+        const riga = imm.slice(i, i + per);
+        const dim = riga.map(function (x) {
+          let w = wCella; let h = w * x.dim.h / x.dim.w;
+          if (h > hMax) { h = hMax; w = h * x.dim.w / x.dim.h; }
+          return { w: w, h: h };
+        });
+        const hR = Math.max.apply(null, dim.map(function (d) { return d.h; }));
+        assicura(hR + 8);
+        y += 4;
+        let x = MARGINI.sx;
+        riga.forEach(function (im, j) {
+          const nome = aggiungiImmagine({ tipo: 'jpeg', dati: im.d, w: im.dim.w, h: im.dim.h });
+          disegnaImmagine(nome, x, y, dim[j].w, dim[j].h);
+          x += wCella + gapF;
+        });
+        y += hR + 4;
+      }
+    }
 
     function disegnaTabellaLingue(righeLingue) {
       const w0 = 95; const w = (LARGHEZZA - w0) / 5;
@@ -515,8 +547,8 @@
       lavori.push(comprimi(testo(ops.join('\n'))).then(function (z) { oggetti[idContenuto - 1] = { dict: '<< /Filter /FlateDecode ', flusso: z }; }));
     });
     oggetti[alberoPagine - 1] = { dict: '<< /Type /Pages /Count ' + idPagine.length + ' /Kids [' + idPagine.map(function (i) { return i + ' 0 R'; }).join(' ') + '] >>', flusso: null };
-    const titoloDoc = String(m.nome || 'Curriculum').replace(/[^\x20-\x7E]/g, '').replace(/[()\\]/g, '');
-    const idInfo = nuovo('<< /Title (Curriculum ' + titoloDoc + ') /Producer (Bilancio di competenze) >>');
+    const titoloDoc = String(m.titoloDocumento || ('Curriculum ' + (m.nome || ''))).replace(/[^\x20-\x7E]/g, '').replace(/[()\\]/g, '');
+    const idInfo = nuovo('<< /Title (' + titoloDoc + ') /Producer (Bilancio di competenze) >>');
     oggetti[catalogo - 1] = { dict: '<< /Type /Catalog /Pages ' + alberoPagine + ' 0 R >>', flusso: null };
 
     return Promise.all(lavori).then(function () {

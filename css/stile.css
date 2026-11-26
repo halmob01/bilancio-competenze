@@ -89,7 +89,7 @@ a { color: var(--c-rosso); text-underline-offset: 3px; }
 .testata__nome--fermo { cursor: default; display: inline-flex; align-items: center; }
 .testata__nome--fermo:hover { color: var(--c-titolo); }
 .testata__salvato { margin-left: auto; text-align: right; }
-/* Link alla pagina iniziale con i tre percorsi. */
+/* Link alla pagina iniziale con i percorsi. */
 .testata__tutti {
   font-size: 14px; font-weight: 600; color: var(--c-testo-2); text-decoration: none;
   display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding-right: 14px; white-space: nowrap;
@@ -208,7 +208,7 @@ body:has(.home) .avanzamento { display: none; }
   .home { overflow-x: clip; }
 }
 
-/* ---------- Pagina iniziale: i tre percorsi ---------- */
+/* ---------- Pagina iniziale: i quattro percorsi ---------- */
 .home--percorsi h1 { max-width: 16ch; }
 .home__sotto { padding-top: clamp(48px, 6vw, 80px); }
 /* I tre siti come tappe di un percorso: una linea li attraversa e ogni scheda ha il suo anello (cerchi.md, uso 4). */
@@ -236,10 +236,10 @@ body:has(.home) .avanzamento { display: none; }
   content: ""; position: absolute; left: -34px; top: 26px; width: 25px; height: 25px; z-index: 1; box-sizing: border-box;
   border: var(--cerchio-t) solid var(--c-rosso); border-radius: 50%; background: var(--c-bianco);
 }
-@media (min-width: 768px) {
-  .percorsi { grid-template-columns: repeat(3, 1fr); padding: 40px 0 0; }
+@media (min-width: 1000px) {
+  .percorsi { grid-template-columns: repeat(4, 1fr); padding: 40px 0 0; }
   /* La linea entra dal bordo sinistro dello schermo e finisce nell'ultimo anello. */
-  .percorsi::before { left: calc(-1 * var(--m) - 100vw); right: calc((100% - 2 * var(--gap)) / 3 - 34px); top: 10px; bottom: auto; width: auto; height: var(--cerchio-t); }
+  .percorsi::before { left: calc(-1 * var(--m) - 100vw); right: calc((100% - 3 * var(--gap)) / 4 - 34px); top: 10px; bottom: auto; width: auto; height: var(--cerchio-t); }
   .percorsi > li::before { left: 22px; top: -40px; }
 }
 
@@ -306,7 +306,7 @@ body:has(.home) .avanzamento { display: none; }
 @media (min-width: 1000px) {
   .schermata__corpo { grid-template-columns: 4fr 8fr; gap: 0; }
   /* La spiegazione sta su un pannello grigio chiaro, il lavoro sul bianco. */
-  .schermata__corpo > .colonna-intro { background: var(--c-pannello); border-radius: var(--radius-card); padding: 24px 24px 28px; position: sticky; top: 100px; }
+  .schermata__corpo > .colonna-intro { background: var(--c-pannello); border-radius: var(--radius-card); padding: 24px 24px 28px; position: sticky; top: 100px; align-self: start; }
   .schermata__corpo > .colonna-risposta { padding-left: clamp(28px, 3.5vw, 56px); }
   .schermata__corpo--pieno { grid-template-columns: 1fr; }
   .schermata__corpo--pieno > .colonna-risposta { border-left: 0; padding-left: 0; }
@@ -719,3 +719,76 @@ dialog > * + * { margin-top: 14px; }
   .dossier__parte:last-child { border-bottom: 1px solid var(--c-filetto); }
   .dossier__parte:has(.orientamento-anteprima) { grid-column: 1 / -1; }
 }
+
+/* ---------- Le mie attività (portfolio) ---------- */
+.pulsante--grande { min-height: 56px; padding: 0 28px; font-size: 18px; }
+.home__sotto > h2.occhiello { margin-bottom: 18px; }
+.lavoro--singolo { display: block; }
+.ed__torna-sempre { padding-left: 0; margin-top: 24px; text-decoration: none; font-weight: 600; }
+.ed__torna-sempre + .schermata__testa, .lavoro--singolo .schermata { padding-top: 0; }
+.galleria-vuota { display: grid; gap: 18px; max-width: var(--measure); }
+
+/* Filtri: pulsanti a bordo sottile, quello attivo pieno di rosso. */
+.filtri { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 20px; }
+.filtro {
+  min-height: 44px; padding: 0 16px; border-radius: var(--radius-control); cursor: pointer;
+  border: 1px solid var(--c-bordo-campo); background: var(--c-bianco); color: var(--c-titolo); font-size: 15px; font-weight: 600;
+}
+.filtro:hover { border-color: var(--c-rosso); color: var(--c-rosso); }
+.filtro[aria-pressed="true"] { background: var(--c-rosso); border-color: var(--c-rosso); color: var(--c-bianco); }
+.filtri__comp select {
+  min-height: 44px; max-width: min(100%, 420px); padding: 0 12px; border: 1px solid var(--c-bordo-campo);
+  border-radius: var(--radius-control); background: var(--c-bianco); font-size: 15px;
+}
+
+/* Galleria: miniature quadrate, testo sotto. */
+.galleria { list-style: none; padding: 0; margin: 0; display: grid; gap: var(--gap); grid-template-columns: repeat(auto-fill, minmax(min(100%, 230px), 1fr)); }
+.galleria > li { display: flex; }
+.carta {
+  display: flex; flex-direction: column; width: 100%; padding: 0; text-align: left; cursor: pointer; overflow: hidden;
+  background: var(--c-bianco); border: 1px solid var(--c-filetto); border-radius: var(--radius-card);
+  transition: border-color var(--durata), box-shadow var(--durata);
+}
+.carta:hover { border-color: var(--c-rosso); box-shadow: inset 0 0 0 1px var(--c-rosso); }
+.carta__foto { position: relative; display: block; aspect-ratio: 1 / 1; background: var(--c-pannello); }
+.carta__foto img, .carta__foto .foto-mancante { display: block; width: 100%; height: 100%; object-fit: cover; }
+.carta__senza, .foto-mancante {
+  display: grid; place-items: center; height: 100%; padding: 12px; text-align: center;
+  color: var(--c-testo-2); font-size: 14px; font-weight: 600;
+}
+.carta__senza::before { content: ""; display: block; width: 28px; height: 28px; margin: 0 auto 8px; border: var(--cerchio-t) solid var(--c-filetto); border-radius: 50%; }
+.carta__conta {
+  position: absolute; right: 8px; bottom: 8px; padding: 2px 8px; border-radius: 999px;
+  background: rgba(26, 26, 26, .78); color: var(--c-bianco); font-size: 13px; font-weight: 600;
+}
+.carta__testo { display: grid; gap: 4px; padding: 12px 14px 14px; }
+.carta__titolo { font-weight: 800; line-height: 1.3; color: var(--c-titolo); overflow-wrap: anywhere; }
+.carta__manca::before { content: ""; display: inline-block; width: 10px; height: 10px; border: 3px solid var(--c-rosso); border-radius: 50%; margin-right: 6px; vertical-align: -1px; }
+
+/* Passo delle foto: striscia di miniature con le azioni sotto. */
+.striscia { list-style: none; padding: 0; display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+.striscia__foto { display: grid; gap: 6px; }
+.striscia__foto img, .striscia__foto .foto-mancante { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; border-radius: var(--radius-card); background: var(--c-pannello); }
+.striscia__azioni { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px; }
+.striscia__azioni .pulsante--testo { min-height: 36px; font-size: 14px; padding: 0; }
+.profilo-breve { display: grid; gap: 16px; }
+.profilo-breve .pulsante--testo { min-height: 32px; padding: 0; font-size: 14px; }
+
+/* Scheda di un'attività: foto grandi, poi il testo. Da 1000px affiancate. */
+.scheda-attivita { display: grid; gap: 28px; }
+.foto-grandi { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.foto-grandi--una { grid-template-columns: 1fr; }
+.foto-grandi img, .foto-grandi .foto-mancante { display: block; width: 100%; height: auto; max-height: 70vh; object-fit: contain; background: var(--c-pannello); border-radius: var(--radius-card); }
+.foto-grandi .foto-mancante { aspect-ratio: 4 / 3; }
+.scheda-attivita__testo { display: grid; gap: 22px; align-content: start; }
+.citazione { font-size: 1.125em; line-height: 1.5; color: var(--c-titolo); white-space: pre-line; border-left: 3px solid var(--c-rosso); padding-left: 14px; }
+.testo-libero { white-space: pre-line; }
+.competenze { list-style: none; padding: 0; display: grid; gap: 8px; margin-top: 8px; }
+.competenze li { position: relative; padding-left: 26px; color: var(--c-titolo); font-weight: 600; }
+.competenze li::before { content: ""; position: absolute; left: 0; top: .3em; width: 16px; height: 16px; box-sizing: border-box; border: 4px solid var(--c-rosso); border-radius: 50%; }
+@media (min-width: 1000px) {
+  .scheda-attivita { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: clamp(32px, 4vw, 56px); align-items: start; }
+}
+.elenco-proposte { list-style: none; padding: 0; display: grid; gap: 8px; }
+.elenco-proposte .pulsante { height: auto; min-height: 44px; padding-block: 8px; text-align: left; white-space: normal; }
+.aiuto details summary { cursor: pointer; font-weight: 600; min-height: 44px; display: flex; align-items: center; color: var(--c-titolo); }

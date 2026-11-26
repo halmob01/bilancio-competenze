@@ -2,11 +2,12 @@
 
 **Che cosa hai imparato finora?**
 
-Applicazione statica per gli studenti IeFP di tutti gli anni (Elettrico, Informatica, Estetica), fatta di **tre siti sullo stesso indirizzo** e una pagina iniziale che li presenta:
+Applicazione statica per gli studenti IeFP di tutti gli anni (Elettrico, Informatica, Estetica), fatta di **quattro siti sullo stesso indirizzo** e una pagina iniziale che li presenta:
 
 | Indirizzo | Sito | A che cosa serve |
 |---|---|---|
-| `/` | Pagina iniziale | tre card per scegliere il percorso |
+| `/` | Pagina iniziale | quattro card per scegliere il percorso |
+| `/portfolio/` | Le mie attività | foto e due righe per ogni lavoro fatto in laboratorio o in tirocinio, con le competenze del proprio indirizzo; il bilancio pesca da qui ([docs/PORTFOLIO.md](docs/PORTFOLIO.md)) |
 | `/diario/` | Diario di bordo | una scheda a settimana durante il tirocinio ([docs/DIARIO.md](docs/DIARIO.md)) |
 | `/bilancio/` | Bilancio di competenze | il bilancio riflessivo, con un doppio esito: un dossier di autovalutazione non valutativo e un breve testo per presentarsi agli open day |
 | `/cv/` | Curriculum | il foglio da consegnare a un'azienda, in Word, PDF o stampa; può prendere nome, esperienze e competenze dal bilancio e i tirocini dal diario |
@@ -64,7 +65,9 @@ Sei passi: i tuoi dati (nome, indirizzo di studio, recapiti, foto), che lavoro c
 
 ## Struttura
 
-- `index.html` — pagina iniziale con le tre card (senza script).
+- `index.html` — pagina iniziale con le quattro card (senza script).
+- `portfolio/` — «Le mie attività»: `js/attivita.js` (logica), `js/foto.js` (riduzione delle foto e IndexedDB), `js/app.js` (interfaccia).
+- `js/competenze.js` — catalogo delle competenze dei tre indirizzi dagli allegati B2 della Regione Lombardia (copia in `docs/fonti/`).
 - `bilancio/index.html`, `cv/index.html`, `diario/index.html` — scheletro, testata e dialoghi di ciascun sito.
 - `js/config.js` — URL dell'applicazione web Apps Script per l'invio.
 - `js/dati.js` — contenuti: sezioni, situazioni, esempi per indirizzo, scala di autonomia, domande.

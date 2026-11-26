@@ -31,7 +31,7 @@ Scritto il 12 novembre 2026, **aggiornato il 18 novembre 2026** con le decisioni
 | Bilancio di competenze (6 sezioni, 9 schermate; esperienze guidate, «so fare» in due tempi) | fatto, salva nel browser (`bilancio-competenze-v1`); in `main` ha ancora l'invio al Foglio Google, spento nel pacchetto per il server | `bilancio/`, `js/app.js`, `js/bilancio.js`, `js/dati.js` |
 | Curriculum (6 passi, Word e PDF con caratteri incorporati, Europass) | fatto, salva nel browser (`cv-v1`); importa dal bilancio e dal diario | `cv/`, `js/cv.js`, `js/docx.js`, `js/pdf.js` |
 | Diario di bordo (tirocini, settimane) | prototipo, salva nel browser (`diario-tirocinio-v1`) | `diario/` |
-| Portfolio | **non c'è** | — |
+| Portfolio («Le mie attività») | **prima versione fatta il 26/11/2026**, salva nel browser (attività nel `localStorage`, foto in IndexedDB); importa dal diario, il bilancio importa da lui, PDF con foto (`docs/PORTFOLIO.md`) | `portfolio/`, `js/competenze.js` |
 | Programma del server: accesso di studenti e docenti, classi, cartellini, documenti con revisioni, correzioni dei docenti con registro, backup | **scritto e provato**, non ancora installato; i siti non lo usano ancora | `server/`, `tests/server.test.cjs` |
 | Preparazione del server: Node, utente, cartelle, servizio, backup notturno, inoltro Apache, pacchetto dei siti | **pronti**, non ancora applicati | `deploy/` |
 | Foglio Google | **tolto** (era una prova su un account personale); nel pacchetto per il server l'invio è spento | `apps-script/` (resta come storia) |
@@ -243,7 +243,7 @@ L'elenco si sfoglia per data, per luogo o per competenza. Da desktop: elenco a s
 - *Operatore del benessere (estetica)*: accoglienza e analisi dei bisogni del cliente; trattamenti estetici di base scegliendo i prodotti cosmetici adatti; igiene e sicurezza; collaborazione alla gestione dell'esercizio. Al quarto anno compare l'analisi delle caratteristiche della pelle. Attenzione: il diploma IeFP di estetica **non abilita** da solo all'esercizio della professione; il curriculum non deve dire il contrario.
 - Comune a tutte le figure: le fasi di lavoro (pianificare le operazioni, preparare strumenti e spazi, controllare il risultato) e sicurezza, qualità e ambiente.
 
-**Cosa serve per farlo bene.** Il testo esatto degli **allegati B2 della Regione Lombardia** (qualifiche e diplomi) per le sei figure. Sono sul sito della Regione, nella pagina «Repertorio IeFP», che dalla scuola si apre senza problemi: basta scaricare i PDF e caricarli nel progetto, poi li trasformo in un catalogo.
+**Fatto il 26 novembre 2026.** Gli **allegati B2 della Regione Lombardia** (qualifiche e diplomi) sono stati scaricati dal sito della Regione (`docs/fonti/`) e trasformati nel catalogo `js/competenze.js`: testo ufficiale di ogni competenza delle sei figure, con tutti gli indirizzi interni, e una frase semplice per lo studente, **da rivedere con i docenti**. La DGR 4615/2025 non cambia le nostre figure.
 
 **Il catalogo** (`js/competenze.js`, un file condiviso da tutti i siti): per ogni indirizzo e anno, l'elenco delle competenze con
 - il **titolo ufficiale** (per il docente e i documenti),
@@ -379,7 +379,8 @@ Ogni fase si chiude con test automatici, prova nel browser su telefono e PC e do
 |---|---|---|
 | F0 | script di installazione provato (Node v26.13.1, utente, cartelle), servizio systemd, copia notturna, inoltro Apache per le prove, pacchetto dei siti (`deploy/prepara-siti.sh`), diagnosi del server | `aggiorna.sh` (§3 bis), `deploy/LEGGIMI.md`, configurazione per il nome di dominio dedicato, scheda per il DPO, backup fuori dal server; applicare tutto sul server |
 | F1 | programma con database e migrazioni; classi, studenti, codici e QR; accesso di studenti e docenti; documenti con revisioni e conflitti; correzioni dei docenti con registro; rigenerazione dei codici; limite dei tentativi per dispositivo; 17 test | `archivio.js` nei tre siti (salvataggio per studente, unione per voce, coda senza rete); pagina di accesso; la mia area; pagine dei docenti (classi, cartellini, avanzamento, correzione); cestino per voce; esportazione della classe |
-| F2-F6 | — | come nella tabella |
+| F2 | (26/11/2026) sito «Le mie attività» sul dispositivo: attività in quattro passi, foto ridotte in IndexedDB, catalogo delle competenze dagli allegati B2, diario → attività, attività → bilancio, PDF con foto, copia con le foto; 6 test | collegamento al server (documento `portfolio`, caricamento delle foto); attività → curriculum; revisione delle frasi semplici con i docenti; prove su iPhone e Android |
+| F3-F6 | F3 in parte: catalogo pronto | come nella tabella |
 
 ## 16. Rischi
 
@@ -415,6 +416,7 @@ Ogni fase si chiude con test automatici, prova nel browser su telefono e PC e do
 - Genitori senza accesso al portale (§10, §13).
 - Foto da togliere subito: decidono i docenti; frase sulle foto nella convenzione di tirocinio (§7).
 - Limite dei tentativi per dispositivo, non per IP (§4).
+- **Portfolio** (26/11/2026): si chiama «Le mie attività»; prima sul dispositivo e poi sul server; competenze dagli allegati B2 lombardi, mostrate allo studente solo con la frase semplice; collegamenti diario → attività, attività → bilancio e PDF; per le foto solo un avviso, senza casella da spuntare (`docs/PORTFOLIO.md`).
 
 **Da decidere**
 1. **Indirizzo pubblico e nome di dominio dedicato**: un sottodominio di AFOL o un secondo nome? Necessario prima dei dati veri (§2). Chi conferma il DNS dinamico?
@@ -426,8 +428,8 @@ Ogni fase si chiude con test automatici, prova nel browser su telefono e PC e do
 7. **Conservazione**: per quanto tempo dopo l'uscita dal CFP (proposta: 12 mesi)? Gli ex studenti possono ancora entrare per scaricare il lavoro?
 8. **Repository pubblico o privato** (per `git pull` dal server serve, se privato, una deploy key).
 9. **Lingue**: quali oltre a inglese e arabo, e chi può rivedere le traduzioni?
-10. **Allegati B2** della Regione: chi li scarica (proposta: tu dalla scuola) e quale docente per indirizzo rivede le frasi semplici?
-11. **Portfolio e bilancio**: va bene che il portfolio diventi l'archivio delle cose fatte da cui il bilancio pesca (§6)?
+10. **Allegati B2**: scaricati il 26/11/2026. Resta da decidere quale docente per indirizzo rivede le frasi semplici.
+11. ~~Portfolio e bilancio~~: **deciso il 26/11/2026**, il portfolio è l'archivio delle cose fatte e il bilancio pesca da lì (`docs/PORTFOLIO.md`).
 12. **Pagina pubblica del portfolio** (link o QR da mettere nel curriculum): sì, più avanti, con consenso?
 13. **Secondo fattore per i docenti** (TOTP) o pannello solo dalla rete della scuola?
 

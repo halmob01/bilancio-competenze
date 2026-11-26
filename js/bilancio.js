@@ -101,6 +101,9 @@
       n.autonomia = inElenco(e.autonomia, DATI.AUTONOMIA);
       n.situazioni = (Array.isArray(e.situazioni) ? e.situazioni : [])
         .filter(function (x) { return inElenco(x, DATI.SITUAZIONI); });
+      // Riferimento all'attività di «Le mie attività» da cui la cosa è stata presa (solo per riconoscerla, mai per modificarla).
+      const rifAtt = testo(e.attivita, 40);
+      if (/^a[a-z0-9]{4,39}$/.test(rifAtt)) n.attivita = rifAtt;
       s.esperienze.push(n);
     });
 
@@ -360,6 +363,41 @@
     return proposte;
   }
 
+  // Dalle attività del portfolio («Le mie attività», sola lettura): una proposta per ogni attività descritta.
+  // Il testo è dello studente e viene copiato com'è; le foto restano nel portfolio, qui si dice solo che ci sono.
+  function esperienzeDalPortfolio(grezzo) {
+    if (!grezzo || typeof grezzo !== 'object' || !Array.isArray(grezzo.attivita)) return [];
+    const t = function (v, max) { return typeof v === 'string' ? v.trim().slice(0, max) : ''; };
+    const data = function (iso) {
+      const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(typeof iso === 'string' ? iso : '');
+      return m ? m[3] + '/' + m[2] + '/' + m[1] : '';
+    };
+    const anno = grezzo.profilo && inElenco(grezzo.profilo.anno, DATI.ANNI);
+    const LUOGHI = { scuola: 'A scuola o in laboratorio', tirocinio: 'In tirocinio o alternanza', fuori: 'Fuori da scuola' };
+    return grezzo.attivita.slice(0, 300).map(function (a) {
+      if (!a || typeof a !== 'object') return null;
+      const id = t(a.id, 40);
+      const fatto = t(a.fatto, MAX_LUNGO);
+      if (!/^a[a-z0-9]{4,39}$/.test(id) || !fatto) return null;
+      const luogo = LUOGHI[a.luogo] ? a.luogo : '';
+      const quando = luogo === 'tirocinio' ? 'tirocinio' : luogo === 'fuori' ? 'fuori' : (luogo === 'scuola' && anno ? anno : '');
+      const prima = fatto.split('\n')[0];
+      const nFoto = Array.isArray(a.foto) ? Math.min(a.foto.length, 4) : 0;
+      return {
+        id: id,
+        data: /^\d{4}-\d{2}-\d{2}$/.test(a.data) ? a.data : '',
+        titolo: (prima.length > 120 ? prima.slice(0, 118).replace(/\s+\S*$/, '') + '…' : prima).slice(0, MAX_BREVE),
+        quando: quando,
+        contesto: [LUOGHI[luogo] || '', t(a.dove, MAX_BREVE), data(a.data)].filter(Boolean).join(', ').slice(0, MAX_LUNGO),
+        azione: fatto,
+        difficolta: t(a.difficolta, MAX_LUNGO),
+        aiuto: t(a.aiuto, MAX_LUNGO),
+        prova: nFoto ? (nFoto === 1 ? 'Una foto' : nFoto + ' foto') + ' in «Le mie attività»' + (data(a.data) ? ', attività del ' + data(a.data) : '') + '.' : '',
+        foto: nFoto
+      };
+    }).filter(Boolean).sort(function (x, y) { return x.data < y.data ? 1 : x.data > y.data ? -1 : 0; });
+  }
+
   function avanzamento(stato) {
     const stati = DATI.SEZIONI.map(function (s) { return statoSezione(stato, s.id); });
     return {
@@ -385,6 +423,7 @@
     suggerisciCompetenze: suggerisciCompetenze,
     anniDelPercorso: anniDelPercorso,
     esperienzeDalDiario: esperienzeDalDiario,
+    esperienzeDalPortfolio: esperienzeDalPortfolio,
     testo: testo,
     inElenco: inElenco,
     pieno: pieno,

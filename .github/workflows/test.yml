@@ -24,6 +24,10 @@ jobs:
           node --check cv/js/app.js
           node --check diario/js/diario.js
           node --check diario/js/app.js
+          node --check js/competenze.js
+          node --check portfolio/js/attivita.js
+          node --check portfolio/js/foto.js
+          node --check portfolio/js/app.js
           for f in server/*.js; do node --check "$f"; done
           bash -n deploy/installa-portale.sh
           bash -n deploy/prepara-siti.sh

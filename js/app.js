@@ -647,6 +647,41 @@
         : h('p', null, h('button', { type: 'button', class: 'pulsante pulsante--testo', onclick: scegliFileDiario }, 'Carica la copia di un altro diario')));
   }
 
+  // ---------- Le mie attività (portfolio) ----------
+  // Un altro sito sullo stesso indirizzo: il bilancio legge le attività salvate in questo browser, solo quando lo studente
+  // sceglie, e non le modifica mai. Nel bilancio passano il testo e un riferimento; le foto restano nelle attività.
+  function proposteDalPortfolio() {
+    try { return L.esperienzeDalPortfolio(JSON.parse(localStorage.getItem('portfolio-attivita-v1') || 'null')); } catch (e) { return []; }
+  }
+
+  function riquadroAttivita(pieneAbbastanza) {
+    const proposte = proposteDalPortfolio();
+    if (!proposte.length) return null;
+    const usa = function (pr) {
+      const e = L.esperienzaVuota();
+      e.titolo = pr.titolo; e.quando = pr.quando; e.contesto = pr.contesto; e.azione = pr.azione;
+      e.difficolta = pr.difficolta; e.aiuto = pr.aiuto; e.prova = pr.prova; e.attivita = pr.id;
+      stato.esperienze.push(e);
+      esperienzaAperta = e.id;
+      modificato();
+      ridisegna('f-esp-' + e.id + '-azione');
+    };
+    const riga = function (pr) {
+      const gia = stato.esperienze.some(function (x) { return x.attivita === pr.id; });
+      return h('li', null,
+        h('button', { type: 'button', class: 'pulsante pulsante--secondario pulsante--piccolo', disabled: gia || pieneAbbastanza, onclick: function () { usa(pr); } },
+          (gia ? 'Già inserita: ' : 'Usa: ') + pr.titolo),
+        ' ', h('span', { class: 'meta', text: [pr.data ? pr.data.split('-').reverse().join('/') : '', pr.foto ? (pr.foto === 1 ? 'una foto' : pr.foto + ' foto') : 'senza foto'].filter(Boolean).join(' · ') }));
+    };
+    const prime = proposte.slice(0, 5);
+    const altre = proposte.slice(5);
+    return aiuto(
+      h('p', { class: 'meta', text: 'Dalle tue attività' }),
+      h('p', { text: 'Hai già raccolto ' + (proposte.length === 1 ? 'un\'attività' : proposte.length + ' attività') + ' con le foto. Scegli quelle da raccontare qui: il testo viene copiato, poi aggiungi difficoltà, aiuto e quanto sai farlo da solo.' }),
+      h('ul', { class: 'elenco-proposte' }, prime.map(riga)),
+      altre.length ? h('details', null, h('summary', { text: 'Mostra le altre ' + altre.length }), h('ul', { class: 'elenco-proposte' }, altre.map(riga))) : null);
+  }
+
   function schermataEsperienze() {
     const anni = Object.keys(stato.anni).filter(function (k) { return pieno(stato.anni[k]); });
     const pieneAbbastanza = stato.esperienze.length >= L.MAX_ESPERIENZE;
@@ -656,6 +691,7 @@
       anni.length ? esempio('I tuoi appunti sul percorso', h('dl', null, anni.map(function (k) {
         return [h('dt', { text: etichettaRicordo(k) }), h('dd', { text: stato.anni[k] })];
       }))) : null,
+      riquadroAttivita(pieneAbbastanza),
       riquadroDiario({
         intro: 'Hai scritto il diario dei tirocini. Puoi trasformarne uno alla volta in una cosa da raccontare: poi rileggila e correggila.',
         nome: function (pr) { return pr.titolo; },

@@ -903,6 +903,11 @@ dialog p:empty { display: none; }
 .anno-scheda[aria-selected="true"] { color: var(--c-titolo); font-weight: 800; border-bottom-color: var(--c-rosso); }
 .anno-scheda__n { font-size: 13px; font-weight: 600; color: var(--c-testo-2); }
 .anno-scheda[aria-selected="true"] .anno-scheda__n { color: var(--c-rosso); }
+/* Telefono: le schede si dividono la larghezza in parti uguali, tutte visibili, senza scorrimento nascosto. */
+@media (max-width: 599px) {
+  .anni-schede { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 0; overflow: visible; }
+  .anno-scheda { flex-direction: column; align-items: center; justify-content: center; gap: 0; padding: 8px 2px 6px; font-size: 15px; white-space: normal; text-align: center; line-height: 1.15; }
+}
 .anno-sezione + .anno-sezione { margin-top: 36px; }
 .anno-sezione__titolo { display: flex; align-items: baseline; gap: 12px; font-size: 22px; font-weight: 800; margin: 0 0 14px; }
 

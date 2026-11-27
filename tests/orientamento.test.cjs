@@ -31,8 +31,15 @@ test('la mappa dipende dal percorso: 3+1 oppure quattro anni (solo Informatica I
   assert.deepEqual(classico.filter((t) => t.qui).map((t) => t.id), ['qualifica'], 'una sola tappa è «Sei qui»');
   assert.deepEqual(classico.find((t) => t.id === 'qualifica').cambi, ['quarto', 'lavoro', 'apprendistato', 'scuola']);
   const quad = O.mappa({ indirizzo: 'informatica', anno: 'anno2' });
-  assert.deepEqual(quad.map((t) => t.id), ['anni', 'diploma', 'maturita']);
+  // DGR 2954/2024, All. B, punto 3: anche nel quadriennale di filiera la qualifica al terzo anno è garantita.
+  assert.deepEqual(quad.map((t) => t.id), ['anni', 'qualifica', 'diploma', 'maturita']);
   assert.ok(quad[0].qui);
+  assert.deepEqual(quad.find((t) => t.id === 'qualifica').cambi, ['lavoro', 'apprendistato', 'scuola']);
+  // Legge 99/2022, art. 1 c. 2: dal diploma professionale all'ITS si passa con il certificato IFTS.
+  [classico, quad].forEach((m) => assert.match(m.find((t) => t.id === 'diploma').testo, /IFTS/));
+  assert.match(O.strada('its').testo, /IFTS/);
+  // Decreto 12550/2013, §4.6: crediti e anno di inserimento li decide la scuola che accoglie.
+  assert.ok(!/riconoscono/.test(O.strada('scuola').testo) && /decide/.test(O.strada('scuola').testo));
   assert.ok(!quad.some((t) => t.cambi.indexOf('quarto') !== -1), 'chi fa quattro anni non ha «il quarto anno» come scelta');
   // Ogni strada citata nella mappa esiste
   [classico, quad].forEach((m) => m.forEach((t) => t.cambi.forEach((id) => assert.ok(O.strada(id), id))));
@@ -41,7 +48,11 @@ test('la mappa dipende dal percorso: 3+1 oppure quattro anni (solo Informatica I
 test('le note non promettono scorciatoie a chi non è nella filiera, e le strade cambiano con l\'anno', () => {
   assert.ok(!O.note({ indirizzo: 'elettrico', anno: 'anno3' }).some((n) => n.id === 'riforma'));
   const r = O.note({ indirizzo: 'informatica', anno: 'anno1' }).find((n) => n.id === 'riforma');
-  assert.ok(r && /Chiedi al docente/.test(r.testo) && /A certe condizioni/.test(r.testo), 'la riforma è condizionata e rimanda al docente');
+  // SETT 2025, par. III: in Lombardia l'accesso diretto a ITS ed Esame di Stato non rientra nella sperimentazione IeFP di filiera.
+  assert.ok(r && /Chiedi al docente/.test(r.testo) && /non vale ancora/.test(r.testo), 'la riforma non promette scorciatoie oggi non attive');
+  // DGR 2954/2024, All. B, punto 6: passaggi in ingresso nei quadriennali fino al secondo anno.
+  assert.ok(O.note({ indirizzo: 'informatica', anno: 'anno1' }).some((n) => n.id === 'passaggi4'));
+  assert.ok(!O.note({ indirizzo: 'elettrico', anno: 'anno1' }).some((n) => n.id === 'passaggi4'));
   assert.deepEqual(O.stradeDisponibili({ indirizzo: 'elettrico', anno: 'anno2' }).map((x) => x.id), ['quarto', 'lavoro', 'apprendistato', 'scuola', 'nonso']);
   assert.deepEqual(O.stradeDisponibili({ indirizzo: 'estetica', anno: 'anno4' }).map((x) => x.id), ['lavoro', 'apprendistato', 'ifts', 'its', 'quinto', 'scuola', 'nonso']);
   assert.ok(O.stradeDisponibili({}).length === O.STRADE.length, 'senza profilo si mostrano tutte');

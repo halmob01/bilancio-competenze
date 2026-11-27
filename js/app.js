@@ -387,7 +387,7 @@
         iniziato ? h('button', { type: 'button', class: 'pulsante pulsante--secondario', onclick: function () { vaiA('bilancio', 'dossier'); } }, 'Vai al bilancio') : null),
       )),
       h('section', { class: 'home__indice', 'aria-labelledby': 'home-indice' },
-        h('h2', { id: 'home-indice', class: 'meta', text: 'Sei sezioni · circa tre ore' }),
+        h('h2', { id: 'home-indice', class: 'meta', text: 'Cinque sezioni · circa tre ore' }),
         h('ol', null, D.SEZIONI.map(function (s, i) {
           return h('li', null,
             h('span', { class: 'meta', text: String(i + 1).padStart(2, '0') }),
@@ -904,7 +904,7 @@
   function schermataRegionali() {
     const p = stato.profilo;
     if (!p.indirizzo || !p.anno) {
-      return [testa(metaSchermata(), 'Le competenze del tuo indirizzo'), corpoLargo([h('p', { text: 'Per vedere le competenze del tuo indirizzo serve sapere indirizzo e anno.' })],
+      return [testa(metaSchermata(), 'Le competenze del tuo percorso'), corpoLargo([h('p', { text: 'Per vedere le competenze del tuo percorso serve sapere indirizzo e anno.' })],
         h('div', null, h('button', { type: 'button', class: 'pulsante', onclick: function () { vaiA('percorso', 'chi'); } }, 'Scegli indirizzo e anno')))];
     }
     const C = window.BC_COMPETENZE || null;
@@ -913,16 +913,19 @@
     // Lo standard è la figura più l'indirizzo scelto (Decreto 12550/2013, §3.2): chi sa su che cosa lavora la classe lo sceglie qui.
     const possibili = C && C.articolazioniPer ? C.articolazioniPer(p.indirizzo, p.anno) : { qualifica: [], diploma: [] };
     const sceltaIndirizzo = ['diploma', 'qualifica'].filter(function (liv) { return possibili[liv].length > 1; }).map(function (liv) {
-      const opzioni = possibili[liv].map(function (x) { return { id: x.id, testo: x.titolo.replace(/^Se lavori su /, 'Su ') }; }).concat([{ id: '', testo: 'Non lo so ancora: mostrali tutti' }]);
+      // «Se lavori sullo sviluppo di programmi» → «Sullo sviluppo di programmi»
+      const opzioni = possibili[liv].map(function (x) { const t = x.titolo.replace(/^Se lavori /, ''); return { id: x.id, testo: t.charAt(0).toUpperCase() + t.slice(1) }; }).concat([{ id: '', testo: 'Non lo so ancora: mostrali tutti' }]);
       return gruppoScelte({ legenda: liv === 'diploma' ? 'Per il diploma, su che cosa lavora la tua classe?' : 'Su che cosa lavora la tua classe?', nome: 'f-art-' + liv,
         opzioni: opzioni, valore: p.articolazioni[liv] || '',
         aggiorna: function (id) { p.articolazioni[liv] = id; modificato(); ridisegna('f-art-' + liv + '-' + id); } });
     });
-    const fatte = tutte.filter(function (x) { return stato.regionali[x.id] && stato.regionali[x.id].livello; }).length;
+    // Il conteggio riguarda le competenze del mestiere; quelle di base e quelle su come lavori e impari sono facoltative.
+    const delMestiere = tutte.filter(function (x) { return x.area === 'tecnica' || x.area === 'curvatura'; });
+    const fatte = delMestiere.filter(function (x) { return stato.regionali[x.id] && stato.regionali[x.id].livello; }).length;
     const intro = [
       h('p', { text: 'Queste sono le cose che si imparano nel tuo percorso. Per ognuna scegli la frase più vera per te.' }),
       info ? h('p', { class: 'meta', text: info.figura + ' · ' + info.titolo }) : null,
-      h('p', { class: 'meta livelli__conta', role: 'status', text: fatte + ' su ' + tutte.length + ' con una risposta' })
+      h('p', { class: 'meta livelli__conta', role: 'status', text: fatte + ' su ' + delMestiere.length + ' del tuo mestiere con una risposta' })
     ].concat(sceltaIndirizzo);
     const gruppi = [];
     tutte.forEach(function (x) {
@@ -934,11 +937,11 @@
       const toccato = g.voci.some(function (x) { return stato.regionali[x.id] && stato.regionali[x.id].livello; });
       const elenco = h('ul', { class: 'regionali' }, g.voci.map(cartaRegionale));
       // «Se lavori su…», competenze di base e trasversali: restano chiusi finché non si tocca una voce.
-      return g.chiuso || /^Se /.test(g.titolo)
+      return g.chiuso
         ? h('details', { class: 'dettagli', open: toccato ? 'open' : null }, h('summary', { text: g.titolo }), h('div', { class: 'dettagli__corpo' }, elenco))
         : h('section', { class: 'regionali__gruppo' }, h('h3', { text: g.titolo }), elenco);
     });
-    return [testa(metaSchermata(), 'Le competenze del tuo indirizzo'), corpoLargo(intro, risposta)];
+    return [testa(metaSchermata(), 'Le competenze del tuo percorso'), corpoLargo(intro, risposta)];
   }
 
   // ---------- 04 Uno sguardo critico ----------
@@ -1235,7 +1238,7 @@
   caricaArchivio();
   disegna();
   if (!archivioDisponibile) $('salvato').textContent = 'Salvataggio non disponibile: scarica una copia';
-  else if (stato.aggiornato) $('salvato').textContent = 'Risposte ritrovate';
+  else if (stato.aggiornato) $('salvato').textContent = 'Salvato';
 
   $('vai-home').addEventListener('click', function () { vai(null); });
   $('apri-risposte').addEventListener('click', function () { aggiornaDialogo(); $('dialogo-risposte').showModal(); });

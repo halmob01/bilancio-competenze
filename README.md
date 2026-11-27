@@ -2,15 +2,17 @@
 
 **Che cosa hai imparato finora?**
 
-Applicazione statica per gli studenti IeFP di tutti gli anni (Elettrico, Informatica, Estetica), fatta di **quattro siti sullo stesso indirizzo** e una pagina iniziale che li presenta:
+Applicazione statica per gli studenti IeFP di tutti gli anni (Elettrico, Informatica, Estetica), fatta di **cinque siti sullo stesso indirizzo** e una pagina iniziale che li presenta (più il pannello dei docenti, che funziona solo con il server):
 
 | Indirizzo | Sito | A che cosa serve |
 |---|---|---|
-| `/` | Pagina iniziale | quattro card per scegliere il percorso |
+| `/` | Pagina iniziale | cinque card per scegliere il percorso |
 | `/portfolio/` | Le mie attività | foto e due righe per ogni lavoro fatto in laboratorio o in tirocinio, con le competenze del proprio indirizzo; il bilancio pesca da qui ([docs/PORTFOLIO.md](docs/PORTFOLIO.md)) |
 | `/diario/` | Diario di bordo | una scheda a settimana durante il tirocinio ([docs/DIARIO.md](docs/DIARIO.md)) |
-| `/bilancio/` | Bilancio di competenze | il bilancio riflessivo, con un doppio esito: un dossier di autovalutazione non valutativo e un breve testo per presentarsi agli open day |
+| `/bilancio/` | Bilancio di competenze | il bilancio riflessivo: un dossier di autovalutazione non valutativo |
 | `/cv/` | Curriculum | il foglio da consegnare a un'azienda, in Word, PDF o stampa; può prendere nome, esperienze e competenze dal bilancio e i tirocini dal diario |
+| `/orientamento/` | Orientamento | «Racconto il CFP» (le risposte e il testo per l'open day) e «Cosa faccio dopo» (la mappa della filiera e le strade dopo il CFP) |
+| `/docenti/` | Pannello docenti | classi, avanzamento, competenze della classe; funziona solo sul server della scuola |
 
 Ogni sito ha il suo salvataggio sul dispositivo e la testata ha il link «Tutti i percorsi» verso la pagina iniziale (sul telefono, dove la testata è piena, il link sta nella schermata iniziale di ogni sito). I siti restano separati: si parlano solo leggendo, su richiesta dello studente, i dati salvati dagli altri nello stesso browser (o da una copia `.json` caricata), senza mai scriverci.
 
@@ -35,7 +37,7 @@ Regole didattiche applicate (da `design.md` §9):
 - **Nessuna competenza dichiarata con un solo click.** Se lo studente dice di saper fare qualcosa, serve un esempio scritto o un'esperienza collegata; altrimenti la voce compare nel bilancio come «da documentare».
 - **«Non l'ho mai affrontato» è distinto da «Non lo so ancora fare»** e finisce in una parte diversa del dossier.
 - **Esempi filtrati per indirizzo, categorie comuni.** Gli esempi si aprono a richiesta e sono sempre etichettati come esempi.
-- **Nessuna riscrittura automatica.** La bozza per l'open day mette in fila le risposte dello studente senza cambiarle.
+- **Nessuna riscrittura automatica.** Le frasi dello studente non vengono mai cambiate (vale anche per il testo dell'open day, oggi nel sito dell'orientamento).
 - Nessun punteggio, badge, classifica o colore diverso per indirizzo.
 
 ## Il curriculum (`/cv/`)
@@ -51,7 +53,7 @@ Sei passi: i tuoi dati (nome, indirizzo di studio, recapiti, foto), che lavoro c
 
 ## Online e raccolta dei dati
 
-- **Indirizzo pubblico:** GitHub Pages, ramo `main`, cartella radice: `https://halmob01.github.io/bilancio-competenze/` (pagina iniziale); il bilancio è in `…/bilancio/`. Chi ha il vecchio indirizzo del bilancio vede ora le tre card e sceglie. I dati salvati non cambiano perché l'origine (`halmob01.github.io`) è la stessa.
+- **Indirizzo pubblico:** GitHub Pages, ramo `main`, cartella radice: `https://halmob01.github.io/bilancio-competenze/` (pagina iniziale); il bilancio è in `…/bilancio/`. Chi ha il vecchio indirizzo del bilancio vede ora le card e sceglie. I dati salvati non cambiano perché l'origine (`halmob01.github.io`) è la stessa.
 - **Raccolta in un Foglio Google del docente:** lo studente preme «Invia al docente» nel **bilancio** e le risposte arrivano in una riga del foglio; se corregge e invia di nuovo, la riga si aggiorna. Il collegamento passa da uno script Apps Script del docente (`apps-script/Codice.gs`) il cui URL va in `js/config.js`. Istruzioni passo per passo: [docs/FOGLIO-GOOGLE.md](docs/FOGLIO-GOOGLE.md).
 - Finché `urlInvio` è vuoto, il pulsante di invio non compare e resta solo la copia da scaricare.
 
@@ -65,7 +67,7 @@ Sei passi: i tuoi dati (nome, indirizzo di studio, recapiti, foto), che lavoro c
 
 ## Struttura
 
-- `index.html` — pagina iniziale con le quattro card (senza script).
+- `index.html` — pagina iniziale con le cinque card (senza script).
 - `portfolio/` — «Le mie attività»: `js/attivita.js` (logica), `js/foto.js` (riduzione delle foto e IndexedDB), `js/app.js` (interfaccia).
 - `js/competenze.js` — catalogo delle competenze dei tre indirizzi dagli allegati B2 della Regione Lombardia (copia in `docs/fonti/`).
 - `bilancio/index.html`, `cv/index.html`, `diario/index.html` — scheletro, testata e dialoghi di ciascun sito.

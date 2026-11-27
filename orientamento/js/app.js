@@ -537,7 +537,7 @@
   })();
   disegna();
   if (!archivioDisponibile) $('salvato').textContent = 'Salvataggio non disponibile: scarica una copia';
-  else if (stato.aggiornato) $('salvato').textContent = 'Lavoro ritrovato';
+  else if (stato.aggiornato) $('salvato').textContent = 'Salvato';
   $('vai-home').addEventListener('click', function () { vai(null); });
   $('apri-salva').addEventListener('click', function () { $('dialogo-salva').showModal(); });
   $('chiudi-salva').addEventListener('click', function () { $('dialogo-salva').close(); });

@@ -27,7 +27,7 @@ Scritto il 12 novembre 2026, **aggiornato il 18 novembre 2026** con le decisioni
 
 | Pezzo | Stato | File |
 |---|---|---|
-| Pagina iniziale con tre card | fatta | `index.html` |
+| Pagina iniziale con le card dei percorsi (oggi cinque) | fatta | `index.html` |
 | Bilancio di competenze (6 sezioni, 9 schermate; esperienze guidate, «so fare» in due tempi) | fatto, salva nel browser (`bilancio-competenze-v1`); in `main` ha ancora l'invio al Foglio Google, spento nel pacchetto per il server | `bilancio/`, `js/app.js`, `js/bilancio.js`, `js/dati.js` |
 | Curriculum (6 passi, Word e PDF con caratteri incorporati, Europass) | fatto, salva nel browser (`cv-v1`); importa dal bilancio e dal diario | `cv/`, `js/cv.js`, `js/docx.js`, `js/pdf.js` |
 | Diario di bordo (tirocini, settimane) | prototipo, salva nel browser (`diario-tirocinio-v1`) | `diario/` |

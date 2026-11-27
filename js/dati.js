@@ -155,7 +155,7 @@
     }
   ];
 
-  // Sei sezioni (design.md §6.2). Il curriculum è un sito a parte (cv/). Ogni sezione ha una o più schermate:
+  // Cinque sezioni (design.md §6.2; l'orientamento è passato al sito orientamento/). Il curriculum è un sito a parte (cv/). Ogni sezione ha una o più schermate:
   // una sola domanda principale per schermata.
   const SEZIONI = [
     {
@@ -179,7 +179,7 @@
       schermate: [
         { id: 'livelli', titolo: 'Quanto lo sai fare' },
         { id: 'esempi', titolo: 'Un esempio per ogni «so fare»' },
-        { id: 'regionali', titolo: 'Le competenze del tuo indirizzo' }
+        { id: 'regionali', titolo: 'Le competenze del tuo percorso' }
       ]
     },
     {

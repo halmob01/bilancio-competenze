@@ -25,6 +25,9 @@ jobs:
           node --check diario/js/diario.js
           node --check diario/js/app.js
           node --check js/competenze.js
+          node --check js/situazioni.js
+          for f in js/contenuti/*.js; do node --check "$f"; done
+          node --check strumenti/prova-mappa.cjs
           node --check js/unione.js
           node --check js/archivio.js
           node --check js/area.js

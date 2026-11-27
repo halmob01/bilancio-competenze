@@ -1,0 +1,683 @@
+[
+ {
+  "fonte": "docs/guida/studente-di-prova.json anni.anno1",
+  "testo": "Il primo laboratorio di reti: ho crimpato i cavi e sbagliato l'ordine dei colori due volte.",
+  "luogo": "scuola",
+  "anno": "anno1",
+  "atteso": [
+   "ict05-c3"
+  ],
+  "tipo": "repo"
+ },
+ {
+  "fonte": "docs/guida/studente-di-prova.json anni.anno2",
+  "testo": "Ho montato un computer da zero con un compagno.",
+  "luogo": "scuola",
+  "anno": "anno2",
+  "atteso": [
+   "ict05-c1"
+  ],
+  "tipo": "repo"
+ },
+ {
+  "fonte": "docs/guida/studente-di-prova.json anni.anno3",
+  "testo": "Progetto di gruppo: un piccolo sito per un'associazione del quartiere.",
+  "luogo": "scuola",
+  "anno": "anno3",
+  "atteso": [],
+  "tipo": "repo"
+ },
+ {
+  "fonte": "docs/guida/studente-di-prova.json anni.anno4",
+  "testo": "Preparazione al tirocinio e prime configurazioni di rete.",
+  "luogo": "scuola",
+  "anno": "anno4",
+  "atteso": "dubbio",
+  "tipo": "repo"
+ },
+ {
+  "fonte": "docs/guida/studente-di-prova.json esperienze e1.azione",
+  "testo": "Ho configurato due stampanti di rete e aggiornato i computer della segreteria.",
+  "luogo": "tirocinio",
+  "anno": "anno4",
+  "atteso": [
+   "ict05-3.1",
+   "ict05-1.1"
+  ],
+  "tipo": "repo"
+ },
+ {
+  "fonte": "docs/guida/studente-di-prova.json esperienze e1.prova",
+  "testo": "Il documento di procedura che ho scritto e il giudizio del tutor.",
+  "luogo": "tirocinio",
+  "anno": "anno4",
+  "atteso": [
+   "ict05-4.1"
+  ],
+  "tipo": "repo"
+ },
+ {
+  "fonte": "docs/guida/studente-di-prova.json esperienze e1.difficolta",
+  "testo": "Una stampante non veniva vista dalla rete: ho dovuto imparare a leggere i log.",
+  "luogo": "tirocinio",
+  "anno": "anno4",
+  "atteso": [
+   "ict05-4.3",
+   "ict05-3.1"
+  ],
+  "tipo": "repo"
+ },
+ {
+  "fonte": "docs/guida/studente-di-prova.json esperienze e2.azione",
+  "testo": "Ho scritto le pagine e collegato il modulo di contatto.",
+  "luogo": "scuola",
+  "anno": "anno3",
+  "atteso": [],
+  "tipo": "repo"
+ },
+ {
+  "fonte": "docs/guida/studente-di-prova.json sofare.capire",
+  "testo": "Al tirocinio ho capito da una telefonata confusa che il problema era il cavo, non il computer.",
+  "luogo": "tirocinio",
+  "anno": "anno4",
+  "atteso": [
+   "ict05-4.3",
+   "ict05-c3"
+  ],
+  "tipo": "repo"
+ },
+ {
+  "fonte": "docs/guida/studente-di-prova.json sofare.fare",
+  "testo": "Ho installato e configurato un sistema operativo e due stampanti di rete.",
+  "luogo": "tirocinio",
+  "anno": "anno4",
+  "atteso": [
+   "ict05-1.1",
+   "ict05-3.1"
+  ],
+  "tipo": "repo"
+ },
+ {
+  "fonte": "docs/guida/studente-di-prova.json sofare.verificare",
+  "testo": "Prima di modificare la rete faccio una copia di sicurezza e dopo provo che tutto funzioni.",
+  "luogo": "tirocinio",
+  "anno": "anno4",
+  "atteso": [
+   "ict05-1.3",
+   "ict05-4.2"
+  ],
+  "tipo": "repo"
+ },
+ {
+  "fonte": "docs/guida/studente-di-prova.json sofare.collaborare",
+  "testo": "Nel progetto del sito ci siamo divisi i compiti in quattro.",
+  "luogo": "scuola",
+  "anno": "anno3",
+  "atteso": [],
+  "tipo": "repo"
+ },
+ {
+  "fonte": "tests/diario.test.cjs settimana 1",
+  "testo": "Ho configurato due stampanti.",
+  "luogo": "tirocinio",
+  "anno": "anno3",
+  "atteso": [
+   "ict05-3.1"
+  ],
+  "tipo": "repo"
+ },
+ {
+  "fonte": "tests/diario.test.cjs settimana 2",
+  "testo": "Ho aggiornato i computer.",
+  "luogo": "tirocinio",
+  "anno": "anno3",
+  "atteso": [
+   "ict05-1.1"
+  ],
+  "tipo": "repo"
+ },
+ {
+  "fonte": "tests/diario.test.cjs imparato 1",
+  "testo": "Leggere i log.",
+  "luogo": "tirocinio",
+  "anno": "anno3",
+  "atteso": [
+   "ict05-4.3"
+  ],
+  "tipo": "repo"
+ },
+ {
+  "fonte": "tests/diario.test.cjs imparato 2",
+  "testo": "Fare le copie di sicurezza.",
+  "luogo": "tirocinio",
+  "anno": "anno3",
+  "atteso": [
+   "ict05-1.3"
+  ],
+  "tipo": "repo"
+ },
+ {
+  "fonte": "js/dati.js esempio capire",
+  "testo": "Capire dal racconto di un utente che cosa non funziona sul suo computer, anche quando lo spiega in modo confuso.",
+  "luogo": "scuola",
+  "anno": "anno3",
+  "atteso": [
+   "ict05-4.3"
+  ],
+  "tipo": "repo"
+ },
+ {
+  "fonte": "js/dati.js esempio fare",
+  "testo": "Installare e configurare un sistema operativo, una stampante di rete o un piccolo programma.",
+  "luogo": "scuola",
+  "anno": "anno3",
+  "atteso": [
+   "ict05-1.1",
+   "ict05-3.1",
+   "ict05-2.3",
+   "ict05-c2"
+  ],
+  "tipo": "repo"
+ },
+ {
+  "fonte": "js/dati.js esempio collaborare",
+  "testo": "Lavorare a un progetto di gruppo e accordarsi su chi fa che cosa, senza rifare il lavoro degli altri.",
+  "luogo": "scuola",
+  "anno": "anno3",
+  "atteso": [],
+  "tipo": "repo"
+ },
+ {
+  "fonte": "js/dati.js esempio verificare",
+  "testo": "Provare che un programma o una rete funzionino davvero e fare una copia di sicurezza prima di modificare.",
+  "luogo": "scuola",
+  "anno": "anno3",
+  "atteso": [
+   "ict05-4.2",
+   "ict05-1.3"
+  ],
+  "tipo": "repo"
+ },
+ {
+  "fonte": "js/dati.js esempio spiegare",
+  "testo": "Spiegare a un utente non esperto una procedura passo per passo, oppure scriverla in un breve documento.",
+  "luogo": "scuola",
+  "anno": "anno3",
+  "atteso": [
+   "ict05-4.1"
+  ],
+  "tipo": "repo"
+ },
+ {
+  "fonte": "js/dati.js esempio migliorare",
+  "testo": "Cercare nella documentazione o in un forum la causa di un errore che non avevi mai visto.",
+  "luogo": "scuola",
+  "anno": "anno3",
+  "atteso": [
+   "ict05-4.3"
+  ],
+  "tipo": "repo"
+ },
+ {
+  "fonte": "portfolio/js/app.js esempio informatica",
+  "testo": "Ho installato il sistema operativo su un PC del laboratorio e ho configurato la stampante di rete.",
+  "luogo": "scuola",
+  "anno": "anno2",
+  "atteso": [
+   "ict05-1.1",
+   "ict05-3.1"
+  ],
+  "tipo": "repo"
+ },
+ {
+  "fonte": "scritta per la prova (non di studenti)",
+  "testo": "o installato windows 11 sul pc del lab",
+  "luogo": "scuola",
+  "anno": "anno1",
+  "atteso": [
+   "ict05-1.1"
+  ],
+  "tipo": "sintetica"
+ },
+ {
+  "fonte": "scritta per la prova (non di studenti)",
+  "testo": "formattato il computer e rimesso tutto",
+  "luogo": "scuola",
+  "anno": "anno2",
+  "atteso": [
+   "ict05-1.1"
+  ],
+  "tipo": "sintetica"
+ },
+ {
+  "fonte": "scritta per la prova (non di studenti)",
+  "testo": "ho messo l'ssd nuovo al posto del disco vecchio",
+  "luogo": "scuola",
+  "anno": "anno2",
+  "atteso": [
+   "ict05-1.1",
+   "ict05-1.2"
+  ],
+  "tipo": "sintetica"
+ },
+ {
+  "fonte": "scritta per la prova (non di studenti)",
+  "testo": "abbiamo cambiato l'alimentatore che era bruciato",
+  "luogo": "scuola",
+  "anno": "anno2",
+  "atteso": [
+   "ict05-1.2"
+  ],
+  "tipo": "sintetica"
+ },
+ {
+  "fonte": "scritta per la prova (non di studenti)",
+  "testo": "aggiornato i driver della scheda video",
+  "luogo": "tirocinio",
+  "anno": "anno3",
+  "atteso": [
+   "ict05-1.2"
+  ],
+  "tipo": "sintetica"
+ },
+ {
+  "fonte": "scritta per la prova (non di studenti)",
+  "testo": "montato ram e processore sulla scheda madre",
+  "luogo": "scuola",
+  "anno": "anno1",
+  "atteso": [
+   "ict05-c1"
+  ],
+  "tipo": "sintetica"
+ },
+ {
+  "fonte": "scritta per la prova (non di studenti)",
+  "testo": "fatto i cavi di rete con la pinza e provati col tester",
+  "luogo": "scuola",
+  "anno": "anno1",
+  "atteso": [
+   "ict05-c3",
+   "ict05-4.2"
+  ],
+  "tipo": "sintetica"
+ },
+ {
+  "fonte": "scritta per la prova (non di studenti)",
+  "testo": "ho configurato lo switch su packet tracer",
+  "luogo": "scuola",
+  "anno": "anno2",
+  "atteso": [
+   "ict05-3.2"
+  ],
+  "tipo": "sintetica"
+ },
+ {
+  "fonte": "scritta per la prova (non di studenti)",
+  "testo": "esercizio sulle sottoreti con la subnet mask",
+  "luogo": "scuola",
+  "anno": "anno2",
+  "atteso": [
+   "ict05-3.3"
+  ],
+  "tipo": "sintetica"
+ },
+ {
+  "fonte": "scritta per la prova (non di studenti)",
+  "testo": "creato gli utenti sul pc della segreteria e messo il programma in avvio automatico",
+  "luogo": "tirocinio",
+  "anno": "anno3",
+  "atteso": [
+   "ict05-1.4"
+  ],
+  "tipo": "sintetica"
+ },
+ {
+  "fonte": "scritta per la prova (non di studenti)",
+  "testo": "installato chrome e configurato outlook al cliente",
+  "luogo": "tirocinio",
+  "anno": "anno3",
+  "atteso": [
+   "ict05-2.1"
+  ],
+  "tipo": "sintetica"
+ },
+ {
+  "fonte": "scritta per la prova (non di studenti)",
+  "testo": "spostato la posta e la rubrica dal vecchio pc al nuovo",
+  "luogo": "tirocinio",
+  "anno": "anno3",
+  "atteso": [
+   "ict05-2.2"
+  ],
+  "tipo": "sintetica"
+ },
+ {
+  "fonte": "scritta per la prova (non di studenti)",
+  "testo": "installato il gestionale del magazzino sui pc dell'ufficio",
+  "luogo": "tirocinio",
+  "anno": "anno3",
+  "atteso": [
+   "ict05-2.3"
+  ],
+  "tipo": "sintetica"
+ },
+ {
+  "fonte": "scritta per la prova (non di studenti)",
+  "testo": "installato office e attivato le licenze",
+  "luogo": "tirocinio",
+  "anno": "anno3",
+  "atteso": [
+   "ict05-c2"
+  ],
+  "tipo": "sintetica"
+ },
+ {
+  "fonte": "scritta per la prova (non di studenti)",
+  "testo": "pulito un pc pieno di virus",
+  "luogo": "tirocinio",
+  "anno": "anno3",
+  "atteso": [
+   "ict05-4.3"
+  ],
+  "tipo": "sintetica"
+ },
+ {
+  "fonte": "scritta per la prova (non di studenti)",
+  "testo": "fatto il backup prima di formattare",
+  "luogo": "tirocinio",
+  "anno": "anno3",
+  "atteso": [
+   "ict05-1.3",
+   "ict05-1.1"
+  ],
+  "tipo": "sintetica"
+ },
+ {
+  "fonte": "scritta per la prova (non di studenti)",
+  "testo": "con il ping abbiamo controllato che i pc si vedessero",
+  "luogo": "scuola",
+  "anno": "anno2",
+  "atteso": [
+   "ict05-4.2"
+  ],
+  "tipo": "sintetica"
+ },
+ {
+  "fonte": "scritta per la prova (non di studenti)",
+  "testo": "scritto il report dell'intervento per il cliente",
+  "luogo": "tirocinio",
+  "anno": "anno4",
+  "atteso": [
+   "ict05-4.1"
+  ],
+  "tipo": "sintetica"
+ },
+ {
+  "fonte": "scritta per la prova (non di studenti)",
+  "testo": "configurato il router del cliente e il wifi",
+  "luogo": "tirocinio",
+  "anno": "anno4",
+  "atteso": [
+   "ict05-3.2",
+   "ict05-3.1"
+  ],
+  "tipo": "sintetica"
+ },
+ {
+  "fonte": "scritta per la prova (non di studenti)",
+  "testo": "ho dato l'ip statico alla stampante",
+  "luogo": "tirocinio",
+  "anno": "anno3",
+  "atteso": [
+   "ict05-3.1"
+  ],
+  "tipo": "sintetica"
+ },
+ {
+  "fonte": "scritta per la prova (non di studenti)",
+  "testo": "il pc era lentissimo, ho trovato il problema nel disco",
+  "luogo": "tirocinio",
+  "anno": "anno3",
+  "atteso": [
+   "ict05-4.3",
+   "ict05-1.2",
+   "ict05-1.1"
+  ],
+  "tipo": "sintetica"
+ },
+ {
+  "fonte": "scritta per la prova (non di studenti)",
+  "testo": "fatto il sito della scuola in html e css",
+  "luogo": "scuola",
+  "anno": "anno3",
+  "atteso": [],
+  "tipo": "sintetica"
+ },
+ {
+  "fonte": "scritta per la prova (non di studenti)",
+  "testo": "presentazione in power point per la classe",
+  "luogo": "scuola",
+  "anno": "anno1",
+  "atteso": [],
+  "tipo": "sintetica"
+ },
+ {
+  "fonte": "scritta per la prova (non di studenti)",
+  "testo": "aiutato il tutor a sistemare la rete dell'ufficio",
+  "luogo": "tirocinio",
+  "anno": "anno3",
+  "atteso": "dubbio",
+  "tipo": "sintetica"
+ },
+ {
+  "fonte": "scritta per la prova (non di studenti)",
+  "testo": "ho fatto un po di tutto in ufficio",
+  "luogo": "tirocinio",
+  "anno": "anno3",
+  "atteso": "dubbio",
+  "tipo": "sintetica"
+ },
+ {
+  "fonte": "scritta per la prova (non di studenti)",
+  "testo": "ho riparato un pc",
+  "luogo": "tirocinio",
+  "anno": "anno3",
+  "atteso": "dubbio",
+  "tipo": "sintetica"
+ },
+ {
+  "fonte": "scritta per la prova (non di studenti)",
+  "testo": "sostituito la ventola del portatile e pulito la polvere",
+  "luogo": "tirocinio",
+  "anno": "anno3",
+  "atteso": [
+   "ict05-1.2"
+  ],
+  "tipo": "sintetica"
+ },
+ {
+  "fonte": "scritta per la prova (non di studenti)",
+  "testo": "database degli studenti con le query",
+  "luogo": "scuola",
+  "anno": "anno3",
+  "atteso": [],
+  "tipo": "sintetica"
+ },
+ {
+  "fonte": "scritta per la prova (non di studenti)",
+  "testo": "messo le prese di rete nel laboratorio e etichettato il patch panel",
+  "luogo": "scuola",
+  "anno": "anno2",
+  "atteso": [
+   "ict05-c3"
+  ],
+  "tipo": "sintetica"
+ },
+ {
+  "fonte": "scritta per la prova (non di studenti)",
+  "testo": "configurato le vlan sullo switch",
+  "luogo": "scuola",
+  "anno": "anno4",
+  "atteso": [
+   "ict05-3.3",
+   "ict05-3.2"
+  ],
+  "tipo": "sintetica"
+ },
+ {
+  "fonte": "variazioni scritte dopo il lessico, con parole che il lessico non contiene",
+  "testo": "ho reinstallato il sistema da capo",
+  "luogo": "scuola",
+  "anno": "anno2",
+  "atteso": [
+   "ict05-1.1"
+  ],
+  "tipo": "variazione"
+ },
+ {
+  "fonte": "variazioni scritte dopo il lessico, con parole che il lessico non contiene",
+  "testo": "messo su linux mint su un portatile vecchio",
+  "luogo": "fuori",
+  "anno": "anno2",
+  "atteso": [
+   "ict05-1.1"
+  ],
+  "tipo": "variazione"
+ },
+ {
+  "fonte": "variazioni scritte dopo il lessico, con parole che il lessico non contiene",
+  "testo": "settato l'ip del pc a mano",
+  "luogo": "scuola",
+  "anno": "anno2",
+  "atteso": [
+   "ict05-3.1"
+  ],
+  "tipo": "variazione"
+ },
+ {
+  "fonte": "variazioni scritte dopo il lessico, con parole che il lessico non contiene",
+  "testo": "ho collegato il pc allo switch col cavo",
+  "luogo": "scuola",
+  "anno": "anno1",
+  "atteso": [
+   "ict05-3.1",
+   "ict05-c3",
+   "ict05-3.2"
+  ],
+  "tipo": "variazione"
+ },
+ {
+  "fonte": "variazioni scritte dopo il lessico, con parole che il lessico non contiene",
+  "testo": "ho cambiato il disco rotto",
+  "luogo": "tirocinio",
+  "anno": "anno3",
+  "atteso": [
+   "ict05-1.2",
+   "ict05-1.1"
+  ],
+  "tipo": "variazione"
+ },
+ {
+  "fonte": "variazioni scritte dopo il lessico, con parole che il lessico non contiene",
+  "testo": "la stampante non stampava, ho rimesso i driver",
+  "luogo": "tirocinio",
+  "anno": "anno3",
+  "atteso": [
+   "ict05-4.3",
+   "ict05-1.2",
+   "ict05-3.1"
+  ],
+  "tipo": "variazione"
+ },
+ {
+  "fonte": "variazioni scritte dopo il lessico, con parole che il lessico non contiene",
+  "testo": "ho clonato il disco su quello nuovo",
+  "luogo": "tirocinio",
+  "anno": "anno3",
+  "atteso": [
+   "ict05-1.3",
+   "ict05-1.1"
+  ],
+  "tipo": "variazione"
+ },
+ {
+  "fonte": "variazioni scritte dopo il lessico, con parole che il lessico non contiene",
+  "testo": "installato l'antivirus su tutti i pc",
+  "luogo": "tirocinio",
+  "anno": "anno3",
+  "atteso": [
+   "ict05-2.3",
+   "ict05-1.1",
+   "ict05-4.3"
+  ],
+  "tipo": "variazione"
+ },
+ {
+  "fonte": "variazioni scritte dopo il lessico, con parole che il lessico non contiene",
+  "testo": "configurato il dns e il gateway",
+  "luogo": "scuola",
+  "anno": "anno3",
+  "atteso": [
+   "ict05-3.1",
+   "ict05-3.2"
+  ],
+  "tipo": "variazione"
+ },
+ {
+  "fonte": "variazioni scritte dopo il lessico, con parole che il lessico non contiene",
+  "testo": "ho sistemato il wifi che cadeva sempre",
+  "luogo": "tirocinio",
+  "anno": "anno4",
+  "atteso": [
+   "ict05-4.3",
+   "ict05-3.1",
+   "ict05-3.2"
+  ],
+  "tipo": "variazione"
+ },
+ {
+  "fonte": "variazioni scritte dopo il lessico, con parole che il lessico non contiene",
+  "testo": "preparato 10 portatili per i nuovi assunti",
+  "luogo": "tirocinio",
+  "anno": "anno4",
+  "atteso": [
+   "ict05-1.1",
+   "ict05-1.4"
+  ],
+  "tipo": "variazione"
+ },
+ {
+  "fonte": "variazioni scritte dopo il lessico, con parole che il lessico non contiene",
+  "testo": "ho rimosso un programma che rallentava il pc",
+  "luogo": "tirocinio",
+  "anno": "anno3",
+  "atteso": [
+   "ict05-4.3"
+  ],
+  "tipo": "variazione"
+ },
+ {
+  "fonte": "variazioni scritte dopo il lessico, con parole che il lessico non contiene",
+  "testo": "ho stampato i documenti per la segretaria",
+  "luogo": "tirocinio",
+  "anno": "anno3",
+  "atteso": [],
+  "tipo": "variazione"
+ },
+ {
+  "fonte": "variazioni scritte dopo il lessico, con parole che il lessico non contiene",
+  "testo": "ho fatto le fotocopie e risposto al telefono",
+  "luogo": "tirocinio",
+  "anno": "anno3",
+  "atteso": [],
+  "tipo": "variazione"
+ },
+ {
+  "fonte": "variazioni scritte dopo il lessico, con parole che il lessico non contiene",
+  "testo": "ho scritto un programma in python che calcola la media",
+  "luogo": "scuola",
+  "anno": "anno3",
+  "atteso": [],
+  "tipo": "variazione"
+ }
+]

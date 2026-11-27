@@ -1000,9 +1000,6 @@
         'Ancora nulla.'),
       parte('Devo ancora imparare', (devo.length ? [h('ul', { class: 'voci' }, devo)] : []).concat(mai),
         'Ancora nulla.'),
-      pieno(stato.orientamento.testo) ? h('section', { class: 'dossier__parte' },
-        h('h3', { text: 'Per l\'open day' }),
-        h('p', { class: 'libro orientamento-anteprima', text: stato.orientamento.testo })) : null,
       riferimentiRegionali(interattivo));
   }
 
@@ -1033,39 +1030,6 @@
     return [testa(metaSchermata(), 'Il tuo bilancio'), corpo(intro, risposta, true)];
   }
 
-  // ---------- 07 Orientamento ----------
-  function schermataOrientamentoDomande() {
-    const intro = [
-      h('p', { text: 'All\'open day parlerai a ragazzi di terza media. Rispondi con parole tue.' })
-    ];
-    const risposta = D.ORIENTAMENTO.map(function (o) {
-      return campo({ id: 'f-or-' + o.id, etichetta: o.etichetta, suggerimento: 'Per esempio: ' + o.esempio, area: true, valore: stato.orientamento[o.id],
-        aggiorna: function (v) { stato.orientamento[o.id] = v; } });
-    });
-    return [testa(metaSchermata(), 'Che cosa racconteresti a chi deve scegliere?'), corpo(intro, risposta)];
-  }
-
-  function schermataOrientamentoTesto() {
-    const intro = [
-      h('p', { text: '«Componi una bozza» mette in fila le tue risposte. Poi correggi tu.' }),
-      notaInvio()
-    ];
-    const risposta = [
-      h('div', { class: 'home__azioni' },
-        h('button', { type: 'button', class: 'pulsante pulsante--secondario', onclick: function () {
-          const bozza = L.componiOrientamento(stato);
-          if (!bozza) { avvisa('Prima rispondi ad almeno una domanda.'); return; }
-          const applica = function () { stato.orientamento.testo = bozza; modificato(); ridisegna('f-or-testo'); };
-          if (pieno(stato.orientamento.testo)) chiedi('Sostituire il testo attuale con la bozza delle tue risposte?', 'Sostituisci', applica);
-          else applica();
-        } }, 'Componi una bozza dalle risposte'),
-        h('button', { type: 'button', class: 'pulsante pulsante--secondario', onclick: stampa }, 'Stampa bilancio e testo')),
-      campo({ id: 'f-or-testo', etichetta: 'Il tuo testo', area: true, lungo: true, libro: true, valore: stato.orientamento.testo,
-        aggiorna: function (v) { stato.orientamento.testo = v; } })
-    ];
-    return [testa(metaSchermata(), 'Il tuo testo per l\'open day'), corpo(intro, risposta)];
-  }
-
   // ---------- Disegno ----------
   function schermataCorrente() {
     const sez = D.SEZIONI[vista.s];
@@ -1076,7 +1040,6 @@
       case 'sofare': return sch.id === 'livelli' ? schermataLivelli() : sch.id === 'regionali' ? schermataRegionali() : schermataEsempi();
       case 'sguardo': return schermataSguardo();
       case 'bilancio': return schermataBilancio();
-      case 'orientamento': return sch.id === 'domande' ? schermataOrientamentoDomande() : schermataOrientamentoTesto();
     }
     return [];
   }

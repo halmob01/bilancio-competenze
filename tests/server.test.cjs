@@ -709,7 +709,7 @@ test('orientamento: il documento si salva, il pannello ne vede lo stato, un pass
     const rie = (await p.chiedi('GET', '/api/classi/' + k.classeId + '/riepilogo', undefined, { cookie: k.docente })).json;
     const rs = rie.studenti.find((x) => x.nome === 'Sara');
     assert.equal(rs.percorsi.orientamento.stato, 'in_corso');
-    assert.match(rs.percorsi.orientamento.dettaglio, /^\d di 6 passi$/);
+    assert.match(rs.percorsi.orientamento.dettaglio, /^\d di 9 passi$/);
     assert.equal(rie.studenti.find((x) => x.nome === 'Luca').percorsi.orientamento.stato, 'vuota');
     // Un dato non valido viene ripulito, non salvato com'è
     const brutto = await p.chiedi('PUT', '/api/documenti/orientamento', { base: 1, dati: { versione: 1, uscita: { strade: [{ id: 'inventata' }], passi: 'no' } } }, { cookie: sara });

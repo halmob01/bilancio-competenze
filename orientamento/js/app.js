@@ -5,7 +5,8 @@
 
   const O = window.BC_ORIENTAMENTO;
   const B = window.BC_LOGICA;
-  const SEZIONI = O.PASSI;
+  let parte = null;  // null = home; altrimenti 'entrata' o 'uscita'
+  function sezioni() { const x = O.PARTI.find(function (y) { return y.id === parte; }); return x ? x.passi : []; }
 
   let stato = O.statoVuoto();
   let vista = null; // null = home; altrimenti { s }
@@ -71,6 +72,8 @@
       if (grezzo) stato = O.normalizza(JSON.parse(grezzo));
     } catch (e) { archivioDisponibile = false; }
   }
+  // Dalla home si entra in una delle due parti.
+  function apri(id, s) { parte = id; vai(s || 0); }
   function scriviArchivio() {
     stato.aggiornato = new Date().toISOString();
     try {
@@ -118,6 +121,7 @@
 
   // ---------- Navigazione ----------
   function vai(s) {
+    if (s === null) parte = null;
     vista = (s === null) ? null : { s: s };
     entrata = true; disegna(); entrata = false;
     window.scrollTo(0, 0);
@@ -133,11 +137,11 @@
 
   const ETICHETTA_STATO = { vuota: 'Da iniziare', in_corso: 'In corso', completa: 'Completa' };
   function statoSezione(i) {
-    if (SEZIONI[i].id === 'strada') return stato.profilo.indirizzo && stato.profilo.anno ? 'Completa' : 'Da guardare';
-    return ETICHETTA_STATO[O.statoPasso(stato, SEZIONI[i].id)];
+    if (sezioni()[i].id === 'strada') return stato.profilo.indirizzo && stato.profilo.anno ? 'Completa' : 'Da guardare';
+    return ETICHETTA_STATO[O.statoPasso(stato, sezioni()[i].id)];
   }
   function vociIndice(classe) {
-    return SEZIONI.map(function (s, i) {
+    return sezioni().map(function (s, i) {
       return h('li', null, h('button', {
         type: 'button', class: classe, 'aria-current': vista && vista.s === i ? 'step' : null,
         onclick: function () { if ($('dialogo-indice').open) $('dialogo-indice').close(); vai(i); }
@@ -156,17 +160,17 @@
   function aggiornaTestata() {
     $('tappa-mobile').hidden = !vista;
     $('avanzamento').hidden = false;
-    $('barra').style.width = vista ? ((vista.s + 1) / SEZIONI.length * 100) + '%' : '0%';
+    $('barra').style.width = vista ? ((vista.s + 1) / sezioni().length * 100) + '%' : '0%';
     const avanzamento = $('avanzamento');
     avanzamento.querySelectorAll('.avanzamento__nodo').forEach(function (n) { n.remove(); });
-    SEZIONI.forEach(function (_, i) {
+    sezioni().forEach(function (_, i) {
       const nodo = document.createElement('span');
       nodo.className = 'avanzamento__nodo' + (vista && i === vista.s ? ' avanzamento__nodo--attivo' : vista && i < vista.s ? ' avanzamento__nodo--completato' : '');
-      nodo.style.left = (i / (SEZIONI.length - 1) * 100) + '%';
+      nodo.style.left = (i / (sezioni().length - 1) * 100) + '%';
       nodo.setAttribute('aria-hidden', 'true');
       avanzamento.appendChild(nodo);
     });
-    if (vista) $('tappa-nome').textContent = SEZIONI[vista.s].titolo;
+    if (vista) $('tappa-nome').textContent = sezioni()[vista.s].titolo;
   }
 
   // ---------- Elementi ricorrenti ----------
@@ -200,29 +204,95 @@
     const s = vista.s;
     return h('nav', { class: 'navigazione', 'aria-label': 'Navigazione tra le schermate' },
       h('button', { type: 'button', class: 'pulsante pulsante--secondario', onclick: function () { s === 0 ? vai(null) : vai(s - 1); } }, 'Indietro'),
-      s < SEZIONI.length - 1
+      s < sezioni().length - 1
         ? h('button', { type: 'button', class: 'pulsante navigazione__avanti', onclick: function () { vai(s + 1); } }, 'Avanti')
         : h('button', { type: 'button', class: 'pulsante navigazione__avanti', onclick: scaricaCopia }, 'Scarica una copia'));
   }
-  function meta(s) { return String(s + 1).padStart(2, '0') + ' / ' + String(SEZIONI.length).padStart(2, '0'); }
+  function meta(s) { return String(s + 1).padStart(2, '0') + ' / ' + String(sezioni().length).padStart(2, '0'); }
 
   // ---------- Home ----------
+  const NOMI_STATO = { vuota: 'Da iniziare', in_corso: 'In corso', completa: 'Completa' };
+  function statoParte(p) {
+    const stati = p.passi.map(function (x) { return O.statoPasso(stato, x.id); });
+    if (stati.every(function (x) { return x === 'completa'; })) return 'Completa';
+    return stati.some(function (x) { return x !== 'vuota'; }) ? 'In corso' : 'Da iniziare';
+  }
   function disegnaHome() {
-    const iniziato = !!stato.aggiornato;
     return h('div', { class: 'home' },
       h('div', { class: 'home__fascia' }, h('div', { class: 'home__fascia-dentro' },
         h('a', { class: 'home__tutti', href: '../', text: 'Tutti i percorsi' }),
         h('h1', { text: 'Orientamento' }),
-        h('p', { class: 'home__sottotitolo', text: 'Che cosa fai dopo il CFP?' }),
-        h('p', { class: 'home__testo misura', text: 'Guardi le strade possibili e scegli i tuoi prossimi passi.' }),
-        h('div', { class: 'home__azioni' },
-          h('button', { type: 'button', class: 'pulsante', onclick: function () { vai(0); } }, iniziato ? 'Riprendi da dove eri' : 'Inizia'),
-          iniziato ? h('button', { type: 'button', class: 'pulsante pulsante--secondario', onclick: function () { vai(SEZIONI.length - 1); } }, 'Vai al tuo foglio') : null))),
-      h('section', { class: 'home__indice', 'aria-labelledby': 'home-indice' },
-        h('h2', { id: 'home-indice', class: 'meta', text: 'Sei passi' }),
-        h('ol', null, SEZIONI.map(function (s, i) {
-          return h('li', null, h('span', { class: 'meta', text: String(i + 1).padStart(2, '0') }), h('span', { text: s.titolo }));
+        h('p', { class: 'home__sottotitolo', text: 'Due modi di guardare il CFP.' }),
+        h('p', { class: 'home__testo misura', text: 'Uno è per chi deve ancora scegliere. L\'altro è per te.' }))),
+      h('section', { class: 'home__indice', 'aria-labelledby': 'home-parti' },
+        h('h2', { id: 'home-parti', class: 'meta', text: 'Scegli da dove partire' }),
+        h('ul', { class: 'percorsi' }, O.PARTI.map(function (p, i) {
+          return h('li', null, h('a', { class: 'percorso', href: '#' + p.id, onclick: function (e) { e.preventDefault(); apri(p.id, 0); } },
+            h('span', { class: 'meta percorso__num', text: String(i + 1).padStart(2, '0') }),
+            h('span', { class: 'percorso__titolo', text: p.titolo }),
+            h('span', { class: 'percorso__testo', text: p.per }),
+            h('span', { class: 'meta percorso__stato', text: statoParte(p) }),
+            h('span', { class: 'percorso__apri', text: statoParte(p) === 'Da iniziare' ? 'Inizia' : 'Riprendi' })));
         }))));
+  }
+
+  // ---------- Racconto il CFP ----------
+  const E = function () { return stato.entrata; };
+
+  function schermataRacconto() {
+    const intro = [h('p', { text: 'All\'open day parlerai a ragazzi di terza media. Rispondi con parole tue.' })];
+    const risposta = O.RACCONTO.map(function (r) {
+      return campo({ id: 'f-ra-' + r.id, etichetta: r.etichetta, suggerimento: 'Per esempio: ' + r.esempio, area: true, valore: E()[r.id], aggiorna: function (v) { E()[r.id] = v; } });
+    });
+    return [testa(meta(0), 'Che cosa racconteresti a chi deve scegliere?'), corpo(intro, risposta)];
+  }
+
+  function schermataMedie() {
+    const intro = [h('p', { text: 'I ragazzi di terza media ti faranno delle domande. Rispondi a quelle che vuoi.' })];
+    const risposta = O.MEDIE.map(function (m) {
+      const id = 'f-me-' + m.id;
+      const aiuto = m.id === 'dopo' && O.fraseStrade(stato)
+        ? h('button', { type: 'button', class: 'pulsante pulsante--testo', onclick: function () {
+          const v = (E().medie.dopo || '').trim();
+          E().medie.dopo = (v ? v + '\n' : '') + O.fraseStrade(stato);
+          modificato(); ridisegna(id);
+        } }, 'Usa le strade che hai scelto in «Cosa faccio dopo»') : null;
+      return h('div', { class: 'campo-con-aiuto' }, campo({ id: id, etichetta: m.domanda, suggerimento: 'Per esempio: ' + m.esempio, area: true, valore: E().medie[m.id], aggiorna: function (v) { E().medie[m.id] = v; } }), aiuto);
+    });
+    return [testa(meta(1), 'Le domande dei ragazzi'), corpo(intro, risposta)];
+  }
+
+  function schermataTesto() {
+    const intro = [h('p', { text: '«Componi una bozza» mette in fila le tue risposte. Poi correggi tu.' })];
+    const risposta = [
+      h('div', { class: 'home__azioni' },
+        h('button', { type: 'button', class: 'pulsante pulsante--secondario', onclick: function () {
+          const bozza = O.componiTesto(stato);
+          if (!bozza) { avvisa('Prima rispondi ad almeno una domanda.'); return; }
+          const applica = function () { E().testo = bozza; modificato(); ridisegna('f-te-testo'); };
+          if (pieno(E().testo)) chiedi('Sostituire il testo attuale con la bozza delle tue risposte?', 'Sostituisci', applica); else applica();
+        } }, 'Componi una bozza dalle risposte'),
+        h('button', { type: 'button', class: 'pulsante pulsante--secondario', onclick: function () { stampa(); } }, 'Stampa o salva in PDF'),
+        h('button', { type: 'button', class: 'pulsante pulsante--testo', onclick: scaricaCopia }, 'Scarica una copia')),
+      campo({ id: 'f-te-testo', etichetta: 'Il tuo testo', area: true, max: O.MAX_TESTO, valore: E().testo, aggiorna: function (v) { E().testo = v; } })
+    ];
+    return [testa(meta(2), 'Il tuo testo per l\'open day'), corpo(intro, risposta)];
+  }
+
+  function foglioEntrata() {
+    const p = stato.profilo;
+    const sess = ARCH.sessione();
+    const intestazione = [nome(O.INDIRIZZI, p.indirizzo), nome(O.ANNI, p.anno)].filter(Boolean).join(' · ');
+    const domande = O.MEDIE.filter(function (m) { return pieno(E().medie[m.id]); });
+    return h('article', { class: 'dossier', 'aria-label': 'Il tuo foglio per l\'open day' },
+      h('header', { class: 'dossier__testa' },
+        h('p', { class: 'meta', text: 'Orientamento · Racconto il CFP' }),
+        h('p', { class: 'dossier__titolo', text: sess && sess.profilo ? sess.profilo.nome + (sess.profilo.cognome ? ' ' + sess.profilo.cognome : '') : 'Il mio racconto del CFP' }),
+        intestazione ? h('p', { class: 'meta', text: intestazione }) : null),
+      h('section', { class: 'dossier__parte' }, h('h3', { text: 'Il mio testo' }),
+        pieno(E().testo) ? h('p', { class: 'libro orientamento-anteprima', text: E().testo.trim() }) : h('p', { class: 'vuoto', text: 'Ancora nulla.' })),
+      domande.length ? h('section', { class: 'dossier__parte' }, h('h3', { text: 'Se mi chiedono' }),
+        h('ul', { class: 'voci' }, domande.map(function (m) { return voce(m.domanda, E().medie[m.id]); }))) : null);
   }
 
   // ---------- 01 La strada ----------
@@ -363,7 +433,7 @@
   function voce(etichetta, testoV) {
     return pieno(testoV) ? h('li', { class: 'voce' }, h('p', { class: 'meta', text: etichetta }), h('blockquote', { text: testoV.trim() })) : null;
   }
-  function foglio() {
+  function foglioUscita() {
     const u = stato.uscita; const p = stato.profilo;
     const att = attivitaSalvate().filter(function (a) { return u.attivita.indexOf(a.id) !== -1; });
     const pm = promemoria();
@@ -399,7 +469,7 @@
       h('div', { class: 'home__azioni' },
         h('button', { type: 'button', class: 'pulsante', onclick: function () { stampa(); } }, 'Stampa o salva in PDF'),
         h('button', { type: 'button', class: 'pulsante pulsante--secondario', onclick: scaricaCopia }, 'Scarica una copia')),
-      foglio()
+      foglioUscita()
     ];
     return [testa(meta(5), 'Il mio foglio'), corpo(null, risposta, true)];
   }
@@ -409,11 +479,12 @@
     principale.textContent = '';
     if (!vista) aggiungi(principale, disegnaHome());
     else {
-      const id = SEZIONI[vista.s].id;
-      const contenuto = id === 'strada' ? schermataStrada() : id === 'piace' ? schermataPiace() : id === 'sofare' ? schermataSoFare()
-        : id === 'dove' ? schermataDove() : id === 'prossimi' ? schermataPassi() : schermataFoglio();
+      const id = sezioni()[vista.s].id;
+      const contenuto = id === 'racconto' ? schermataRacconto() : id === 'medie' ? schermataMedie() : id === 'testo' ? schermataTesto()
+        : id === 'strada' ? schermataStrada() : id === 'piace' ? schermataPiace() : id === 'sofare' ? schermataSoFare()
+          : id === 'dove' ? schermataDove() : id === 'prossimi' ? schermataPassi() : schermataFoglio();
       aggiungi(principale, h('div', { class: 'lavoro' },
-        h('nav', { class: 'rail', 'aria-label': 'Passi dell\'orientamento' }, h('ol', { id: 'rail-elenco' })),
+        h('nav', { class: 'rail', 'aria-label': 'Passi di «' + O.PARTI.find(function (x) { return x.id === parte; }).titolo + '»' }, h('ol', { id: 'rail-elenco' })),
         h('div', null, h('section', { class: 'schermata' + (entrata ? ' schermata--entra' : ''), 'aria-labelledby': 'titolo-schermata' }, contenuto), navigazione())));
     }
     aggiornaTestata(); aggiornaIndice();
@@ -443,7 +514,11 @@
     };
     lettore.readAsText(file);
   }
-  function preparaStampa() { const s = $('stampa'); s.textContent = ''; s.appendChild(foglio()); }
+  function preparaStampa() {
+    const s = $('stampa'); s.textContent = '';
+    if (parte !== 'uscita') s.appendChild(foglioEntrata());
+    if (parte !== 'entrata') s.appendChild(foglioUscita());
+  }
   function stampa() { preparaStampa(); window.print(); }
   function cancellaTutto() {
     chiedi('Cancellare tutto? Se non hai una copia, lo perdi.', 'Cancella tutto', function () {
@@ -455,6 +530,11 @@
 
   // ---------- Avvio ----------
   caricaArchivio();
+  // Le risposte della vecchia sezione «Orientamento» del bilancio si portano qui una volta (la sezione nel bilancio non c'è più).
+  (function () {
+    const b = leggiAltro('bilancio-competenze-v1');
+    if (O.importaDalBilancio(stato, b && b.orientamento)) { scriviArchivio(); } else if (!stato.entrata.importato) { stato.entrata.importato = true; }
+  })();
   disegna();
   if (!archivioDisponibile) $('salvato').textContent = 'Salvataggio non disponibile: scarica una copia';
   else if (stato.aggiornato) $('salvato').textContent = 'Lavoro ritrovato';

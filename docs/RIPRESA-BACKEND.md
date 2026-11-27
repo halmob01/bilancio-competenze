@@ -256,3 +256,9 @@ Il docente scrive in italiano semplice e non vuole emoji. Il piano completo è `
 - **Dossier**: le competenze regionali entrano negli stessi quattro elenchi (so fare, ho imparato, devo ancora imparare, mai affrontato); in fondo un riquadro con il testo ufficiale (aperto nella stampa, chiuso sullo schermo).
 - **Pagine**: `bilancio/` e `orientamento/` caricano `js/competenze.js`; il curriculum no (non cambia).
 - **Non fatto**: le frasi regionali non entrano ancora nel campo «competenze» del curriculum (solo le sei situazioni); la vista dei docenti per competenza (blocco 8).
+
+### 4.13 Racconto il CFP: orientamento in entrata (27 novembre 2026)
+- **Orientamento** ha due parti nella stessa pagina e nello stesso documento: «Racconto il CFP» (`entrata`: 3 passi) e «Cosa faccio dopo» (`uscita`: 6 passi). L'avanzamento per il pannello conta 9 passi.
+- **Racconto il CFP**: (1) le quattro domande dell'open day (presentati, racconto, difficile, consiglio); (2) sei domande dei ragazzi di terza media, tutte facoltative (giornata, pratica, iscriversi, professori, dopo, rifaresti), con un pulsante che porta le strade scelte in «Cosa faccio dopo» nella risposta «dopo»; (3) il testo per l'open day, con la bozza che mette in fila le risposte senza riscriverle. Si stampa un foglio con il testo e le risposte date. Nessuna pagina pubblica, nessuna foto.
+- **Dal bilancio**: la sezione 07 «Orientamento» non c'è più. Le risposte già scritte lì si copiano nella nuova parte **una volta sola** (`importaDalBilancio`, segnata da `entrata.importato`), solo se la parte è ancora vuota. Il bilancio le conserva nel documento ma non le mostra né le stampa; `DATI.ORIENTAMENTO` e `componiOrientamento` restano solo per leggerle (e per il foglio Google, spento).
+- Il bilancio ha cinque sezioni.

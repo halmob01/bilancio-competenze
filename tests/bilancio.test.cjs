@@ -13,9 +13,9 @@ function conEsperienza(stato, campi) {
   return e;
 }
 
-test('sei sezioni, schermate con un solo compito (il curriculum è un sito a parte)', () => {
-  assert.equal(D.SEZIONI.length, 6);
-  assert.deepEqual(D.SEZIONI.map((x) => x.id), ['percorso', 'esperienze', 'sofare', 'sguardo', 'bilancio', 'orientamento']);
+test('cinque sezioni, schermate con un solo compito (curriculum e orientamento sono siti a parte)', () => {
+  assert.equal(D.SEZIONI.length, 5);
+  assert.deepEqual(D.SEZIONI.map((x) => x.id), ['percorso', 'esperienze', 'sofare', 'sguardo', 'bilancio']);
   D.SEZIONI.forEach((s) => assert.ok(s.schermate.length >= 1, s.id));
   // «Che cosa so fare» è in due tempi (livello, poi esempio); lo sguardo critico ha le tre domande insieme.
   // Gli id delle sei situazioni e delle tre risposte non cambiano mai (li legge lo script del docente).
@@ -93,7 +93,7 @@ test('le difficoltà, gli aiuti e le prove delle esperienze entrano nel dossier 
   assert.deepEqual(b.possoDimostrarlo[0].rif, { sezione: 'esperienze', schermata: 'elenco', esperienza: e.id });
 });
 
-test('il testo per l\'open day mette in fila le risposte senza riscriverle', () => {
+test('le vecchie risposte di orientamento si leggono ancora (ora le usa orientamento/)', () => {
   const s = L.statoVuoto();
   s.orientamento.presentati = '  Sono Sara.  ';
   s.orientamento.consiglio = 'Venite a vedere i laboratori.';

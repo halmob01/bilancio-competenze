@@ -1053,3 +1053,6 @@ dialog p:empty { display: none; }
 .regionale { display: grid; gap: 12px; padding-bottom: 22px; border-bottom: 1px solid var(--c-filetto); }
 .regionale:last-child { border-bottom: 0; }
 .regionale__frase { font-size: 18px; font-weight: 700; line-height: 1.35; color: var(--c-titolo); }
+
+.campo-con-aiuto { display: grid; gap: 6px; }
+.campo-con-aiuto .pulsante--testo { justify-self: start; }

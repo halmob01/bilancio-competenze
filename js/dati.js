@@ -177,17 +177,11 @@
       id: 'bilancio',
       titolo: 'Bilancio',
       schermate: [{ id: 'dossier', titolo: 'Il tuo bilancio' }]
-    },
-    {
-      id: 'orientamento',
-      titolo: 'Orientamento',
-      schermate: [
-        { id: 'domande', titolo: 'Che cosa racconteresti?' },
-        { id: 'testo', titolo: 'Il tuo testo per l\'open day' }
-      ]
     }
   ];
 
+  // Le domande della vecchia sezione «Orientamento» del bilancio: ora vive in orientamento/ («Racconto il CFP»).
+  // Restano qui solo per leggere le risposte già salvate, che l'orientamento porta con sé una volta.
   const ORIENTAMENTO = [
     {
       id: 'presentati',

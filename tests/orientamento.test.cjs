@@ -48,7 +48,7 @@ test('le note non promettono scorciatoie a chi non è nella filiera, e le strade
 });
 
 test('avanzamento: stessa forma di bilancio e curriculum', () => {
-  assert.deepEqual(O.avanzamento(null), { stati: ['vuota', 'vuota', 'vuota', 'vuota', 'vuota', 'vuota'], complete: 0, totale: 6 });
+  assert.deepEqual(O.avanzamento(null), { stati: new Array(9).fill('vuota'), complete: 0, totale: 9 }, 'tre passi di «Racconto il CFP» e sei di «Cosa faccio dopo»');
   const s = O.statoVuoto();
   s.profilo = { indirizzo: 'elettrico', anno: 'anno3' };
   s.uscita.piace = 'Mi piacciono i quadri'; s.uscita.attivita = ['a12345'];
@@ -56,7 +56,7 @@ test('avanzamento: stessa forma di bilancio e curriculum', () => {
   s.uscita.strade = [{ id: 'quarto', perche: 'Voglio il diploma' }];
   s.uscita.passi = [{ id: 'p1', cosa: 'Chiedere al docente', con: '', entro: '' }];
   const a = O.avanzamento(s);
-  assert.deepEqual([a.complete, a.totale], [6, 6]);
+  assert.deepEqual([a.complete, a.totale], [6, 9], 'la parte «Cosa faccio dopo» è tutta completa, l\'altra no');
   s.uscita.strade = [{ id: 'nonso', perche: '' }];
   assert.equal(O.statoPasso(s, 'dove'), 'completa', '«Non lo so ancora» è una risposta valida');
   s.uscita.strade = [{ id: 'its', perche: '' }];
@@ -86,4 +86,38 @@ test('la pagina carica gli script giusti e i fatti sulla filiera hanno un docume
   const f = fs.readFileSync(path.join(__dirname, '../docs/FILIERA.md'), 'utf8');
   assert.match(f, /legge 8 agosto 2024, n\. 121|Legge 8 agosto 2024, n\. 121/);
   assert.match(f, /Da verificare/);
+});
+
+test('Racconto il CFP: le vecchie risposte del bilancio si portano una volta sola, e il testo si compone senza riscrivere', () => {
+  const s = O.statoVuoto();
+  const vecchie = { presentati: ' Sono Sara. ', racconto: '', difficile: 'Gli schemi.', consiglio: 'Venite a vedere i laboratori.', testo: 'Il mio testo per l\'open day.', extra: 'x' };
+  assert.equal(O.importaDalBilancio(s, vecchie), true);
+  assert.equal(s.entrata.presentati.trim(), 'Sono Sara.'); assert.equal(s.entrata.testo, 'Il mio testo per l\'open day.');
+  assert.equal(s.entrata.importato, true);
+  s.entrata.consiglio = 'Cambiato.';
+  assert.equal(O.importaDalBilancio(s, vecchie), false, 'la seconda volta non copia più niente');
+  assert.equal(s.entrata.consiglio, 'Cambiato.');
+  // Se lo studente ha già scritto qui, non si sovrascrive
+  const t = O.statoVuoto(); t.entrata.presentati = 'Già scritto.';
+  assert.equal(O.importaDalBilancio(t, vecchie), false); assert.equal(t.entrata.presentati, 'Già scritto.');
+  assert.equal(O.importaDalBilancio(O.statoVuoto(), null), false);
+  const c = O.statoVuoto(); c.entrata.presentati = ' Sono Sara. '; c.entrata.consiglio = 'Venite.';
+  assert.equal(O.componiTesto(c), 'Sono Sara.\n\nVenite.');
+  assert.equal(O.componiTesto(O.statoVuoto()), '');
+});
+
+test('Racconto il CFP: le domande dei ragazzi, lo stato dei passi e le strade scelte', () => {
+  assert.deepEqual(O.MEDIE.map((m) => m.id), ['giornata', 'pratica', 'iscriversi', 'prof', 'dopo', 'rifaresti']);
+  const s = O.normalizza({ entrata: { presentati: 'x', medie: { giornata: 'Una giornata.', inventata: 'no', pratica: 5 } } });
+  assert.deepEqual(Object.keys(s.entrata.medie), O.MEDIE.map((m) => m.id), 'solo le domande vere');
+  assert.equal(s.entrata.medie.giornata, 'Una giornata.'); assert.equal(s.entrata.medie.pratica, '');
+  assert.equal(O.statoPasso(s, 'racconto'), 'in_corso'); assert.equal(O.statoPasso(s, 'medie'), 'in_corso'); assert.equal(O.statoPasso(s, 'testo'), 'vuota');
+  s.entrata.medie.pratica = 'A'; s.entrata.medie.prof = 'B';
+  assert.equal(O.statoPasso(s, 'medie'), 'completa', 'bastano tre risposte');
+  s.uscita.strade = [{ id: 'quarto', perche: '' }, { id: 'lavoro', perche: '' }];
+  assert.equal(O.fraseStrade(s), 'Dopo il CFP io penso di: Quarto anno, Lavorare.');
+  s.uscita.strade = [{ id: 'nonso', perche: '' }];
+  assert.equal(O.fraseStrade(s), '');
+  assert.deepEqual(O.PARTI.map((p) => p.id), ['entrata', 'uscita']);
+  assert.deepEqual(O.normalizza(JSON.parse(JSON.stringify(s))), O.normalizza(s));
 });

@@ -35,7 +35,8 @@
   const INDIRIZZI = [{ id: 'elettrico', testo: 'Elettrico' }, { id: 'informatica', testo: 'Informatica' }, { id: 'estetica', testo: 'Estetica' }];
   const ANNI = [{ id: 'anno1', testo: 'I anno' }, { id: 'anno2', testo: 'II anno' }, { id: 'anno3', testo: 'III anno' }, { id: 'anno4', testo: 'IV anno' }];
 
-  // I percorsi di quattro anni della nuova filiera (riforma 4+2, legge 121/2024) al CFP: nel 2026/27 solo Informatica, I e II anno.
+  // I percorsi di quattro anni della nuova filiera (riforma 4+2, legge 121/2024; in Lombardia DGR 2954/2024, Allegato B) al CFP:
+  // nel 2026/27 solo Informatica, I e II anno. Anche in questi percorsi la qualifica al terzo anno è garantita (DGR 2954/2024, All. B, punto 3).
   // Da aggiornare a ogni settembre (vedi docs/FILIERA.md, «Da verificare»): chi non ci sta dentro segue il percorso 3+1.
   const PERCORSO_QUADRIENNALE = { informatica: ['anno1', 'anno2'] };
 
@@ -44,9 +45,12 @@
     { id: 'lavoro', titolo: 'Lavorare', testo: 'Cerco lavoro con il mio titolo.' },
     { id: 'apprendistato', titolo: 'Apprendistato', testo: 'Lavoro in un\'azienda con un contratto e intanto continuo a studiare.' },
     { id: 'quarto', titolo: 'Quarto anno', testo: 'Faccio un anno in più e prendo il diploma professionale.' },
-    { id: 'scuola', titolo: 'Scuola professionale', testo: 'Passo a una scuola professionale. Mi riconoscono quello che ho già fatto.' },
-    { id: 'ifts', titolo: 'Corso IFTS', testo: 'Dopo il diploma faccio un corso tecnico più avanzato.' },
-    { id: 'its', titolo: 'ITS Academy', testo: 'Dopo il diploma vado in una scuola di alta formazione tecnica.' },
+    // Il riconoscimento dei crediti e l'anno di inserimento li decide la scuola che accoglie (Decreto 12550/2013, Indicazioni regionali, §4.6).
+    { id: 'scuola', titolo: 'Scuola professionale', testo: 'Passo a una scuola professionale. Quella scuola valuta quello che ho già fatto e decide in che anno inserirmi.' },
+    { id: 'ifts', titolo: 'Corso IFTS', testo: 'Dopo il diploma faccio un corso tecnico di un anno. Serve anche per entrare in un ITS Academy.' },
+    // Con il diploma professionale si entra all'ITS insieme al certificato IFTS (legge 99/2022, art. 1 c. 2); l'accesso diretto
+    // della legge 121/2024 (art. 25-bis c. 4 D.L. 144/2022) in Lombardia oggi non è attivo (SETT 2025, par. III).
+    { id: 'its', titolo: 'ITS Academy', testo: 'Dopo il diploma e un anno di IFTS, oppure dopo la maturità, vado in una scuola di alta formazione tecnica.' },
     { id: 'quinto', titolo: 'Quinto anno e maturità', testo: 'Faccio un anno in più, poi l\'Esame di Stato. Con la maturità posso andare all\'università.' },
     { id: 'nonso', titolo: 'Non lo so ancora', testo: 'Va bene così. Intanto guardo le strade e ne parlo con un docente.' }
   ];
@@ -143,13 +147,15 @@
     const a = profilo && profilo.anno;
     const t = [];
     if (quad) {
-      t.push({ id: 'anni', titolo: 'Dal 1° al 4° anno', testo: 'Impari il mestiere in laboratorio e in azienda. Il tuo percorso dura quattro anni.', qui: !!a && a !== '', cambi: ['scuola'] });
-      t.push({ id: 'diploma', titolo: 'Fine del 4° anno: diploma professionale', testo: 'Ricevi il diploma professionale.', qui: false, cambi: ['lavoro', 'apprendistato', 'ifts', 'its', 'quinto'] });
+      // DGR 2954/2024, All. B: schema 2 + 1 + 1 (punto 4) e uscita garantita con la qualifica al terzo anno (punto 3).
+      t.push({ id: 'anni', titolo: '1° e 2° anno', testo: 'Impari le basi del mestiere, in laboratorio e in azienda. Il tuo percorso dura quattro anni.', qui: a === 'anno1' || a === 'anno2', cambi: ['scuola'] });
+      t.push({ id: 'qualifica', titolo: 'Fine del 3° anno: qualifica', testo: 'Anche nel percorso di quattro anni, alla fine del 3° anno ricevi la qualifica professionale.', qui: a === 'anno3', cambi: ['lavoro', 'apprendistato', 'scuola'] });
+      t.push({ id: 'diploma', titolo: 'Fine del 4° anno: diploma professionale', testo: 'Ricevi il diploma professionale. Per l\'ITS Academy serve anche un anno di IFTS.', qui: a === 'anno4', cambi: ['lavoro', 'apprendistato', 'ifts', 'its', 'quinto'] });
     } else {
       t.push({ id: 'anno1', titolo: '1° anno', testo: 'Impari le basi del mestiere.', qui: a === 'anno1', cambi: [] });
       t.push({ id: 'anno2', titolo: '2° anno', testo: 'Impari di più, in laboratorio e in azienda.', qui: a === 'anno2', cambi: [] });
       t.push({ id: 'qualifica', titolo: 'Fine del 3° anno: qualifica', testo: 'Ricevi la qualifica professionale. Con la qualifica puoi andare al quarto anno.', qui: a === 'anno3', cambi: ['quarto', 'lavoro', 'apprendistato', 'scuola'] });
-      t.push({ id: 'diploma', titolo: 'Fine del 4° anno: diploma professionale', testo: 'Ricevi il diploma professionale.', qui: a === 'anno4', cambi: ['lavoro', 'apprendistato', 'ifts', 'its', 'quinto'] });
+      t.push({ id: 'diploma', titolo: 'Fine del 4° anno: diploma professionale', testo: 'Ricevi il diploma professionale. Per l\'ITS Academy serve anche un anno di IFTS.', qui: a === 'anno4', cambi: ['lavoro', 'apprendistato', 'ifts', 'its', 'quinto'] });
     }
     t.push({ id: 'maturita', titolo: 'Dopo il diploma: quinto anno e maturità', testo: 'Un anno in più per l\'Esame di Stato. Poi puoi andare all\'università o in un ITS.', qui: false, cambi: [], facoltativa: true });
     return t;
@@ -160,7 +166,11 @@
     const n = [{ id: 'passaggi', testo: 'Puoi anche cambiare scuola. La scuola che ti accoglie guarda quello che hai già fatto e decide in che anno inserirti.' },
       { id: 'quinto', testo: 'Il quinto anno non è per tutti gli indirizzi e la Regione non lo finanzia: chiedi quanto costa e dove si fa.' }];
     if (eQuadriennale(profilo)) {
-      n.unshift({ id: 'riforma', testo: 'Il tuo percorso è nella nuova filiera 4+2 (riforma del 2024). A certe condizioni puoi entrare in un ITS o fare l\'Esame di Stato in modo più diretto. Chiedi al docente se valgono per te.' });
+      // Legge 121/2024 (art. 25-bis c. 4-5 D.L. 144/2022): accesso diretto a ITS ed Esame di Stato solo per percorsi «validati».
+      // In Lombardia non rientra nella sperimentazione IeFP di filiera e resta la distinzione tra esame di diploma ed Esame di Stato (SETT 2025, par. III).
+      n.unshift({ id: 'riforma', testo: 'Il tuo percorso è nella nuova filiera 4+2. La legge prevede un accesso più diretto a ITS ed Esame di Stato, ma in Lombardia oggi non vale ancora. Chiedi al docente.' });
+      // Passaggi in ingresso nei quadriennali solo fino alla seconda annualità (DGR 2954/2024, All. B, punto 6).
+      n.push({ id: 'passaggi4', testo: 'Nel percorso di quattro anni si può entrare da un\'altra scuola solo fino al 2° anno.' });
     }
     return n;
   }

@@ -294,7 +294,7 @@
     };
     return h('div', { class: 'competenze-classe' },
       h('div', { class: 'pannello__azioni' },
-        d.figura ? h('p', { class: 'meta', text: d.figura.nome + ' · ' + d.figura.titolo + ' · EQF ' + d.figura.eqf }) : null,
+        d.figura ? h('p', { class: 'meta', text: d.figura.nome + ' · ' + d.figura.titolo + ' · livello EQF ' + d.figura.eqf + ' del titolo di riferimento (non un livello raggiunto). Autovalutazione degli studenti, non certificazione (D.Lgs. 13/2013).' }) : null,
         h('button', { type: 'button', class: 'pulsante pulsante--secondario', onclick: function () { scaricaTesto(D.csvCompetenze(d), D.nomeFileCsv(d.classe, null, 'competenze'), 'text/csv;charset=utf-8'); } }, 'Esporta le competenze in CSV')),
       h('p', { class: 'meta', text: 'Si vedono solo i livelli scelti e se c\'è una prova. I testi degli studenti no.' }),
       gruppi.map(function (g) { return h('section', { class: 'competenze-gruppo' }, h('h3', { text: g.titolo }), g.voci.map(scheda)); }));

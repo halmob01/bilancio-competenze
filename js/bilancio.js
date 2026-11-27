@@ -33,7 +33,7 @@
       codice: nuovoCodice(),
       aggiornato: '',
       inviato: '',
-      profilo: { nome: '', classe: '', indirizzo: '', anno: '' },
+      profilo: { nome: '', classe: '', indirizzo: '', anno: '', articolazioni: { qualifica: '', diploma: '' } },
       anni: { anno1: '', anno2: '', anno3: '', anno4: '', tirocinio: '' },
       esperienze: [],
       sofare: sofare,
@@ -84,6 +84,15 @@
     s.profilo.classe = testo(p.classe, 40);
     s.profilo.indirizzo = inElenco(p.indirizzo, DATI.INDIRIZZI);
     s.profilo.anno = inElenco(p.anno, DATI.ANNI);
+    // L'indirizzo del Repertorio (articolazione della figura) che segue la classe: solo id presenti nel catalogo per quell'indirizzo e anno.
+    const C0 = catalogo();
+    const ar = p.articolazioni && typeof p.articolazioni === 'object' ? p.articolazioni : {};
+    if (C0 && C0.articolazioniPer) {
+      const possibili = C0.articolazioniPer(s.profilo.indirizzo, s.profilo.anno);
+      ['qualifica', 'diploma'].forEach(function (liv) {
+        s.profilo.articolazioni[liv] = possibili[liv].some(function (x) { return x.id === ar[liv]; }) ? ar[liv] : '';
+      });
+    }
 
     const a = grezzo.anni || {};
     Object.keys(s.anni).forEach(function (k) { s.anni[k] = testo(a[k], MAX_LUNGO); });
@@ -269,12 +278,17 @@
     if (!C) return [];
     const viste = {};
     const out = [];
-    C.gruppiPer(stato.profilo.indirizzo, stato.profilo.anno).forEach(function (g) {
-      g.competenze.forEach(function (x) { if (!viste[x.id]) { viste[x.id] = true; out.push({ id: x.id, semplice: x.semplice, ufficiale: x.ufficiale, gruppo: g.id, gruppoTitolo: g.titolo }); } });
+    C.gruppiPer(stato.profilo.indirizzo, stato.profilo.anno, { articolazioni: stato.profilo.articolazioni }).forEach(function (g) {
+      g.competenze.forEach(function (x) {
+        if (!viste[x.id]) {
+          viste[x.id] = true;
+          out.push({ id: x.id, semplice: x.semplice, ufficiale: x.ufficiale, gruppo: g.id, gruppoTitolo: g.titolo, area: g.area || 'tecnica', fonte: g.fonte || '', chiuso: !!g.chiuso });
+        }
+      });
     });
     Object.keys(stato.regionali || {}).forEach(function (id) {
       const x = !viste[id] && C.trova(id);
-      if (x) { viste[id] = true; out.push({ id: x.id, semplice: x.semplice, ufficiale: x.ufficiale, gruppo: '', gruppoTitolo: 'Già scelte prima' }); }
+      if (x) { viste[id] = true; out.push({ id: x.id, semplice: x.semplice, ufficiale: x.ufficiale, gruppo: '', gruppoTitolo: 'Già scelte prima', area: '', fonte: '', chiuso: false }); }
     });
     return out;
   }
@@ -297,11 +311,15 @@
   // Che cosa dire ai documenti e ai docenti: per ogni competenza con una risposta, la frase semplice e il testo ufficiale della Regione.
   function riferimentiRegionali(stato) {
     const C = catalogo();
-    const info = C ? C.infoPer(stato.profilo.indirizzo, stato.profilo.anno) : null;
+    const info = C ? C.infoPer(stato.profilo.indirizzo, stato.profilo.anno, stato.profilo.articolazioni) : null;
     const voci = regionaliPer(stato).filter(function (x) { return stato.regionali[x.id] && stato.regionali[x.id].livello; }).map(function (x) {
-      return { id: x.id, semplice: x.semplice, ufficiale: x.ufficiale, livello: livello(stato.regionali[x.id].livello).breve };
+      return { id: x.id, semplice: x.semplice, ufficiale: x.ufficiale, livello: livello(stato.regionali[x.id].livello).breve, area: x.area, fonte: x.fonte };
     });
-    return { info: info, voci: voci };
+    // Le sei situazioni comuni con una risposta, e a quali riferimenti normativi corrispondono (js/dati.js).
+    const situazioni = DATI.SITUAZIONI.filter(function (sit) { return stato.sofare[sit.id] && livello(stato.sofare[sit.id].livello); }).map(function (sit) {
+      return { id: sit.id, verbo: sit.verbo, livello: livello(stato.sofare[sit.id].livello).breve, riferimenti: (sit.riferimenti || []).slice() };
+    });
+    return { info: info, voci: voci, situazioni: situazioni };
   }
 
   function componiBilancio(stato, portfolio) {

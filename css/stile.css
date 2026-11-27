@@ -21,6 +21,8 @@ a { color: var(--c-rosso); text-underline-offset: 3px; }
 [hidden] { display: none !important; }
 
 :focus-visible { outline: 3px solid var(--c-nero); outline-offset: 2px; }
+/* Titoli e contenitori che ricevono il fuoco da script (tabindex="-1"): niente cornice, il lettore di schermo li annuncia comunque. */
+[tabindex="-1"]:focus { outline: none; }
 
 .visivamente-nascosto {
   position: absolute !important; width: 1px; height: 1px; overflow: hidden;
@@ -189,18 +191,20 @@ body:has(.home) .avanzamento { display: none; }
 .home__indice ol::before {
   content: ""; position: absolute; left: 10px; top: 8px; bottom: 8px; width: var(--cerchio-t); background: var(--c-rosso);
 }
-.home__indice li { position: relative; display: grid; grid-template-columns: 3ch 1fr; align-items: baseline; gap: 10px; padding: 10px 0; color: var(--c-titolo); font-weight: 600; }
-.home__indice li::before {
+.home__indice ol > li { position: relative; display: grid; grid-template-columns: 3ch 1fr; align-items: baseline; gap: 10px; padding: 10px 0; color: var(--c-titolo); font-weight: 600; }
+.home__indice ol > li::before {
   content: ""; position: absolute; left: -40px; top: 10px; width: 25px; height: 25px; box-sizing: border-box;
   border: var(--cerchio-t) solid var(--c-rosso); border-radius: 50%; background: var(--c-bianco);
 }
-.home__indice li > .meta:first-child { color: var(--c-rosso); font-weight: 800; }
+.home__indice ol > li > .meta:first-child { color: var(--c-rosso); font-weight: 800; }
 @media (min-width: 768px) {
   .home__indice ol { grid-auto-flow: column; grid-auto-columns: 1fr; padding: 40px 0 0; }
   .home__indice ol::before { left: calc(-1 * var(--m) - 100vw); right: calc(100% / var(--n, 6) - 22px); top: 10px; bottom: auto; width: auto; height: var(--cerchio-t); }
   .home__indice ol:has(> li:nth-child(3):last-child) { --n: 3; }
-  .home__indice li { grid-template-columns: 1fr; gap: 2px; padding: 0 12px 0 0; }
-  .home__indice li::before { left: 0; top: -40px; }
+  .home__indice ol:has(> li:nth-child(4):last-child) { --n: 4; }
+  .home__indice ol:has(> li:nth-child(5):last-child) { --n: 5; }
+  .home__indice ol > li { grid-template-columns: 1fr; gap: 2px; padding: 0 12px 0 0; }
+  .home__indice ol > li::before { left: 0; top: -40px; }
   .home { overflow-x: clip; }
 }
 
@@ -221,7 +225,7 @@ body:has(.home) .avanzamento { display: none; }
 .percorso__titolo { font-size: var(--t-domanda); font-weight: 900; line-height: 1.1; color: var(--c-titolo); }
 .percorso__testo { max-width: 40ch; }
 .percorso__apri { margin-top: auto; padding-top: 10px; font-weight: 600; color: var(--c-rosso); }
-.percorso__apri::after { content: " →"; }
+.percorso__apri::after { content: "\00a0→"; } /* spazio unificatore: la freccia non va a capo da sola */
 .percorso:hover .percorso__apri { text-decoration: underline; text-underline-offset: 4px; }
 /* Mobile: linea verticale a sinistra, anello all'altezza del titolo. */
 .percorsi { padding-left: 34px; }
@@ -233,9 +237,16 @@ body:has(.home) .avanzamento { display: none; }
   border: var(--cerchio-t) solid var(--c-rosso); border-radius: 50%; background: var(--c-bianco);
 }
 @media (min-width: 1000px) {
-  .percorsi { grid-template-columns: repeat(4, 1fr); padding: 40px 0 0; }
+  /* Tante colonne quante sono le schede (5 nella pagina iniziale, 2 nell'orientamento): nessuna scheda resta sola su una riga. */
+  .percorsi { --n: 4; grid-template-columns: repeat(var(--n), minmax(0, 1fr)); padding: 40px 0 0; }
+  .percorsi:has(> li:nth-child(2):last-child) { --n: 2; }
+  .percorsi:has(> li:nth-child(3):last-child) { --n: 3; }
+  .percorsi:has(> li:nth-child(5):last-child) { --n: 5; }
+  /* Con cinque schede strette i titoli scendono di una misura, perché parole come «Orientamento» stiano nella scheda. */
+  .percorsi:has(> li:nth-child(5):last-child) .percorso { padding: 24px 18px 20px; }
+  .percorsi:has(> li:nth-child(5):last-child) .percorso__titolo { font-size: clamp(20px, 1.75vw, 26px); hyphens: auto; }
   /* La linea entra dal bordo sinistro dello schermo e finisce nell'ultimo anello. */
-  .percorsi::before { left: calc(-1 * var(--m) - 100vw); right: calc((100% - 3 * var(--gap)) / 4 - 34px); top: 10px; bottom: auto; width: auto; height: var(--cerchio-t); }
+  .percorsi::before { left: calc(-1 * var(--m) - 100vw); right: calc((100% - (var(--n) - 1) * var(--gap)) / var(--n) - 34px); top: 10px; bottom: auto; width: auto; height: var(--cerchio-t); }
   .percorsi > li::before { left: 22px; top: -40px; }
 }
 
@@ -733,8 +744,9 @@ dialog > * + * { margin-top: 14px; }
 }
 .filtro:hover { border-color: var(--c-rosso); color: var(--c-rosso); }
 .filtro[aria-pressed="true"] { background: var(--c-rosso); border-color: var(--c-rosso); color: var(--c-bianco); }
+.filtri__comp { flex: 1 1 260px; min-width: 0; max-width: 420px; }
 .filtri__comp select {
-  min-height: 44px; max-width: min(100%, 420px); padding: 0 12px; border: 1px solid var(--c-bordo-campo);
+  width: 100%; min-height: 44px; max-width: 100%; padding: 0 12px; border: 1px solid var(--c-bordo-campo);
   border-radius: var(--radius-control); background: var(--c-bianco); font-size: 15px;
 }
 
@@ -891,6 +903,11 @@ dialog p:empty { display: none; }
 .anno-scheda[aria-selected="true"] { color: var(--c-titolo); font-weight: 800; border-bottom-color: var(--c-rosso); }
 .anno-scheda__n { font-size: 13px; font-weight: 600; color: var(--c-testo-2); }
 .anno-scheda[aria-selected="true"] .anno-scheda__n { color: var(--c-rosso); }
+/* Telefono: le schede si dividono la larghezza in parti uguali, tutte visibili, senza scorrimento nascosto. */
+@media (max-width: 599px) {
+  .anni-schede { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 0; overflow: visible; }
+  .anno-scheda { flex-direction: column; align-items: center; justify-content: center; gap: 0; padding: 8px 2px 6px; font-size: 15px; white-space: normal; text-align: center; line-height: 1.15; }
+}
 .anno-sezione + .anno-sezione { margin-top: 36px; }
 .anno-sezione__titolo { display: flex; align-items: baseline; gap: 12px; font-size: 22px; font-weight: 800; margin: 0 0 14px; }
 

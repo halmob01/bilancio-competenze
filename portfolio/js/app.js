@@ -562,7 +562,15 @@
           aggiorna: function (id) { p.anno = id; modificato(); ridisegna('f-anno-' + id); } })
       ]);
     const gruppi = profiloCompleto ? C.gruppiPer(p.indirizzo, p.anno) : [];
+    // I gruppi «Se lavori su…», le competenze di base e quelle su come lavori e impari restano chiusi,
+    // come nel bilancio: si aprono da soli se contengono una voce già scelta.
     const scelte = gruppi.map(function (g) {
+      const elenco = scelteGruppo(g);
+      if (!g.chiuso) return elenco;
+      const toccato = g.competenze.some(function (c) { return a.competenze.indexOf(c.id) !== -1; });
+      return h('details', { class: 'dettagli', open: toccato ? 'open' : null }, h('summary', { text: g.titolo }), h('div', { class: 'dettagli__corpo' }, elenco));
+    });
+    function scelteGruppo(g) {
       return gruppoScelte({ legenda: g.titolo, nome: 'f-comp-' + g.id, multipla: true, max: A.MAX_COMPETENZE,
         opzioni: g.competenze.map(function (c) { return { id: c.id, testo: c.semplice }; }), valore: a.competenze,
         aggiorna: function (id, attiva) {
@@ -570,7 +578,7 @@
           if (attiva && a.competenze.length < A.MAX_COMPETENZE) a.competenze.push(id);
           modificato(); ridisegna('f-comp-' + g.id + '-' + id);
         } });
-    });
+    }
     // Competenze scelte che non sono più tra quelle mostrate (anno o indirizzo cambiati): restano visibili e si possono togliere.
     const mostrate = {};
     gruppi.forEach(function (g) { g.competenze.forEach(function (c) { mostrate[c.id] = true; }); });
@@ -775,7 +783,7 @@
   caricaArchivio();
   disegna();
   if (!archivioDisponibile) $('salvato').textContent = 'Salvataggio non disponibile: scarica una copia';
-  else if (stato.aggiornato) $('salvato').textContent = 'Attività ritrovate';
+  else if (stato.aggiornato) $('salvato').textContent = 'Salvato';
   // Le foto che nessuna attività usa più (per esempio dopo un'uscita a metà) si tolgono all'avvio.
   F.pulisci(A.fotoUsate(stato)).catch(function () { fotoDisponibili = false; if (vista) ridisegna(); });
   // Da entrati le foto vanno anche sul server (e si prendono da lì se non sono su questo dispositivo).

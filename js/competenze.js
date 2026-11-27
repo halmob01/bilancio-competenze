@@ -259,7 +259,9 @@
       return gruppi.filter(function (g) { return !valido || !g.indirizzo || g.id === scelto; });
     }
     function conFonte(g, fonte, extra) {
-      return Object.assign({ id: g.id, titolo: g.titolo, competenze: g.competenze, area: 'tecnica', fonte: fonte, chiuso: !!g.indirizzo }, g.indirizzo ? { indirizzo: g.indirizzo } : {}, extra || {});
+      // Un gruppo «Se lavori su…» resta chiuso, tranne quello dell'indirizzo che lo studente ha scelto.
+      const scelto = g.indirizzo && (art.qualifica === g.id || art.diploma === g.id);
+      return Object.assign({ id: g.id, titolo: g.titolo, competenze: g.competenze, area: 'tecnica', fonte: fonte, chiuso: !!g.indirizzo && !scelto }, g.indirizzo ? { indirizzo: g.indirizzo } : {}, extra || {});
     }
     let out;
     if (anno !== 'anno4') out = filtra('qualifica', f.qualifica.gruppi).map(function (g) { return conFonte(g, 'Repertorio IeFP Lombardia, ' + f.qualifica.fonte); });

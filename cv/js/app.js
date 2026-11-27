@@ -501,7 +501,11 @@
         h('label', { for: 'f-cv-foto', text: 'Foto' }),
         h('p', { class: 'campo__suggerimento', text: 'Una foto nitida, con sfondo semplice.' }),
         c.foto ? h('img', { class: 'cv__anteprima-foto', src: c.foto, alt: 'La tua foto' }) : null,
-        h('input', { type: 'file', id: 'f-cv-foto', accept: 'image/*', onchange: function (e) { caricaFoto(e.target.files[0]); e.target.value = ''; } }),
+        // Pulsante dell'app al posto del campo file del browser, che mostra testi nella lingua del sistema («Choose File»).
+        (function () {
+          const inp = h('input', { type: 'file', accept: 'image/*', hidden: true, onchange: function (e) { caricaFoto(e.target.files[0]); e.target.value = ''; } });
+          return h('div', null, inp, h('button', { type: 'button', class: 'pulsante pulsante--secondario pulsante--piccolo', id: 'f-cv-foto', onclick: function () { inp.click(); } }, c.foto ? 'Cambia la foto' : 'Scegli una foto'));
+        })(),
         c.foto ? h('div', null, h('button', { type: 'button', class: 'pulsante pulsante--testo', onclick: function () { c.foto = ''; modificato(); ridisegna('f-cv-foto'); } }, 'Togli la foto')) : null)
     ];
     return [testa(metaSchermata(), 'I tuoi dati'), corpo(intro, risposta)];
@@ -1255,7 +1259,7 @@
   if (ripresoDalBilancio) scriviArchivio();
   disegna();
   if (!archivioDisponibile) $('salvato').textContent = 'Salvataggio non disponibile: scarica una copia';
-  else if (stato.aggiornato) $('salvato').textContent = 'Curriculum ritrovato';
+  else if (stato.aggiornato) $('salvato').textContent = 'Salvato';
 
   $('vai-home').addEventListener('click', function () { vai(null); });
   $('apri-risposte').addEventListener('click', function () { $('dialogo-risposte').showModal(); });

@@ -1,5 +1,5 @@
 /* Pagina iniziale: accesso con il cartellino e «la mia area» (piano del portale §4 e §9 bis).
-   Senza server configurato (BC_CONFIG.urlApi vuoto) non fa niente: la pagina resta quella statica con le quattro card.
+   Senza server configurato (BC_CONFIG.urlApi vuoto) non fa niente: la pagina resta quella statica con le cinque card.
    - Accesso dal telefono: il QR del cartellino porta qui con «#qr=…» nell'indirizzo; il codice si toglie subito
      dall'indirizzo (history.replaceState) e non finisce nei registri del server.
    - Accesso dal PC della scuola: si scrive il codice del cartellino.

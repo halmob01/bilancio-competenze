@@ -17,7 +17,8 @@
    grado: posizione nella colonna della dimensione, dal più semplice (1). Nella SST FVG la posizione indica la complessità
    crescente e un colore segna la soglia di piena autonomia: il colore non è leggibile nel testo consultato, quindi «soglia»
    resta null finché i docenti non la verificano sulla scheda originale.
-   lessico: parole dello studente. «forte» = indica da solo la situazione; «debole» = aiuta solo insieme ad altro.
+   lessico: parole dello studente. «forte» = indica da solo la situazione; «debole» = aiuta solo insieme ad altro;
+   «generico» = nome del servizio, vale come forte solo se il testo non nomina una situazione più precisa della stessa dimensione.
    Un termine che finisce con * vale per tutte le parole che iniziano così. Più parole = devono comparire vicine e in ordine.
    Stato: BOZZA da rivedere con i docenti di Informatica. */
 (function (radice) {

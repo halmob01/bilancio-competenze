@@ -1,0 +1,401 @@
+[
+ {
+  "fonte": "portfolio/js/app.js esempio elettrico",
+  "testo": "Ho cablato un quadro con due interruttori differenziali seguendo lo schema, poi ho controllato le tensioni con il multimetro.",
+  "luogo": "scuola",
+  "anno": "anno2",
+  "atteso": [
+   "imp03-4.1",
+   "imp03-c1"
+  ],
+  "tipo": "repo"
+ },
+ {
+  "fonte": "tests/portfolio.test.cjs attività 1",
+  "testo": "Ho cablato un quadro con due differenziali seguendo lo schema.",
+  "luogo": "scuola",
+  "anno": "anno2",
+  "atteso": [
+   "imp03-4.1"
+  ],
+  "tipo": "repo"
+ },
+ {
+  "fonte": "tests/portfolio.test.cjs attività 2",
+  "testo": "Ho montato le canaline.",
+  "luogo": "tirocinio",
+  "anno": "anno2",
+  "atteso": [
+   "imp03-1.2"
+  ],
+  "tipo": "repo"
+ },
+ {
+  "fonte": "tests/bilancio.test.cjs prova",
+  "testo": "Ho verificato un impianto con il tester. Poi ho compilato la scheda.",
+  "luogo": "scuola",
+  "anno": "anno3",
+  "atteso": [
+   "imp03-c1"
+  ],
+  "tipo": "repo"
+ },
+ {
+  "fonte": "tests/cestino.test.cjs titolo",
+  "testo": "Ho cablato un quadro",
+  "luogo": "scuola",
+  "anno": "anno2",
+  "atteso": [
+   "imp03-4.1"
+  ],
+  "tipo": "repo"
+ },
+ {
+  "fonte": "js/dati.js esempio capire",
+  "testo": "Leggere lo schema di un impianto civile e capire quali circuiti realizzare prima di prendere in mano i cavi.",
+  "luogo": "scuola",
+  "anno": "anno2",
+  "atteso": "dubbio",
+  "tipo": "repo"
+ },
+ {
+  "fonte": "js/dati.js esempio fare",
+  "testo": "Cablare un quadro o un punto luce seguendo lo schema, con i materiali giusti e il posto di lavoro in ordine.",
+  "luogo": "scuola",
+  "anno": "anno2",
+  "atteso": [
+   "imp03-4.1",
+   "imp03-3.1"
+  ],
+  "tipo": "repo"
+ },
+ {
+  "fonte": "js/dati.js esempio collaborare",
+  "testo": "Dividersi i compiti in coppia in cantiere e avvisare il collega prima di intervenire su un circuito.",
+  "luogo": "tirocinio",
+  "anno": "anno3",
+  "atteso": "dubbio",
+  "tipo": "repo"
+ },
+ {
+  "fonte": "js/dati.js esempio verificare",
+  "testo": "Misurare con il multimetro e verificare l'impianto prima di dare tensione, usando i dispositivi di protezione.",
+  "luogo": "scuola",
+  "anno": "anno3",
+  "atteso": [
+   "imp03-c1"
+  ],
+  "tipo": "repo"
+ },
+ {
+  "fonte": "js/dati.js esempio spiegare",
+  "testo": "Spiegare al cliente come funziona il nuovo impianto o compilare il rapporto di un intervento.",
+  "luogo": "tirocinio",
+  "anno": "anno3",
+  "atteso": [],
+  "tipo": "repo"
+ },
+ {
+  "fonte": "js/dati.js esempio migliorare",
+  "testo": "Rifare un collegamento sbagliato dopo aver capito dove era l'errore, senza nasconderlo.",
+  "luogo": "scuola",
+  "anno": "anno2",
+  "atteso": "dubbio",
+  "tipo": "repo"
+ },
+ {
+  "fonte": "scritta per la prova, insieme al lessico (non di studenti)",
+  "testo": "ho fatto le tracce nel muro con la scanalatrice e messo le scatole 503",
+  "luogo": "tirocinio",
+  "anno": "anno2",
+  "atteso": [
+   "imp03-1.1"
+  ],
+  "tipo": "sintetica"
+ },
+ {
+  "fonte": "scritta per la prova, insieme al lessico (non di studenti)",
+  "testo": "montato le canaline a vista in garage",
+  "luogo": "tirocinio",
+  "anno": "anno3",
+  "atteso": [
+   "imp03-1.2",
+   "imp03-2.4"
+  ],
+  "tipo": "sintetica"
+ },
+ {
+  "fonte": "scritta per la prova, insieme al lessico (non di studenti)",
+  "testo": "abbiamo posato i tubi corrugati e i pozzetti in giardino",
+  "luogo": "tirocinio",
+  "anno": "anno3",
+  "atteso": [
+   "imp03-1.3",
+   "imp03-1.1",
+   "imp03-2.3"
+  ],
+  "tipo": "sintetica"
+ },
+ {
+  "fonte": "scritta per la prova, insieme al lessico (non di studenti)",
+  "testo": "infilato i cavi con la sonda tirafili",
+  "luogo": "tirocinio",
+  "anno": "anno2",
+  "atteso": [
+   "imp03-2.1"
+  ],
+  "tipo": "sintetica"
+ },
+ {
+  "fonte": "scritta per la prova, insieme al lessico (non di studenti)",
+  "testo": "ho collegato un deviatore e un invertitore",
+  "luogo": "scuola",
+  "anno": "anno1",
+  "atteso": [
+   "imp03-3.1"
+  ],
+  "tipo": "sintetica"
+ },
+ {
+  "fonte": "scritta per la prova, insieme al lessico (non di studenti)",
+  "testo": "impianto con relè passo passo e pulsanti",
+  "luogo": "scuola",
+  "anno": "anno1",
+  "atteso": [
+   "imp03-3.3",
+   "imp03-3.1"
+  ],
+  "tipo": "sintetica"
+ },
+ {
+  "fonte": "scritta per la prova, insieme al lessico (non di studenti)",
+  "testo": "montato il crepuscolare per le luci del giardino",
+  "luogo": "tirocinio",
+  "anno": "anno3",
+  "atteso": [
+   "imp03-3.3",
+   "imp03-2.3"
+  ],
+  "tipo": "sintetica"
+ },
+ {
+  "fonte": "scritta per la prova, insieme al lessico (non di studenti)",
+  "testo": "installato le plafoniere e i faretti in soggiorno",
+  "luogo": "tirocinio",
+  "anno": "anno3",
+  "atteso": [
+   "imp03-3.2"
+  ],
+  "tipo": "sintetica"
+ },
+ {
+  "fonte": "scritta per la prova, insieme al lessico (non di studenti)",
+  "testo": "cablato il centralino con magnetotermici e differenziale",
+  "luogo": "scuola",
+  "anno": "anno2",
+  "atteso": [
+   "imp03-4.1"
+  ],
+  "tipo": "sintetica"
+ },
+ {
+  "fonte": "scritta per la prova, insieme al lessico (non di studenti)",
+  "testo": "quadro trifase del condominio",
+  "luogo": "tirocinio",
+  "anno": "anno4",
+  "atteso": [
+   "imp03-4.2"
+  ],
+  "tipo": "sintetica"
+ },
+ {
+  "fonte": "scritta per la prova, insieme al lessico (non di studenti)",
+  "testo": "ho fatto i collegamenti equipotenziali nel bagno con il cavo giallo verde",
+  "luogo": "tirocinio",
+  "anno": "anno3",
+  "atteso": [
+   "imp03-5.1"
+  ],
+  "tipo": "sintetica"
+ },
+ {
+  "fonte": "scritta per la prova, insieme al lessico (non di studenti)",
+  "testo": "piantato i picchetti dell'impianto di terra",
+  "luogo": "tirocinio",
+  "anno": "anno3",
+  "atteso": [
+   "imp03-5.3"
+  ],
+  "tipo": "sintetica"
+ },
+ {
+  "fonte": "scritta per la prova, insieme al lessico (non di studenti)",
+  "testo": "montato l'SPD contro le sovratensioni",
+  "luogo": "tirocinio",
+  "anno": "anno4",
+  "atteso": [
+   "imp03-5.2"
+  ],
+  "tipo": "sintetica"
+ },
+ {
+  "fonte": "scritta per la prova, insieme al lessico (non di studenti)",
+  "testo": "misurato la resistenza di isolamento con il megger",
+  "luogo": "scuola",
+  "anno": "anno3",
+  "atteso": [
+   "imp03-c1"
+  ],
+  "tipo": "sintetica"
+ },
+ {
+  "fonte": "scritta per la prova, insieme al lessico (non di studenti)",
+  "testo": "tirato i cavi dal contatore al quadro dell'appartamento",
+  "luogo": "tirocinio",
+  "anno": "anno3",
+  "atteso": [
+   "imp03-2.5",
+   "imp03-4.1"
+  ],
+  "tipo": "sintetica"
+ },
+ {
+  "fonte": "scritta per la prova, insieme al lessico (non di studenti)",
+  "testo": "ho programmato il plc per il motore",
+  "luogo": "scuola",
+  "anno": "anno3",
+  "atteso": [],
+  "tipo": "sintetica"
+ },
+ {
+  "fonte": "scritta per la prova, insieme al lessico (non di studenti)",
+  "testo": "quadro con teleruttore e salvamotore per un motore trifase",
+  "luogo": "scuola",
+  "anno": "anno3",
+  "atteso": "dubbio",
+  "tipo": "sintetica"
+ },
+ {
+  "fonte": "scritta per la prova, insieme al lessico (non di studenti)",
+  "testo": "ho aiutato a sistemare il cantiere",
+  "luogo": "tirocinio",
+  "anno": "anno3",
+  "atteso": "dubbio",
+  "tipo": "sintetica"
+ },
+ {
+  "fonte": "variazioni scritte dopo il lessico, cercando parole diverse",
+  "testo": "ho messo le prese nella cucina del cliente",
+  "luogo": "tirocinio",
+  "anno": "anno3",
+  "atteso": [
+   "imp03-3.1"
+  ],
+  "tipo": "variazione"
+ },
+ {
+  "fonte": "variazioni scritte dopo il lessico, cercando parole diverse",
+  "testo": "rotto il muro col flessibile per far passare i tubi",
+  "luogo": "tirocinio",
+  "anno": "anno2",
+  "atteso": [
+   "imp03-1.1"
+  ],
+  "tipo": "variazione"
+ },
+ {
+  "fonte": "variazioni scritte dopo il lessico, cercando parole diverse",
+  "testo": "ho cambiato una lampadina e il portalampada",
+  "luogo": "tirocinio",
+  "anno": "anno2",
+  "atteso": [
+   "imp03-3.2"
+  ],
+  "tipo": "variazione"
+ },
+ {
+  "fonte": "variazioni scritte dopo il lessico, cercando parole diverse",
+  "testo": "ho tirato i fili nella stanza",
+  "luogo": "tirocinio",
+  "anno": "anno2",
+  "atteso": [
+   "imp03-2.1"
+  ],
+  "tipo": "variazione"
+ },
+ {
+  "fonte": "variazioni scritte dopo il lessico, cercando parole diverse",
+  "testo": "ho montato il salvavita nuovo",
+  "luogo": "tirocinio",
+  "anno": "anno3",
+  "atteso": [
+   "imp03-4.1"
+  ],
+  "tipo": "variazione"
+ },
+ {
+  "fonte": "variazioni scritte dopo il lessico, cercando parole diverse",
+  "testo": "impianto della luce della cantina con la plafoniera stagna",
+  "luogo": "tirocinio",
+  "anno": "anno3",
+  "atteso": [
+   "imp03-3.4"
+  ],
+  "tipo": "variazione"
+ },
+ {
+  "fonte": "variazioni scritte dopo il lessico, cercando parole diverse",
+  "testo": "ho controllato che non ci fosse corrente prima di lavorare",
+  "luogo": "tirocinio",
+  "anno": "anno2",
+  "atteso": [
+   "imp03-c1"
+  ],
+  "tipo": "variazione"
+ },
+ {
+  "fonte": "variazioni scritte dopo il lessico, cercando parole diverse",
+  "testo": "fatto il punto luce comandato da due posti",
+  "luogo": "scuola",
+  "anno": "anno1",
+  "atteso": [
+   "imp03-3.1"
+  ],
+  "tipo": "variazione"
+ },
+ {
+  "fonte": "variazioni scritte dopo il lessico, cercando parole diverse",
+  "testo": "montato il campanello e il citofono",
+  "luogo": "tirocinio",
+  "anno": "anno3",
+  "atteso": [],
+  "tipo": "variazione"
+ },
+ {
+  "fonte": "variazioni scritte dopo il lessico, cercando parole diverse",
+  "testo": "ho messo la canalina e poi passato i cavi",
+  "luogo": "tirocinio",
+  "anno": "anno2",
+  "atteso": [
+   "imp03-1.2",
+   "imp03-2.1"
+  ],
+  "tipo": "variazione"
+ },
+ {
+  "fonte": "variazioni scritte dopo il lessico, cercando parole diverse",
+  "testo": "pulito il furgone e sistemato il magazzino",
+  "luogo": "tirocinio",
+  "anno": "anno3",
+  "atteso": [],
+  "tipo": "variazione"
+ },
+ {
+  "fonte": "variazioni scritte dopo il lessico, cercando parole diverse",
+  "testo": "allacciato la caldaia alla corrente",
+  "luogo": "tirocinio",
+  "anno": "anno3",
+  "atteso": "dubbio",
+  "tipo": "variazione"
+ }
+]

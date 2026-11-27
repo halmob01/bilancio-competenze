@@ -54,23 +54,26 @@
     return { testo: t, parti: parti };
   }
 
-  function trovato(termine, w) {
+  // Restituisce le posizioni delle parole del testo usate dal termine, oppure null se il termine non c'è.
+  function posizioni(termine, w) {
     const pp = termine.parti;
-    if (!pp.length) return false;
+    if (!pp.length) return null;
     for (let i = 0; i < w.length; i++) {
       if (!combacia(pp[0], w[i])) continue;
-      let pos = i;
+      const usate = [i];
       let ok = true;
       for (let k = 1; k < pp.length && ok; k++) {
         ok = false;
-        for (let j = pos + 1; j <= Math.min(w.length - 1, pos + 1 + SOGLIE.distanza); j++) {
-          if (combacia(pp[k], w[j])) { pos = j; ok = true; break; }
+        const da = usate[usate.length - 1];
+        for (let j = da + 1; j <= Math.min(w.length - 1, da + 1 + SOGLIE.distanza); j++) {
+          if (combacia(pp[k], w[j])) { usate.push(j); ok = true; break; }
         }
       }
-      if (ok) return true;
+      if (ok) return usate;
     }
-    return false;
+    return null;
   }
+  function trovato(termine, w) { return posizioni(termine, w) !== null; }
 
   // Prepara una o più mappe per l'uso: per ogni situazione, i termini già scomposti.
   function compila(mappe) {
@@ -79,20 +82,36 @@
       m.situazioni.forEach(function (s) {
         elenco.push({ mappa: m, sit: s,
           forte: ((s.lessico && s.lessico.forte) || []).map(compilaTermine),
-          debole: ((s.lessico && s.lessico.debole) || []).map(compilaTermine) });
+          debole: ((s.lessico && s.lessico.debole) || []).map(compilaTermine),
+          generico: ((s.lessico && s.lessico.generico) || []).map(compilaTermine) });
       });
     });
     return { elenco: elenco, perId: elenco.reduce(function (o, x) { o[x.sit.id] = x; return o; }, {}) };
   }
 
   // Punteggio di ogni situazione per un testo, dalla più probabile. Ogni termine conta una volta.
+  // Lessico «generico»: il nome del servizio («pedicure», «ceretta»). Indica la situazione base della dimensione solo se
+  // il testo non nomina una situazione più precisa della stessa dimensione («pedicure con il micromotore» → solo 2.4).
   function punteggi(testo, indice) {
     const w = parole(testo);
-    return indice.elenco.map(function (x) {
-      const forti = x.forte.filter(function (t) { return trovato(t, w); }).map(function (t) { return t.testo; });
+    const righe = indice.elenco.map(function (x) {
+      // Per ogni termine forte trovato, le parole del testo che usa: servono a non contare due volte la stessa parola.
+      const parolePerForte = [];
+      const forti = x.forte.filter(function (t) { const p = posizioni(t, w); if (p) parolePerForte.push(p); return !!p; }).map(function (t) { return t.testo; });
       const deboli = x.debole.filter(function (t) { return trovato(t, w); }).map(function (t) { return t.testo; });
-      const punteggio = forti.length * PESO.forte + Math.min(SOGLIE.maxDeboli, deboli.length * PESO.debole);
-      return { id: x.sit.id, dimensione: x.sit.dimensione, mappa: x.mappa.id, punteggio: punteggio, forti: forti, termini: forti.concat(deboli) };
+      const generici = [];
+      x.generico.forEach(function (t) { const p = posizioni(t, w); if (p) generici.push({ testo: t.testo, parole: p }); });
+      return { x: x, forti: forti, parole: parolePerForte, deboli: deboli, generici: generici };
+    });
+    const conForte = {};
+    righe.forEach(function (r) { if (r.forti.length) (conForte[r.x.mappa.id + '|' + r.x.sit.dimensione] = conForte[r.x.mappa.id + '|' + r.x.sit.dimensione] || []).push(r.x.sit.id); });
+    return righe.map(function (r) {
+      const altre = (conForte[r.x.mappa.id + '|' + r.x.sit.dimensione] || []).filter(function (id) { return id !== r.x.sit.id; });
+      const forti = r.forti.slice();
+      const parolePerForte = r.parole.slice();
+      if (!altre.length) r.generici.forEach(function (g) { forti.push(g.testo); parolePerForte.push(g.parole); });
+      const punteggio = forti.length * PESO.forte + Math.min(SOGLIE.maxDeboli, r.deboli.length * PESO.debole);
+      return { id: r.x.sit.id, dimensione: r.x.sit.dimensione, mappa: r.x.mappa.id, punteggio: punteggio, forti: forti, parole: parolePerForte, termini: forti.concat(r.deboli) };
     }).filter(function (r) { return r.punteggio > 0; })
       .sort(function (a, b) { return b.punteggio - a.punteggio || a.id.localeCompare(b.id); });
   }
@@ -160,7 +179,17 @@
     });
     if (!nette.length) return risultato('dubbio', [], ['ambigua']);
     nette.sort(function (x, y) { return y.punteggio - x.punteggio; });
-    const scelti = nette.slice(0, SOGLIE.maxSituazioni);
+    // Ogni parola dello studente vale per una sola situazione: dopo la migliore, un'altra si tiene solo se ha un segnale
+    // forte fatto di parole non ancora usate («quadro trifase del condominio» è un quadro, non anche cavi condominiali).
+    const usate = {};
+    const scelti = [];
+    nette.forEach(function (c) {
+      if (scelti.length >= SOGLIE.maxSituazioni) return;
+      const libere = c.parole.filter(function (p) { return p.every(function (i) { return !usate[i]; }); });
+      if (scelti.length && !libere.length) return;
+      scelti.push(c);
+      c.parole.forEach(function (p) { p.forEach(function (i) { usate[i] = true; }); });
+    });
     const motivi = [];
     scelti.forEach(function (c) { controlli(indice.perId[c.id], a).forEach(function (x) { if (motivi.indexOf(x) === -1) motivi.push(x); }); });
     if (motivi.length) return risultato('dubbio', scelti.map(function (c) { return { id: c.id, origine: 'automatica' }; }), motivi);
@@ -200,7 +229,7 @@
       if (!s.docente || !s.studente) errori.push(dove + ': testi');
       if (s.studente && s.studente.length > 90) errori.push(dove + ': testo studente troppo lungo');
       if (competenze && !competenze.esiste(s.competenza)) errori.push(dove + ': competenza');
-      if (!s.lessico || !s.lessico.forte || !s.lessico.forte.length) errori.push(dove + ': lessico');
+      if (!s.lessico || !((s.lessico.forte && s.lessico.forte.length) || (s.lessico.generico && s.lessico.generico.length))) errori.push(dove + ': lessico');
       if (s.contesti && s.contesti.some(function (c) { return LUOGHI.indexOf(c) === -1; })) errori.push(dove + ': contesti');
     });
     return errori;

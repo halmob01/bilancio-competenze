@@ -105,3 +105,48 @@ test('il motore non tocca il DOM e non fa richieste di rete', () => {
     assert.ok(!/document\.|fetch\(|XMLHttpRequest|innerHTML/.test(t), f);
   });
 });
+
+// ---------- Elettrico ed Estetica ----------
+const { perIndirizzo, INDIRIZZI } = require('../strumenti/prova-mappa.cjs');
+
+test('tutte le mappe sono complete e agganciate a competenze del catalogo e a un\'ADA', () => {
+  Object.keys(INDIRIZZI).forEach((ind) => perIndirizzo(ind).mappe.forEach((m) => {
+    assert.deepEqual(S.verificaMappa(m, C), [], m.id);
+    assert.equal(m.indirizzo, ind, m.id);
+    assert.match(m.fonte.url, /^https:\/\/www\.regione\.fvg\.it\//, m.id);
+    assert.ok(m.fonte.ada.every((a) => /^ADA\.\d+\.\d+\.\d+$/.test(a)), m.id);
+  }));
+  const el = require('../js/contenuti/sst-imp-03.js');
+  assert.deepEqual(el.fonte.ada, ['ADA.7.56.165']);
+  assert.deepEqual(Array.from(new Set(el.situazioni.map((s) => s.competenza))).sort(), ['el-civili', 'el-verifiche']);
+  assert.equal(el.situazioni.filter((s) => s.origine === 'FVG').length, 19, 'SST-IMP-03: 4 + 5 + 4 + 2 + 4 situazioni');
+  ['sst-ben-13.js', 'sst-ben-14.js'].forEach((f) => {
+    const m = require('../js/contenuti/' + f);
+    assert.deepEqual(m.fonte.ada, ['ADA.24.137.406']);
+    assert.ok(m.situazioni.every((s) => s.competenza === 'est-trattamenti' && s.origine === 'FVG'), f);
+  });
+  // Gli id delle situazioni non si ripetono fra mappe diverse
+  const ids = Object.keys(INDIRIZZI).flatMap((ind) => perIndirizzo(ind).mappe.flatMap((m) => m.situazioni.map((s) => s.id)));
+  assert.equal(new Set(ids).size, ids.length);
+});
+
+test('frasi già nella repo, per ogni indirizzo: nessuna associazione automatica sbagliata', () => {
+  Object.keys(INDIRIZZI).forEach((ind) => {
+    const x = perIndirizzo(ind);
+    const righe = valuta(x.frasi.filter((f) => f.tipo === 'repo'), x.mappe);
+    assert.equal(riepilogo(righe).sbagliata || 0, 0, ind + ': ' + JSON.stringify(righe.filter((r) => r.giudizio === 'sbagliata').map((r) => r.frase.testo)));
+  });
+});
+
+test('nome generico del servizio: vale solo se non c\'è una situazione più precisa nella stessa dimensione', () => {
+  const ind = S.compila([require('../js/contenuti/sst-ben-13.js')]);
+  assert.deepEqual(S.associa({ testo: 'Ho fatto una pedicure' }, ind).situazioni.map((x) => x.id), ['ben13-2.1']);
+  assert.deepEqual(S.associa({ testo: 'pedicure con il micromotore e le frese' }, ind).situazioni.map((x) => x.id), ['ben13-2.4']);
+  assert.deepEqual(S.associa({ testo: 'ceretta all\'inguine e al baffetto' }, ind).situazioni.map((x) => x.id), ['ben13-4.2']);
+});
+
+test('ogni parola dello studente vale per una sola situazione', () => {
+  const ind = S.compila([require('../js/contenuti/sst-imp-03.js')]);
+  assert.deepEqual(S.associa({ testo: 'quadro trifase del condominio' }, ind).situazioni.map((x) => x.id), ['imp03-4.2']);
+  assert.deepEqual(S.associa({ testo: 'luce della cantina con la plafoniera stagna' }, ind).situazioni.map((x) => x.id), ['imp03-3.4']);
+});

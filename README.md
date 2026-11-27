@@ -11,10 +11,10 @@ Applicazione statica per gli studenti IeFP di tutti gli anni (Elettrico, Informa
 | `/diario/` | Diario di bordo | una scheda a settimana durante il tirocinio ([docs/DIARIO.md](docs/DIARIO.md)) |
 | `/bilancio/` | Bilancio di competenze | il bilancio riflessivo: un dossier di autovalutazione non valutativo |
 | `/cv/` | Curriculum | il foglio da consegnare a un'azienda, in Word, PDF o stampa; può prendere nome, esperienze e competenze dal bilancio e i tirocini dal diario |
-| `/orientamento/` | Orientamento | «Racconto il CFP» (le risposte e il testo per l'open day) e «Cosa faccio dopo» (la mappa della filiera e le strade dopo il CFP) |
+| `/orientamento/` | Orientamento | «Racconto il CFP» (le risposte e il testo per l'open day) e «Che cosa faccio dopo» (la mappa della filiera e le strade dopo il CFP) |
 | `/docenti/` | Pannello docenti | classi, avanzamento, competenze della classe; funziona solo sul server della scuola |
 
-Ogni sito ha il suo salvataggio sul dispositivo e la testata ha il link «Tutti i percorsi» verso la pagina iniziale (sul telefono, dove la testata è piena, il link sta nella schermata iniziale di ogni sito). I siti restano separati: si parlano solo leggendo, su richiesta dello studente, i dati salvati dagli altri nello stesso browser (o da una copia `.json` caricata), senza mai scriverci.
+Ogni sito ha il suo salvataggio sul dispositivo e in alto a sinistra la testata ha sempre «Portale dello studente», che riporta alla pagina iniziale; accanto, il nome del sito riporta alla home del sito (sul telefono, dentro un passo, i due diventano l'anello e «‹»). I siti restano separati: si parlano solo leggendo, su richiesta dello studente, i dati salvati dagli altri nello stesso browser (o da una copia `.json` caricata), senza mai scriverci.
 
 **Prototipo V1, non ancora collaudato con studenti.** L'interfaccia usa colori, carattere e sistema dei cerchi del brand kit di AFOL Metropolitana (rosso `#CC0000`, Fira Sans), senza il logo dell'ente, copiato dalla repo `cfp-news` nella skill [`.claude/skills/afol-brand/`](.claude/skills/afol-brand/SKILL.md) e applicato come descritto in [`design.md`](design.md); i contenuti didattici sono una prima stesura da rivedere con i docenti dei tre indirizzi.
 

@@ -220,12 +220,11 @@
   function disegnaHome() {
     return h('div', { class: 'home' },
       h('div', { class: 'home__fascia' }, h('div', { class: 'home__fascia-dentro' },
-        h('a', { class: 'home__tutti', href: '../', text: 'Tutti i percorsi' }),
         h('h1', { text: 'Orientamento' }),
         h('p', { class: 'home__sottotitolo', text: 'Due modi di guardare il CFP.' }),
         h('p', { class: 'home__testo misura', text: 'Uno è per chi deve ancora scegliere. L\'altro è per te.' }))),
       h('section', { class: 'home__indice', 'aria-labelledby': 'home-parti' },
-        h('h2', { id: 'home-parti', class: 'meta', text: 'Scegli da dove partire' }),
+        h('h2', { id: 'home-parti', class: 'meta', text: 'Le due parti' }),
         h('ul', { class: 'percorsi' }, O.PARTI.map(function (p, i) {
           return h('li', null, h('a', { class: 'percorso', href: '#' + p.id, onclick: function (e) { e.preventDefault(); apri(p.id, 0); } },
             h('span', { class: 'meta percorso__num', text: String(i + 1).padStart(2, '0') }),
@@ -326,7 +325,7 @@
     return h('ul', { class: 'note-strada' }, O.note(p).map(function (n) { return h('li', { class: 'nota', text: n.testo }); }));
   }
 
-  // ---------- 02 Cosa mi piace ----------
+  // ---------- 02 Che cosa mi piace ----------
   function schermataPiace() {
     const u = stato.uscita;
     const att = attivitaSalvate();
@@ -350,10 +349,10 @@
       scelte,
       campo({ id: 'f-piace', etichetta: 'Che cosa ti piace fare?', area: true, suggerimento: 'Per esempio: «Mi piace quando capisco perché una cosa non funziona.»', valore: u.piace, aggiorna: function (v) { u.piace = v; } })
     ];
-    return [testa(meta(1), 'Cosa mi piace'), corpo(intro, risposta)];
+    return [testa(meta(1), 'Che cosa mi piace'), corpo(intro, risposta)];
   }
 
-  // ---------- 03 Cosa so fare ----------
+  // ---------- 03 Che cosa so fare ----------
   function schermataSoFare() {
     const u = stato.uscita;
     const pm = promemoria();
@@ -368,7 +367,7 @@
       elenco('Quello che devo ancora imparare', pm.devoImparare, 'Nel bilancio non c\'è ancora niente.'),
       campo({ id: 'f-imparare', etichetta: 'Che cosa vorresti imparare ancora?', area: true, valore: u.imparare, aggiorna: function (v) { u.imparare = v; } })
     ];
-    return [testa(meta(2), 'Cosa so fare'), corpo(intro, risposta)];
+    return [testa(meta(2), 'Che cosa so fare'), corpo(intro, risposta)];
   }
 
   // ---------- 04 Dove vorrei andare ----------
@@ -445,13 +444,13 @@
     };
     return h('article', { class: 'dossier', 'aria-label': 'Il tuo foglio di orientamento' },
       h('header', { class: 'dossier__testa' },
-        h('p', { class: 'meta', text: 'Orientamento · Cosa faccio dopo' }),
+        h('p', { class: 'meta', text: 'Orientamento · Che cosa faccio dopo' }),
         h('p', { class: 'dossier__titolo', text: sess && sess.profilo ? sess.profilo.nome + (sess.profilo.cognome ? ' ' + sess.profilo.cognome : '') : 'Il mio orientamento' }),
         intestazione ? h('p', { class: 'meta', text: intestazione }) : null),
-      parte('Cosa mi piace', [
+      parte('Che cosa mi piace', [
         att.length ? h('ul', { class: 'voci' }, att.map(function (a) { return h('li', { class: 'voce', text: titoloAttivita(a) }); })) : null,
         pieno(u.piace) ? h('ul', { class: 'voci' }, voce('Mi piace', u.piace)) : null], 'Ancora nulla.'),
-      parte('Cosa so fare', [
+      parte('Che cosa so fare', [
         pm.soFare.length ? h('ul', { class: 'voci' }, pm.soFare.map(function (v) { return h('li', { class: 'voce', text: v }); })) : null,
         pieno(u.imparare) ? h('ul', { class: 'voci' }, voce('Vorrei imparare ancora', u.imparare)) : null], 'Ancora nulla.'),
       parte('Dove vorrei andare', u.strade.length ? h('ul', { class: 'voci' }, u.strade.map(function (x) {

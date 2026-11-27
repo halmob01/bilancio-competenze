@@ -289,7 +289,6 @@
     const dalDiario = proposteDiario().filter(function (p) { return !p.gia; }).length;
     return h('div', { class: 'home' },
       h('div', { class: 'home__fascia' }, h('div', { class: 'home__fascia-dentro' },
-        h('a', { class: 'home__tutti', href: '../', text: 'Tutti i percorsi' }),
         h('h1', { text: 'Le mie attività' }),
         h('p', { class: 'home__sottotitolo', text: 'Fotografa quello che fai. Scrivi due righe.' }),
         h('div', { class: 'home__azioni' },

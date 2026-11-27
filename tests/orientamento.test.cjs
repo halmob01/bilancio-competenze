@@ -59,7 +59,7 @@ test('le note non promettono scorciatoie a chi non è nella filiera, e le strade
 });
 
 test('avanzamento: stessa forma di bilancio e curriculum', () => {
-  assert.deepEqual(O.avanzamento(null), { stati: new Array(9).fill('vuota'), complete: 0, totale: 9 }, 'tre passi di «Racconto il CFP» e sei di «Cosa faccio dopo»');
+  assert.deepEqual(O.avanzamento(null), { stati: new Array(9).fill('vuota'), complete: 0, totale: 9 }, 'tre passi di «Racconto il CFP» e sei di «Che cosa faccio dopo»');
   const s = O.statoVuoto();
   s.profilo = { indirizzo: 'elettrico', anno: 'anno3' };
   s.uscita.piace = 'Mi piacciono i quadri'; s.uscita.attivita = ['a12345'];
@@ -67,7 +67,7 @@ test('avanzamento: stessa forma di bilancio e curriculum', () => {
   s.uscita.strade = [{ id: 'quarto', perche: 'Voglio il diploma' }];
   s.uscita.passi = [{ id: 'p1', cosa: 'Chiedere al docente', con: '', entro: '' }];
   const a = O.avanzamento(s);
-  assert.deepEqual([a.complete, a.totale], [6, 9], 'la parte «Cosa faccio dopo» è tutta completa, l\'altra no');
+  assert.deepEqual([a.complete, a.totale], [6, 9], 'la parte «Che cosa faccio dopo» è tutta completa, l\'altra no');
   s.uscita.strade = [{ id: 'nonso', perche: '' }];
   assert.equal(O.statoPasso(s, 'dove'), 'completa', '«Non lo so ancora» è una risposta valida');
   s.uscita.strade = [{ id: 'its', perche: '' }];

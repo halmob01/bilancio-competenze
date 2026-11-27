@@ -425,7 +425,7 @@
     const sito = indirizzoDelSito();
     return h('li', { class: 'cartellino' },
       h('div', { class: 'cartellino__testo' },
-        h('p', { class: 'cartellino__sito', text: 'Percorsi per gli studenti' }),
+        h('p', { class: 'cartellino__sito', text: 'Portale dello studente' }),
         h('p', { class: 'cartellino__nome', text: s.nome + ' ' + s.cognome }),
         h('p', { class: 'cartellino__classe', text: [classe.nome, INDIRIZZI[classe.indirizzo] || ''].filter(Boolean).join(' · ') }),
         h('p', { class: 'cartellino__etichetta', text: 'Il tuo codice' }),

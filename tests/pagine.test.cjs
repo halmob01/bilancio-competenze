@@ -31,13 +31,22 @@ test('la pagina iniziale ha cinque card: attività, diario, bilancio, curriculum
   assert.ok(!/https?:\/\//.test(html), 'nessuna risorsa esterna');
 });
 
-test('i siti hanno il link alla pagina iniziale e si riconoscono tra loro solo da lì', () => {
-  ['bilancio/index.html', 'cv/index.html', 'diario/index.html', 'portfolio/index.html', 'orientamento/index.html'].forEach((f) => {
+test('in ogni sito, in alto a sinistra, il portale dello studente riporta alla pagina iniziale', () => {
+  ['bilancio/index.html', 'cv/index.html', 'diario/index.html', 'portfolio/index.html', 'orientamento/index.html', 'docenti/index.html'].forEach((f) => {
     const html = leggi(f);
-    assert.equal((html.match(/<a class="testata__tutti" href="\.\.\/">Tutti i percorsi<\/a>/g) || []).length, 1, f);
+    const riga = html.slice(html.indexOf('<div class="testata__riga">'));
+    assert.ok(/^<div class="testata__riga">\s*<a class="testata__portale" href="\.\.\/"[^>]*><span class="testata__portale-testo">Portale dello studente<\/span><\/a>/.test(riga), f);
+    assert.ok(!/testata__tutti|Tutti i percorsi/.test(html), f);
   });
+  assert.ok(/<a class="testata__portale" href="\.\/" aria-current="page">/.test(leggi('index.html')));
   ['js/app.js', 'cv/js/app.js', 'diario/js/app.js', 'portfolio/js/app.js', 'orientamento/js/app.js'].forEach((f) => {
-    assert.ok(leggi(f).includes("h('a', { class: 'home__tutti', href: '../', text: 'Tutti i percorsi' })"), f);
+    assert.ok(!leggi(f).includes('home__tutti'), f);
+  });
+});
+
+test('nessuna durata promessa agli studenti', () => {
+  ['index.html', 'js/app.js', 'cv/js/app.js', 'diario/js/app.js', 'portfolio/js/app.js', 'orientamento/js/app.js', 'orientamento/js/orientamento.js', 'js/dati.js'].forEach((f) => {
+    assert.ok(!/circa (mezz|un'ora|\w+ ore|\d+ minuti)/i.test(leggi(f)), f);
   });
 });
 

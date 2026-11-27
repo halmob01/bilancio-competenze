@@ -300,7 +300,6 @@
     const iniziato = !!stato.aggiornato;
     return h('div', { class: 'home' },
       h('div', { class: 'home__fascia' }, h('div', { class: 'home__fascia-dentro' },
-      h('a', { class: 'home__tutti', href: '../', text: 'Tutti i percorsi' }),
       h('h1', { text: 'Il tuo curriculum' }),
       h('p', { class: 'home__sottotitolo', text: 'Il foglio da consegnare a un\'azienda.' }),
       h('p', { class: 'home__testo misura', text: 'Scrivi i tuoi dati e le tue esperienze. Alla fine lo scarichi in Word o PDF.' }),
@@ -310,7 +309,7 @@
         iniziato ? h('button', { type: 'button', class: 'pulsante pulsante--secondario', onclick: function () { vai(PASSI.length - 1); } }, 'Vai al curriculum') : null),
       )),
       h('section', { class: 'home__indice', 'aria-labelledby': 'home-indice' },
-        h('h2', { id: 'home-indice', class: 'meta', text: 'Sei passi · circa mezz\'ora' }),
+        h('h2', { id: 'home-indice', class: 'meta', text: 'I passi del curriculum' }),
         h('ol', null, PASSI.map(function (p, i) {
           return h('li', null,
             h('span', { class: 'meta', text: String(i + 1).padStart(2, '0') }),

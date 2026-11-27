@@ -222,7 +222,6 @@
     const iniziato = !!stato.aggiornato;
     return h('div', { class: 'home' },
       h('div', { class: 'home__fascia' }, h('div', { class: 'home__fascia-dentro' },
-      h('a', { class: 'home__tutti', href: '../', text: 'Tutti i percorsi' }),
       h('h1', { text: 'Diario di bordo' }),
       h('p', { class: 'home__sottotitolo', text: 'Che cosa hai fatto e imparato questa settimana?' }),
       h('p', { class: 'home__testo misura', text: 'Una scheda per ogni settimana di tirocinio. Bastano poche righe.' }),
@@ -231,7 +230,7 @@
         iniziato ? h('button', { type: 'button', class: 'pulsante pulsante--secondario', onclick: function () { vai(2); } }, 'Rileggi il diario') : null),
       )),
       h('section', { class: 'home__indice', 'aria-labelledby': 'home-indice' },
-        h('h2', { id: 'home-indice', class: 'meta', text: 'Tre passi' }),
+        h('h2', { id: 'home-indice', class: 'meta', text: 'I passi del diario' }),
         h('ol', null, SEZIONI.map(function (s, i) {
           return h('li', null, h('span', { class: 'meta', text: String(i + 1).padStart(2, '0') }), h('span', { text: s.titolo }));
         }))));

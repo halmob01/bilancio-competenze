@@ -89,7 +89,7 @@
     fascia.textContent = '';
     const occhiello = el('p', 'occhiello', [p.classe, INDIRIZZI[p.indirizzo] || '', p.anno ? p.anno + '° anno' : ''].filter(Boolean).join(' · ') || 'Il tuo spazio');
     const h1 = el('h1', '', 'Ciao, ' + p.nome);
-    const sotto = el('p', 'home__sottotitolo', 'Da dove riparti oggi?');
+    const sotto = el('p', 'home__sottotitolo', 'Questo è il tuo portale dello studente.');
     const az = el('div', 'home__azioni');
     const esci = el('button', 'pulsante pulsante--secondario', 'Esci');
     esci.type = 'button';

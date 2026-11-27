@@ -1,0 +1,366 @@
+[
+ {
+  "fonte": "portfolio/js/app.js esempio estetica",
+  "testo": "Ho eseguito una manicure completa: ho preparato la postazione, scelto il prodotto adatto alle unghie della cliente e applicato lo smalto.",
+  "luogo": "scuola",
+  "anno": "anno2",
+  "atteso": [
+   "ben13-1.1",
+   "ben13-3.1"
+  ],
+  "tipo": "repo"
+ },
+ {
+  "fonte": "js/dati.js esempio capire",
+  "testo": "Capire dalla cliente quale trattamento desidera e accorgersi se ci sono controindicazioni.",
+  "luogo": "scuola",
+  "anno": "anno2",
+  "atteso": "dubbio",
+  "tipo": "repo"
+ },
+ {
+  "fonte": "js/dati.js esempio fare",
+  "testo": "Eseguire una pulizia del viso o una manicure seguendo il protocollo, dalla preparazione della cabina al congedo.",
+  "luogo": "scuola",
+  "anno": "anno2",
+  "atteso": [
+   "ben14-3.2",
+   "ben13-1.1"
+  ],
+  "tipo": "repo"
+ },
+ {
+  "fonte": "js/dati.js esempio collaborare",
+  "testo": "Gestire i turni di cabina con le colleghe e passare le informazioni su una cliente.",
+  "luogo": "tirocinio",
+  "anno": "anno3",
+  "atteso": [],
+  "tipo": "repo"
+ },
+ {
+  "fonte": "js/dati.js esempio verificare",
+  "testo": "Sterilizzare gli strumenti e controllare la reazione della pelle durante e dopo il trattamento.",
+  "luogo": "scuola",
+  "anno": "anno3",
+  "atteso": "dubbio",
+  "tipo": "repo"
+ },
+ {
+  "fonte": "js/dati.js esempio spiegare",
+  "testo": "Consigliare alla cliente i prodotti e i gesti da ripetere a casa, con parole chiare.",
+  "luogo": "tirocinio",
+  "anno": "anno3",
+  "atteso": [],
+  "tipo": "repo"
+ },
+ {
+  "fonte": "js/dati.js esempio migliorare",
+  "testo": "Rivedere l'organizzazione di un trattamento che durava troppo e faceva aspettare la cliente successiva.",
+  "luogo": "tirocinio",
+  "anno": "anno3",
+  "atteso": "dubbio",
+  "tipo": "repo"
+ },
+ {
+  "fonte": "scritta per la prova, insieme al lessico (non di studenti)",
+  "testo": "ho fatto la ceretta alle gambe con la cera al miele",
+  "luogo": "scuola",
+  "anno": "anno1",
+  "atteso": [
+   "ben13-4.1"
+  ],
+  "tipo": "sintetica"
+ },
+ {
+  "fonte": "scritta per la prova, insieme al lessico (non di studenti)",
+  "testo": "ceretta all'inguine e al baffetto",
+  "luogo": "tirocinio",
+  "anno": "anno3",
+  "atteso": [
+   "ben13-4.2"
+  ],
+  "tipo": "sintetica"
+ },
+ {
+  "fonte": "scritta per la prova, insieme al lessico (non di studenti)",
+  "testo": "epilazione con la pasta di zucchero",
+  "luogo": "scuola",
+  "anno": "anno2",
+  "atteso": [
+   "ben13-4.3"
+  ],
+  "tipo": "sintetica"
+ },
+ {
+  "fonte": "scritta per la prova, insieme al lessico (non di studenti)",
+  "testo": "manicure con le cuticole e la limatura",
+  "luogo": "scuola",
+  "anno": "anno1",
+  "atteso": [
+   "ben13-1.1"
+  ],
+  "tipo": "sintetica"
+ },
+ {
+  "fonte": "scritta per la prova, insieme al lessico (non di studenti)",
+  "testo": "pedicure con la raspa per i duroni",
+  "luogo": "scuola",
+  "anno": "anno2",
+  "atteso": [
+   "ben13-2.1"
+  ],
+  "tipo": "sintetica"
+ },
+ {
+  "fonte": "scritta per la prova, insieme al lessico (non di studenti)",
+  "testo": "pedicure con il micromotore e le frese",
+  "luogo": "tirocinio",
+  "anno": "anno3",
+  "atteso": [
+   "ben13-2.4"
+  ],
+  "tipo": "sintetica"
+ },
+ {
+  "fonte": "scritta per la prova, insieme al lessico (non di studenti)",
+  "testo": "smalto semipermanente con la lampada uv",
+  "luogo": "tirocinio",
+  "anno": "anno3",
+  "atteso": [
+   "ben13-3.3"
+  ],
+  "tipo": "sintetica"
+ },
+ {
+  "fonte": "scritta per la prova, insieme al lessico (non di studenti)",
+  "testo": "ho fatto una french alla cliente",
+  "luogo": "tirocinio",
+  "anno": "anno3",
+  "atteso": [
+   "ben13-3.2"
+  ],
+  "tipo": "sintetica"
+ },
+ {
+  "fonte": "scritta per la prova, insieme al lessico (non di studenti)",
+  "testo": "nail art con gli strass",
+  "luogo": "tirocinio",
+  "anno": "anno3",
+  "atteso": [
+   "ben13-3.4"
+  ],
+  "tipo": "sintetica"
+ },
+ {
+  "fonte": "scritta per la prova, insieme al lessico (non di studenti)",
+  "testo": "pulizia del viso con il vapore e l'estrazione dei punti neri",
+  "luogo": "scuola",
+  "anno": "anno2",
+  "atteso": [
+   "ben14-3.2"
+  ],
+  "tipo": "sintetica"
+ },
+ {
+  "fonte": "scritta per la prova, insieme al lessico (non di studenti)",
+  "testo": "peeling con acido glicolico",
+  "luogo": "tirocinio",
+  "anno": "anno3",
+  "atteso": [
+   "ben14-1.2"
+  ],
+  "tipo": "sintetica"
+ },
+ {
+  "fonte": "scritta per la prova, insieme al lessico (non di studenti)",
+  "testo": "maschera idratante per pelle secca",
+  "luogo": "scuola",
+  "anno": "anno2",
+  "atteso": [
+   "ben14-2.1"
+  ],
+  "tipo": "sintetica"
+ },
+ {
+  "fonte": "scritta per la prova, insieme al lessico (non di studenti)",
+  "testo": "trattamento anti age contro le rughe",
+  "luogo": "tirocinio",
+  "anno": "anno3",
+  "atteso": [
+   "ben14-5.1"
+  ],
+  "tipo": "sintetica"
+ },
+ {
+  "fonte": "scritta per la prova, insieme al lessico (non di studenti)",
+  "testo": "trattamento lenitivo per una cliente con la couperose",
+  "luogo": "tirocinio",
+  "anno": "anno3",
+  "atteso": [
+   "ben14-4.1"
+  ],
+  "tipo": "sintetica"
+ },
+ {
+  "fonte": "scritta per la prova, insieme al lessico (non di studenti)",
+  "testo": "trattamento alle alghe talasso",
+  "luogo": "tirocinio",
+  "anno": "anno3",
+  "atteso": [
+   "ben14-2.2"
+  ],
+  "tipo": "sintetica"
+ },
+ {
+  "fonte": "scritta per la prova, insieme al lessico (non di studenti)",
+  "testo": "microdermoabrasione su una pelle impura",
+  "luogo": "tirocinio",
+  "anno": "anno4",
+  "atteso": [
+   "ben14-3.4"
+  ],
+  "tipo": "sintetica"
+ },
+ {
+  "fonte": "scritta per la prova, insieme al lessico (non di studenti)",
+  "testo": "ho fatto il trucco da sposa",
+  "luogo": "tirocinio",
+  "anno": "anno3",
+  "atteso": [],
+  "tipo": "sintetica"
+ },
+ {
+  "fonte": "scritta per la prova, insieme al lessico (non di studenti)",
+  "testo": "massaggio rilassante alla schiena",
+  "luogo": "scuola",
+  "anno": "anno2",
+  "atteso": [],
+  "tipo": "sintetica"
+ },
+ {
+  "fonte": "scritta per la prova, insieme al lessico (non di studenti)",
+  "testo": "ho accolto le clienti e preso gli appuntamenti",
+  "luogo": "tirocinio",
+  "anno": "anno3",
+  "atteso": [],
+  "tipo": "sintetica"
+ },
+ {
+  "fonte": "scritta per la prova, insieme al lessico (non di studenti)",
+  "testo": "ho fatto un trattamento alla cliente",
+  "luogo": "tirocinio",
+  "anno": "anno3",
+  "atteso": "dubbio",
+  "tipo": "sintetica"
+ },
+ {
+  "fonte": "variazioni scritte dopo il lessico, cercando parole diverse",
+  "testo": "ho tolto i peli delle gambe con la cera",
+  "luogo": "scuola",
+  "anno": "anno1",
+  "atteso": [
+   "ben13-4.1"
+  ],
+  "tipo": "variazione"
+ },
+ {
+  "fonte": "variazioni scritte dopo il lessico, cercando parole diverse",
+  "testo": "ho sistemato le sopracciglia con la pinzetta",
+  "luogo": "tirocinio",
+  "anno": "anno3",
+  "atteso": [
+   "ben13-4.2"
+  ],
+  "tipo": "variazione"
+ },
+ {
+  "fonte": "variazioni scritte dopo il lessico, cercando parole diverse",
+  "testo": "ho messo lo smalto rosso alla cliente",
+  "luogo": "tirocinio",
+  "anno": "anno2",
+  "atteso": [
+   "ben13-3.1"
+  ],
+  "tipo": "variazione"
+ },
+ {
+  "fonte": "variazioni scritte dopo il lessico, cercando parole diverse",
+  "testo": "ho fatto il gel sulle unghie",
+  "luogo": "tirocinio",
+  "anno": "anno3",
+  "atteso": "dubbio",
+  "tipo": "variazione"
+ },
+ {
+  "fonte": "variazioni scritte dopo il lessico, cercando parole diverse",
+  "testo": "ho tolto le pellicine e dato la forma a mandorla",
+  "luogo": "scuola",
+  "anno": "anno1",
+  "atteso": [
+   "ben13-1.1"
+  ],
+  "tipo": "variazione"
+ },
+ {
+  "fonte": "variazioni scritte dopo il lessico, cercando parole diverse",
+  "testo": "ho pulito la pelle del viso e tolto i brufoli",
+  "luogo": "scuola",
+  "anno": "anno2",
+  "atteso": [
+   "ben14-3.2"
+  ],
+  "tipo": "variazione"
+ },
+ {
+  "fonte": "variazioni scritte dopo il lessico, cercando parole diverse",
+  "testo": "ho messo la maschera al viso",
+  "luogo": "scuola",
+  "anno": "anno2",
+  "atteso": "dubbio",
+  "tipo": "variazione"
+ },
+ {
+  "fonte": "variazioni scritte dopo il lessico, cercando parole diverse",
+  "testo": "ho fatto lo scrub ai piedi e poi la crema",
+  "luogo": "scuola",
+  "anno": "anno2",
+  "atteso": [
+   "ben13-2.2"
+  ],
+  "tipo": "variazione"
+ },
+ {
+  "fonte": "variazioni scritte dopo il lessico, cercando parole diverse",
+  "testo": "ho usato la radiofrequenza sul viso",
+  "luogo": "tirocinio",
+  "anno": "anno4",
+  "atteso": "dubbio",
+  "tipo": "variazione"
+ },
+ {
+  "fonte": "variazioni scritte dopo il lessico, cercando parole diverse",
+  "testo": "ho ricostruito le unghie in gel",
+  "luogo": "tirocinio",
+  "anno": "anno3",
+  "atteso": [],
+  "tipo": "variazione"
+ },
+ {
+  "fonte": "variazioni scritte dopo il lessico, cercando parole diverse",
+  "testo": "ho igienizzato la cabina e preparato il lettino",
+  "luogo": "scuola",
+  "anno": "anno1",
+  "atteso": [],
+  "tipo": "variazione"
+ },
+ {
+  "fonte": "variazioni scritte dopo il lessico, cercando parole diverse",
+  "testo": "trattamento con la luce pulsata alle gambe",
+  "luogo": "tirocinio",
+  "anno": "anno4",
+  "atteso": [
+   "ben13-4.4"
+  ],
+  "tipo": "variazione"
+ }
+]

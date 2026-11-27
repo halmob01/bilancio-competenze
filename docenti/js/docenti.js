@@ -96,10 +96,25 @@
     }));
     return '﻿' + righe.map(function (r) { return r.map(cella).join(';'); }).join('\r\n') + '\r\n';
   }
-  function nomeFileCsv(classe, oggi) {
+  // Come si dice il livello di una risposta, con la prova: «da solo, in situazioni note · con prova».
+  function livelloTesto(r, livelli) {
+    if (!r || !r.livello) return '';
+    const l = (livelli || []).find(function (x) { return x.id === r.livello; });
+    if (!l) return '';
+    return l.breve + (l.dichiara ? (r.prova ? ' · con prova' : ' · senza prova') : '');
+  }
+  // Una riga per studente, una colonna per competenza (frase semplice): per vedere a colpo d'occhio chi ha risposto e come.
+  function csvCompetenze(dati) {
+    const comp = dati.competenze || [];
+    const righe = [['Cognome', 'Nome', 'Classe'].concat(comp.map(function (c) { return c.semplice; }))].concat((dati.studenti || []).map(function (s) {
+      return [s.cognome, s.nome, (dati.classe && dati.classe.nome) || ''].concat(comp.map(function (c) { return livelloTesto(s.risposte[c.id], dati.livelli); }));
+    }));
+    return '\ufeff' + righe.map(function (r) { return r.map(cella).join(';'); }).join('\r\n') + '\r\n';
+  }
+  function nomeFileCsv(classe, oggi, prefisso) {
     const n = String((classe && classe.nome) || 'classe').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'classe';
     const d = oggi || new Date().toISOString().slice(0, 10);
-    return 'riepilogo-' + n + '-' + d + '.csv';
+    return (prefisso || 'riepilogo') + '-' + n + '-' + d + '.csv';
   }
 
   // L'anno scolastico di oggi: da settembre in poi è «2026/27», prima «2025/26».
@@ -111,7 +126,7 @@
 
   const DOCENTI = {
     MAX_PER_RICHIESTA: MAX_PER_RICHIESTA, capitalizza: capitalizza, parsaElenco: parsaElenco, inGruppi: inGruppi, statoTesto: statoTesto,
-    ultimoAccesso: ultimoAccesso, formatoByte: formatoByte, csvRiepilogo: csvRiepilogo, nomeFileCsv: nomeFileCsv, annoScolastico: annoScolastico
+    ultimoAccesso: ultimoAccesso, formatoByte: formatoByte, csvRiepilogo: csvRiepilogo, csvCompetenze: csvCompetenze, livelloTesto: livelloTesto, nomeFileCsv: nomeFileCsv, annoScolastico: annoScolastico
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = DOCENTI;
   else radice.BC_DOCENTI = DOCENTI;

@@ -725,3 +725,35 @@ test('orientamento: il documento si salva, il pannello ne vede lo stato, un pass
     assert.equal((await p.chiedi('GET', '/api/documenti/orientamento', undefined, { cookie: sara })).json.dati.uscita.passi[0].cosa, passo.cosa);
   } finally { await p.chiudi(); }
 });
+
+test('vista dei docenti per competenza: livelli e prove di tutta la classe, senza testi degli studenti', async () => {
+  const p = await avvia();
+  try {
+    const k = await preparaClasse(p);
+    const sara = (await p.chiedi('POST', '/api/accesso/studente', { codice: k.studenti[0].codice })).cookie;
+    const luca = (await p.chiedi('POST', '/api/accesso/studente', { codice: k.studenti[1].codice })).cookie;
+    const att = { id: 'a1abcd', fatto: 'Ho verificato un impianto con il tester.', luogo: 'scuola', data: '2026-03-10', anno: 'anno3', competenze: ['el-verifiche'], foto: [], file: [] };
+    await p.chiedi('PUT', '/api/documenti/portfolio', { base: 0, dati: { versione: 1, profilo: { indirizzo: 'elettrico', anno: 'anno3' }, attivita: [att] } }, { cookie: sara });
+    const bil = (r) => Object.assign(JSON.parse(JSON.stringify(require('../js/bilancio.js').statoVuoto())), { regionali: r, profilo: { nome: '', classe: '', indirizzo: 'elettrico', anno: 'anno3' } });
+    await p.chiedi('PUT', '/api/documenti/bilancio', { base: 0, dati: bil({ 'el-verifiche': { livello: 'autonomo_noto', nota: 'SEGRETO: testo dello studente' }, 'el-manutenzione': { livello: 'autonomo_nuovo', nota: '' }, 'el-civili': { livello: 'non_ancora', nota: 'altro testo privato' } }) }, { cookie: sara });
+    await p.chiedi('PUT', '/api/documenti/bilancio', { base: 0, dati: bil({ 'el-verifiche': { livello: 'con_aiuto', nota: '' } }) }, { cookie: luca });
+    const r = await p.chiedi('GET', '/api/classi/' + k.classeId + '/competenze', undefined, { cookie: k.docente });
+    assert.equal(r.stato, 200);
+    assert.equal(r.json.figura.nome, 'Operatore elettrico'); assert.equal(r.json.figura.eqf, 3);
+    assert.ok(r.json.competenze.length >= 6 && r.json.competenze.every((x) => x.semplice && x.ufficiale && x.gruppo));
+    assert.ok(r.json.livelli.some((l) => l.id === 'autonomo_noto' && l.dichiara === true));
+    const sa = r.json.studenti.find((x) => x.nome === 'Sara'); const lu = r.json.studenti.find((x) => x.nome === 'Luca');
+    assert.deepEqual(sa.risposte['el-verifiche'], { livello: 'autonomo_noto', prova: true, attivita: 1 }, 'prova dall\'attività collegata');
+    assert.deepEqual(sa.risposte['el-manutenzione'], { livello: 'autonomo_nuovo', prova: false, attivita: 0 }, 'dichiarata senza prova');
+    assert.equal(sa.risposte['el-civili'].prova, false, 'non dichiarata: nessuna prova richiesta');
+    assert.deepEqual(lu.risposte['el-verifiche'], { livello: 'con_aiuto', prova: false, attivita: 0 });
+    assert.equal(sa.risposte['pianificare'].livello, '');
+    assert.ok(!JSON.stringify(r.json).includes('SEGRETO') && !JSON.stringify(r.json).includes('privato'), 'nessun testo dello studente');
+    // Scheda di uno studente
+    const s = await p.chiedi('GET', '/api/studenti/' + k.studenti[0].id + '/competenze', undefined, { cookie: k.docente });
+    assert.equal(s.stato, 200); assert.equal(s.json.risposte['el-verifiche'].livello, 'autonomo_noto');
+    // Solo i docenti
+    assert.equal((await p.chiedi('GET', '/api/classi/' + k.classeId + '/competenze', undefined, { cookie: sara })).stato, 403);
+    assert.equal((await p.chiedi('GET', '/api/classi/999/competenze', undefined, { cookie: k.docente })).stato, 404);
+  } finally { await p.chiudi(); }
+});

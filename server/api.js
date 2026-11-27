@@ -15,6 +15,8 @@ const S = require('./sicurezza.js');
 const DB = require('./db.js');
 const CESTINO = require('./cestino.js');
 const BILANCIO = require('../js/bilancio.js');
+const DATI = require('../js/dati.js');
+const COMPETENZE = require('../js/competenze.js');
 const CV = require('../js/cv.js');
 const DIARIO = require('../diario/js/diario.js');
 const ATTIVITA = require('../portfolio/js/attivita.js');
@@ -655,6 +657,46 @@ function creaApi(db, opzioni) {
         percorsi: { portfolio: pc.portfolio, diario: pc.diario, bilancio: pc.bilancio, curriculum: pc.curriculum, orientamento: pc.orientamento },
         foto: t.n, file: f.n, byte: t.byte + f.byte };
     }) }];
+  });
+  // Le competenze regionali della classe: per ogni competenza, chi l'ha dichiarata, a che livello e con quale prova.
+  // Solo livelli e conteggi, mai i testi degli studenti (la lettura dei testi è il blocco 8). Le frasi semplici e il testo ufficiale
+  // vengono dal catalogo (js/competenze.js), gli studenti scelgono solo gli identificativi.
+  function livelliDelCatalogo() { return DATI.AUTONOMIA.map(function (a) { return { id: a.id, breve: a.breve, dichiara: a.dichiara }; }); }
+  function competenzeDiStudente(studenteId, elenco) {
+    const lb = q.documento.get(studenteId, 'bilancio');
+    const lp = q.documento.get(studenteId, 'portfolio');
+    const b = lb ? BILANCIO.normalizza(JSON.parse(lb.dati)) : BILANCIO.statoVuoto();
+    const p = lp ? JSON.parse(lp.dati) : null;
+    const out = {};
+    elenco.forEach(function (x) {
+      const r = b.regionali[x.id];
+      const l = r ? DATI.AUTONOMIA.find(function (a) { return a.id === r.livello; }) : null;
+      out[x.id] = { livello: l ? l.id : '', prova: !!(l && l.dichiara && BILANCIO.haProvaRegionale(b, x.id, p)), attivita: BILANCIO.attivitaPer(p, x.id).length };
+    });
+    return { regionali: b.regionali, risposte: out };
+  }
+  function elencoCompetenze(indirizzo, anno, extra) {
+    const profilo = { indirizzo: indirizzo || '', anno: anno >= 1 && anno <= 4 ? 'anno' + anno : '' };
+    return BILANCIO.regionaliPer({ profilo: profilo, regionali: extra || {} });
+  }
+  const vistaCompetenza = function (x) { return { id: x.id, semplice: x.semplice, ufficiale: x.ufficiale, gruppo: x.gruppoTitolo }; };
+  rotta('GET', '/api/classi/:id/competenze', serveDocente, function (c, p) {
+    const cl = q.classe.get(intero(p.id));
+    if (!cl) return [404, { ok: false, errore: 'classe' }];
+    const elenco = elencoCompetenze(cl.indirizzo, cl.anno);
+    const info = COMPETENZE.infoPer(cl.indirizzo, cl.anno === 4 ? 'anno4' : 'anno3');
+    const studenti = q.studentiRiepilogo.all(adesso(), cl.id).filter(function (s) { return s.attivo; }).map(function (s) {
+      return { id: s.id, nome: s.nome, cognome: s.cognome, risposte: competenzeDiStudente(s.id, elenco).risposte };
+    });
+    return [200, { ok: true, classe: cl, figura: info ? { nome: info.figura, eqf: info.eqf, titolo: info.titolo } : null, livelli: livelliDelCatalogo(), competenze: elenco.map(vistaCompetenza), studenti: studenti }];
+  });
+  rotta('GET', '/api/studenti/:id/competenze', serveDocente, function (c, p) {
+    const s = q.studente.get(intero(p.id));
+    if (!s) return [404, { ok: false, errore: 'studente' }];
+    const lb = q.documento.get(s.id, 'bilancio');
+    const extra = lb ? BILANCIO.normalizza(JSON.parse(lb.dati)).regionali : {};
+    const elenco = elencoCompetenze(s.indirizzo, s.anno, extra);
+    return [200, { ok: true, livelli: livelliDelCatalogo(), competenze: elenco.map(vistaCompetenza), risposte: competenzeDiStudente(s.id, elenco).risposte }];
   });
   rotta('PATCH', '/api/classi/:id', serveDocente, function (c, p) {
     const cl = q.classe.get(intero(p.id));

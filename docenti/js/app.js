@@ -236,7 +236,8 @@
   function vistaClasse(id, scheda, nuovi) {
     const n = ++numero;
     caricamento();
-    Promise.all([api('GET', 'classi/' + id + '/riepilogo'), api('GET', 'classi/' + id + '/studenti'), api('GET', 'classi')]).then(function (r) {
+    Promise.all([api('GET', 'classi/' + id + '/riepilogo'), api('GET', 'classi/' + id + '/studenti'), api('GET', 'classi'),
+      scheda === 'competenze' ? api('GET', 'classi/' + id + '/competenze') : Promise.resolve(null)]).then(function (r) {
       if (n !== numero || !controlla(r[0]) || !controlla(r[1])) return;
       if (r[0].stato === 404) { pagina([indietro('Le classi', '#/'), h('p', { class: 'vuoto', text: 'Classe non trovata.' })]); return; }
       const classe = r[0].json.classe;
@@ -254,13 +255,57 @@
             h('a', { class: 'pulsante', href: '#/classe/' + classe.id + '/cartellini' }, 'Cartellini da stampare'),
             h('button', { type: 'button', class: 'pulsante pulsante--secondario', onclick: function () { scaricaCsv(r[0].json); } }, 'Esporta in CSV'),
             h('button', { type: 'button', class: 'pulsante pulsante--testo', onclick: function () { moduloClasse(classe); } }, 'Modifica la classe'))),
-        h('div', { class: 'anni-schede', role: 'tablist' }, [['avanzamento', 'Avanzamento'], ['studenti', 'Studenti e codici']].map(function (x) {
+        h('div', { class: 'anni-schede', role: 'tablist' }, [['avanzamento', 'Avanzamento'], ['competenze', 'Competenze'], ['studenti', 'Studenti e codici']].map(function (x) {
           return h('button', { type: 'button', role: 'tab', class: 'anno-scheda', id: 'scheda-' + x[0], 'aria-selected': scheda === x[0] ? 'true' : 'false',
             onclick: function () { schedaClasse = x[0]; vistaClasse(id, x[0]); } }, x[1]);
         })),
-        scheda === 'avanzamento' ? tabellaAvanzamento(attivi) : elencoStudenti(classe, studenti, altre, nuovi)
+        scheda === 'avanzamento' ? tabellaAvanzamento(attivi) : scheda === 'competenze' ? vistaCompetenze(r[3]) : elencoStudenti(classe, studenti, altre, nuovi)
       ]);
     });
+  }
+
+  // Per ogni competenza regionale della classe: chi ha risposto, a che livello, con quale prova. Solo livelli e conteggi.
+  function vistaCompetenze(r) {
+    if (!r || !controlla(r)) return h('p', { class: 'vuoto', text: 'Non riesco a leggere le competenze.' });
+    const d = r.json;
+    if (!d.competenze.length) return h('p', { class: 'vuoto', text: 'Per vedere le competenze serve che la classe abbia indirizzo e anno: li scegli da «Modifica la classe».' });
+    const gruppi = [];
+    d.competenze.forEach(function (c) {
+      let g = gruppi.find(function (x) { return x.titolo === c.gruppo; });
+      if (!g) { g = { titolo: c.gruppo, voci: [] }; gruppi.push(g); }
+      g.voci.push(c);
+    });
+    const scheda = function (c) {
+      const risposte = d.studenti.map(function (s) { return { s: s, r: s.risposte[c.id] }; }).filter(function (x) { return x.r && x.r.livello; });
+      const conProva = risposte.filter(function (x) { return x.r.prova; }).length;
+      const dichiarano = risposte.filter(function (x) { return (d.livelli.find(function (l) { return l.id === x.r.livello; }) || {}).dichiara; }).length;
+      const riassunto = risposte.length
+        ? risposte.length + (risposte.length === 1 ? ' risposta' : ' risposte') + (dichiarano ? ' · ' + conProva + ' su ' + dichiarano + ' con prova' : '')
+        : 'Nessuna risposta';
+      return h('details', { class: 'dettagli competenza' },
+        h('summary', null, h('span', { class: 'competenza__frase', text: c.semplice }), h('span', { class: 'meta competenza__conta', text: riassunto })),
+        h('div', { class: 'dettagli__corpo' },
+          h('p', { class: 'meta', text: 'Competenza regionale: ' + c.ufficiale }),
+          risposte.length ? h('ul', { class: 'competenza__studenti' }, risposte.map(function (x) {
+            return h('li', null, h('a', { href: '#/studente/' + x.s.id, text: x.s.cognome + ' ' + x.s.nome }), ' ',
+              h('span', { class: 'meta', text: D.livelloTesto(x.r, d.livelli) + (x.r.attivita ? ' · ' + x.r.attivita + (x.r.attivita === 1 ? ' attività' : ' attività') : '') }));
+          })) : null,
+          d.studenti.length - risposte.length ? h('p', { class: 'meta', text: 'Non hanno risposto: ' + (d.studenti.length - risposte.length) + ' su ' + d.studenti.length + '.' }) : null));
+    };
+    return h('div', { class: 'competenze-classe' },
+      h('div', { class: 'pannello__azioni' },
+        d.figura ? h('p', { class: 'meta', text: d.figura.nome + ' · ' + d.figura.titolo + ' · EQF ' + d.figura.eqf }) : null,
+        h('button', { type: 'button', class: 'pulsante pulsante--secondario', onclick: function () { scaricaTesto(D.csvCompetenze(d), D.nomeFileCsv(d.classe, null, 'competenze'), 'text/csv;charset=utf-8'); } }, 'Esporta le competenze in CSV')),
+      h('p', { class: 'meta', text: 'Si vedono solo i livelli scelti e se c\'è una prova. I testi degli studenti no.' }),
+      gruppi.map(function (g) { return h('section', { class: 'competenze-gruppo' }, h('h3', { text: g.titolo }), g.voci.map(scheda)); }));
+  }
+
+  function scaricaTesto(testoFile, nomeFile, tipo) {
+    const blob = new Blob([testoFile], { type: tipo });
+    const url = URL.createObjectURL(blob);
+    const a = h('a', { href: url, download: nomeFile });
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
   }
 
   function scaricaCsv(riepilogo) {
@@ -430,7 +475,7 @@
   function vistaStudente(id) {
     const n = ++numero;
     caricamento();
-    Promise.all([api('GET', 'studenti/' + id), api('GET', 'studenti/' + id + '/documenti/portfolio'), api('GET', 'studenti/' + id + '/allegati'), api('GET', 'studenti/' + id + '/foto')]).then(function (r) {
+    Promise.all([api('GET', 'studenti/' + id), api('GET', 'studenti/' + id + '/documenti/portfolio'), api('GET', 'studenti/' + id + '/allegati'), api('GET', 'studenti/' + id + '/foto'), api('GET', 'studenti/' + id + '/competenze')]).then(function (r) {
       if (n !== numero || !controlla(r[0])) return;
       if (r[0].stato === 404) { pagina([indietro('Le classi', '#/'), h('p', { class: 'vuoto', text: 'Studente non trovato.' })]); return; }
       const s = r[0].json.studente;
@@ -452,6 +497,7 @@
               h('span', { class: 'meta', text: x && x.aggiornato ? 'Modificato il ' + new Date(x.aggiornato).toLocaleDateString('it-IT', { day: 'numeric', month: 'long' }) + (x.autore && x.autore.tipo === 'docente' ? ' da ' + (x.autore.nome || 'un docente') : '') : '' }));
           })),
           h('p', { class: 'meta', text: 'Spazio usato: ' + D.formatoByte(s.byte) + ' su ' + D.formatoByte(quota.quota || 1073741824) + ' · ' + s.foto + ' foto · ' + s.file + ' file' })),
+        sezioneCompetenze(r[4]),
         h('section', null, h('h2', { class: 'meta occhiello', text: attivita.length === 1 ? 'Un\'attività' : attivita.length + ' attività' }),
           attivita.length ? ['anno1', 'anno2', 'anno3', 'anno4', ''].map(function (a) {
             const el = attivita.filter(function (x) { return (x.anno || '') === a; });
@@ -461,6 +507,19 @@
           }) : h('p', { class: 'vuoto', text: 'Ancora nessuna attività.' }))
       ]);
     });
+  }
+
+  // Le competenze regionali a cui lo studente ha risposto: livello e prova, mai i suoi testi.
+  function sezioneCompetenze(r) {
+    if (!r || r.stato !== 200) return null;
+    const d = r.json;
+    const risposte = d.competenze.filter(function (c) { return d.risposte[c.id] && d.risposte[c.id].livello; });
+    if (!risposte.length) return null;
+    return h('section', null, h('h2', { class: 'meta occhiello', text: 'Competenze regionali' }),
+      h('ul', { class: 'competenza__studenti' }, risposte.map(function (c) {
+        const x = d.risposte[c.id];
+        return h('li', null, h('strong', { text: c.semplice }), ' ', h('span', { class: 'meta', text: D.livelloTesto(x, d.livelli) + (x.attivita ? ' · ' + x.attivita + (x.attivita === 1 ? ' attività' : ' attività') : '') }));
+      })));
   }
 
   function titoloAttivita(a) {

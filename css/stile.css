@@ -1056,3 +1056,10 @@ dialog p:empty { display: none; }
 
 .campo-con-aiuto { display: grid; gap: 6px; }
 .campo-con-aiuto .pulsante--testo { justify-self: start; }
+
+/* Vista docenti per competenza */
+.competenze-classe { display: grid; gap: 18px; }
+.competenze-gruppo { display: grid; gap: 10px; }
+.competenza summary { display: grid; gap: 2px; }
+.competenza__frase { font-weight: 700; color: var(--c-titolo); }
+.competenza__studenti { list-style: none; padding: 0; display: grid; gap: 6px; }

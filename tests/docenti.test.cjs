@@ -70,3 +70,19 @@ test('la libreria dei QR è quella con licenza MIT, e il QR di un cartellino si 
   assert.ok(q.getModuleCount() >= 29 && q.getModuleCount() <= 45);
   assert.match(q.createSvgTag({ cellSize: 2, margin: 0 }), /^<svg /);
 });
+
+test('competenze: come si dice il livello e il CSV con una colonna per competenza', () => {
+  const livelli = [{ id: 'con_aiuto', breve: 'con aiuto', dichiara: true }, { id: 'non_ancora', breve: 'non ancora', dichiara: false }];
+  assert.equal(D.livelloTesto({ livello: 'con_aiuto', prova: true }, livelli), 'con aiuto · con prova');
+  assert.equal(D.livelloTesto({ livello: 'con_aiuto', prova: false }, livelli), 'con aiuto · senza prova');
+  assert.equal(D.livelloTesto({ livello: 'non_ancora', prova: false }, livelli), 'non ancora', 'chi non dichiara non ha bisogno di prove');
+  assert.equal(D.livelloTesto({ livello: '' }, livelli), ''); assert.equal(D.livelloTesto(null, livelli), '');
+  const dati = { classe: { nome: '3ELE' }, livelli, competenze: [{ id: 'a', semplice: 'Controllare; misurare' }, { id: 'b', semplice: 'Riparare' }],
+    studenti: [{ cognome: 'Bianchi', nome: 'Sara', risposte: { a: { livello: 'con_aiuto', prova: true }, b: { livello: '' } } },
+      { cognome: '=CMD()', nome: 'Luca', risposte: { a: { livello: 'non_ancora' } } }] };
+  const righe = D.csvCompetenze(dati).replace(/\r\n$/, '').split('\r\n');
+  assert.equal(righe[0], '﻿Cognome;Nome;Classe;"Controllare; misurare";Riparare');
+  assert.equal(righe[1], 'Bianchi;Sara;3ELE;con aiuto · con prova;');
+  assert.ok(righe[2].startsWith('\'=CMD();Luca;3ELE;non ancora'), righe[2]);
+  assert.equal(D.nomeFileCsv({ nome: '3ELE' }, '2026-11-27', 'competenze'), 'competenze-3ele-2026-11-27.csv');
+});

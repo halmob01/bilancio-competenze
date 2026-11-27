@@ -10,6 +10,9 @@
   const CHIAVE = 'bilancio-competenze-v1';
   const CHIAVE_POSIZIONE = 'bilancio-competenze-posizione-v1';
   const STATO_TESTO = { vuota: 'Da iniziare', in_corso: 'In corso', completa: 'Completa' };
+  // Il bilancio è autovalutazione: non è valutazione né validazione o certificazione delle competenze (D.Lgs. 13/2013).
+  // L'unico formato regionale approvato per la correlazione degli esiti è l'Allegato 1 al Decreto 17944/2024.
+  const AVVERTENZA = 'Autovalutazione dello studente: non è una valutazione né una certificazione delle competenze (D.Lgs. 13/2013).';
 
   // Sequenza piatta delle schermate: [indice sezione, indice schermata].
   const SEQUENZA = [];
@@ -904,25 +907,34 @@
       return [testa(metaSchermata(), 'Le competenze del tuo indirizzo'), corpoLargo([h('p', { text: 'Per vedere le competenze del tuo indirizzo serve sapere indirizzo e anno.' })],
         h('div', null, h('button', { type: 'button', class: 'pulsante', onclick: function () { vaiA('percorso', 'chi'); } }, 'Scegli indirizzo e anno')))];
     }
-    const info = window.BC_COMPETENZE ? window.BC_COMPETENZE.infoPer(p.indirizzo, p.anno) : null;
+    const C = window.BC_COMPETENZE || null;
+    const info = C ? C.infoPer(p.indirizzo, p.anno, p.articolazioni) : null;
     const tutte = L.regionaliPer(stato);
+    // Lo standard è la figura più l'indirizzo scelto (Decreto 12550/2013, §3.2): chi sa su che cosa lavora la classe lo sceglie qui.
+    const possibili = C && C.articolazioniPer ? C.articolazioniPer(p.indirizzo, p.anno) : { qualifica: [], diploma: [] };
+    const sceltaIndirizzo = ['diploma', 'qualifica'].filter(function (liv) { return possibili[liv].length > 1; }).map(function (liv) {
+      const opzioni = possibili[liv].map(function (x) { return { id: x.id, testo: x.titolo.replace(/^Se lavori su /, 'Su ') }; }).concat([{ id: '', testo: 'Non lo so ancora: mostrali tutti' }]);
+      return gruppoScelte({ legenda: liv === 'diploma' ? 'Per il diploma, su che cosa lavora la tua classe?' : 'Su che cosa lavora la tua classe?', nome: 'f-art-' + liv,
+        opzioni: opzioni, valore: p.articolazioni[liv] || '',
+        aggiorna: function (id) { p.articolazioni[liv] = id; modificato(); ridisegna('f-art-' + liv + '-' + id); } });
+    });
     const fatte = tutte.filter(function (x) { return stato.regionali[x.id] && stato.regionali[x.id].livello; }).length;
     const intro = [
       h('p', { text: 'Queste sono le cose che si imparano nel tuo percorso. Per ognuna scegli la frase più vera per te.' }),
       info ? h('p', { class: 'meta', text: info.figura + ' · ' + info.titolo }) : null,
       h('p', { class: 'meta livelli__conta', role: 'status', text: fatte + ' su ' + tutte.length + ' con una risposta' })
-    ];
+    ].concat(sceltaIndirizzo);
     const gruppi = [];
     tutte.forEach(function (x) {
       let g = gruppi.find(function (y) { return y.id === x.gruppo + '|' + x.gruppoTitolo; });
-      if (!g) { g = { id: x.gruppo + '|' + x.gruppoTitolo, titolo: x.gruppoTitolo, voci: [] }; gruppi.push(g); }
+      if (!g) { g = { id: x.gruppo + '|' + x.gruppoTitolo, titolo: x.gruppoTitolo, chiuso: x.chiuso, voci: [] }; gruppi.push(g); }
       g.voci.push(x);
     });
     const risposta = gruppi.map(function (g) {
       const toccato = g.voci.some(function (x) { return stato.regionali[x.id] && stato.regionali[x.id].livello; });
       const elenco = h('ul', { class: 'regionali' }, g.voci.map(cartaRegionale));
-      // «Se lavori su…»: un gruppo che non ti riguarda resta chiuso.
-      return /^Se /.test(g.titolo)
+      // «Se lavori su…», competenze di base e trasversali: restano chiusi finché non si tocca una voce.
+      return g.chiuso || /^Se /.test(g.titolo)
         ? h('details', { class: 'dettagli', open: toccato ? 'open' : null }, h('summary', { text: g.titolo }), h('div', { class: 'dettagli__corpo' }, elenco))
         : h('section', { class: 'regionali__gruppo' }, h('h3', { text: g.titolo }), elenco);
     });
@@ -967,6 +979,7 @@
     const data = stato.aggiornato ? new Date(stato.aggiornato).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
     const annoScelto = D.ANNI.find(function (x) { return x.id === stato.profilo.anno; });
     const intestazione = [ind ? 'Indirizzo ' + ind.nome : '', annoScelto ? annoScelto.testo : '', stato.profilo.classe, data ? 'Aggiornato il ' + data : ''].filter(Boolean).join(' · ');
+    const infoRif = window.BC_COMPETENZE ? window.BC_COMPETENZE.infoPer(stato.profilo.indirizzo, stato.profilo.anno, stato.profilo.articolazioni) : null;
 
     const soFare = b.soFare.map(function (x) {
       return h('li', { class: 'voce' },
@@ -992,7 +1005,9 @@
       h('header', { class: 'dossier__testa' },
         h('p', { class: 'meta', text: 'Bilancio di competenze' }),
         h('p', { class: 'dossier__titolo', text: pieno(stato.profilo.nome) ? stato.profilo.nome : 'Il mio bilancio' }),
-        intestazione ? h('p', { class: 'meta', text: intestazione }) : null),
+        intestazione ? h('p', { class: 'meta', text: intestazione }) : null,
+        infoRif && infoRif.indirizzi.length ? h('p', { class: 'meta', text: 'Indirizzo del Repertorio: ' + infoRif.indirizzi.join('; ') }) : null,
+        h('p', { class: 'meta', text: AVVERTENZA })),
       parte('So fare', (soFare.length ? [h('ul', { class: 'voci' }, soFare)] : []).concat(daDoc), 'Ancora nulla.'),
       parte('Ho imparato così', b.hoImparato.length ? h('ul', { class: 'voci' }, b.hoImparato.map(function (x) { return voce(x.testo, x.fonte, x.rif, interattivo); })) : null,
         'Ancora nulla.'),
@@ -1006,15 +1021,21 @@
   // In fondo: a quali competenze regionali corrispondono le frasi del bilancio, con il testo ufficiale. Nella stampa è aperto.
   function riferimentiRegionali(interattivo) {
     const r = L.riferimentiRegionali(stato);
-    if (!r.voci.length) return null;
+    if (!r.voci.length && !r.situazioni.length) return null;
     const elenco = h('ul', { class: 'voci' }, r.voci.map(function (v) {
-      return h('li', { class: 'voce' }, h('p', null, h('strong', { text: v.semplice })), h('p', { class: 'meta', text: 'Competenza regionale: ' + v.ufficiale }));
+      return h('li', { class: 'voce' }, h('p', null, h('strong', { text: v.semplice })), h('p', { class: 'meta', text: 'Riferimento: ' + v.ufficiale + '.' + (v.fonte ? ' Fonte: ' + v.fonte + '.' : '') }));
     }));
-    const titolo = 'Le competenze regionali' + (r.info ? ' · ' + r.info.figura + ' (' + r.info.titolo + ', EQF ' + r.info.eqf + ')' : '');
-    const nota = r.info ? h('p', { class: 'meta', text: 'Fonte: Regione Lombardia, Repertorio IeFP, ' + r.info.fonte + '.' }) : null;
+    const sit = r.situazioni.length ? [h('h4', { text: 'Le sei situazioni comuni' }), h('ul', { class: 'voci' }, r.situazioni.map(function (x) {
+      return h('li', { class: 'voce' }, h('p', null, h('strong', { text: x.verbo })),
+        x.riferimenti.map(function (y) { return h('p', { class: 'meta', text: 'Riferimento: ' + y.testo + '. Fonte: ' + y.fonte + '.' }); }));
+    }))] : [];
+    // Il livello EQF è quello del titolo di riferimento, non un livello raggiunto dallo studente.
+    const titolo = 'Le competenze di riferimento' + (r.info ? ' · ' + r.info.figura + ', ' + r.info.titolo : '');
+    const nota = r.info ? h('p', { class: 'meta', text: 'Titolo di riferimento: ' + r.info.figura + ', ' + r.info.titolo + ', livello EQF ' + r.info.eqf + ' del titolo (Regione Lombardia, Repertorio IeFP, ' + r.info.fonte + '). '
+      + (r.info.indirizzi.length ? 'Indirizzo: ' + r.info.indirizzi.join('; ') + '. ' : '') + AVVERTENZA }) : h('p', { class: 'meta', text: AVVERTENZA });
     return interattivo
-      ? h('details', { class: 'dossier__parte dettagli' }, h('summary', { text: titolo }), h('div', { class: 'dettagli__corpo' }, nota, elenco))
-      : h('section', { class: 'dossier__parte' }, h('h3', { text: titolo }), nota, elenco);
+      ? h('details', { class: 'dossier__parte dettagli' }, h('summary', { text: titolo }), h('div', { class: 'dettagli__corpo' }, [nota, elenco].concat(sit)))
+      : h('section', { class: 'dossier__parte' }, [h('h3', { text: titolo }), nota, elenco].concat(sit));
   }
 
   function schermataBilancio() {

@@ -41,10 +41,15 @@
 
   // Situazioni comuni ai tre indirizzi (design.md §7: capire / fare / collaborare /
   // verificare / spiegare / migliorare). Gli esempi cambiano per indirizzo;
+  // «riferimenti» lega ogni situazione alle competenze di base (DGR 3192/2020, All. B1), alle competenze ricorsive
+  // (All. B2) e alle competenze personali, sociali, di apprendimento e imprenditoriali (Accordo Regioni 18/12/2019, All. 2):
+  // è una corrispondenza di massima proposta da questo progetto, DA RIVEDERE con i docenti.
   // «anche» ricorda che competenze professionali e di base si intrecciano.
   const SITUAZIONI = [
     {
       id: 'capire',
+      // A che cosa corrisponde nei riferimenti normativi (per documenti e docenti, non per lo studente).
+      riferimenti: [{ fonte: 'Regione Lombardia, DGR 3192/2020, Allegato B1', testo: 'Competenze alfabetiche funzionali (comprensione di testi, anche tecnici)' }, { fonte: 'Regione Lombardia, DGR 3192/2020, Allegato B1', testo: 'Competenza linguistica (lingua straniera)' }],
       cv: 'Comprensione di consegne, schemi e documentazione tecnica',
       verbo: 'Capire',
       domanda: 'Quando ricevi un compito, riesci a capire che cosa ti viene chiesto?',
@@ -57,6 +62,8 @@
     },
     {
       id: 'fare',
+      // A che cosa corrisponde nei riferimenti normativi (per documenti e docenti, non per lo studente).
+      riferimenti: [{ fonte: 'Regione Lombardia, DGR 3192/2020, Allegato B2, competenze ricorsive', testo: 'Definire e pianificare fasi delle operazioni da compiere' }, { fonte: 'Regione Lombardia, DGR 3192/2020, Allegato B2, competenze ricorsive', testo: 'Approntare, monitorare e curare la manutenzione ordinaria di strumenti, utensili, attrezzature e macchinari' }],
       cv: 'Esecuzione di lavori del proprio mestiere dall\'inizio alla fine',
       verbo: 'Fare',
       domanda: 'Sai realizzare un lavoro del tuo mestiere dall\'inizio alla fine?',
@@ -69,6 +76,8 @@
     },
     {
       id: 'collaborare',
+      // A che cosa corrisponde nei riferimenti normativi (per documenti e docenti, non per lo studente).
+      riferimenti: [{ fonte: 'Accordo Regioni 18/12/2019, Allegato 2', testo: 'Lavorare con gli altri in maniera costruttiva' }],
       cv: 'Lavoro in squadra e rapporto con tutor, colleghi e clienti',
       verbo: 'Collaborare',
       domanda: 'Come lavori con gli altri: compagni, colleghi, tutor, clienti?',
@@ -81,6 +90,8 @@
     },
     {
       id: 'verificare',
+      // A che cosa corrisponde nei riferimenti normativi (per documenti e docenti, non per lo studente).
+      riferimenti: [{ fonte: 'Regione Lombardia, DGR 3192/2020, Allegato B2, competenze ricorsive', testo: 'Operare in sicurezza e nel rispetto delle norme di igiene e di salvaguardia ambientale' }, { fonte: 'Regione Lombardia, DGR 3192/2020, Allegato B1', testo: 'Competenze matematiche, scientifiche e tecnologiche (misure e calcoli)' }],
       cv: 'Controllo del risultato e rispetto delle norme di sicurezza e igiene',
       verbo: 'Verificare',
       domanda: 'Controlli il risultato del tuo lavoro e le condizioni di sicurezza?',
@@ -93,6 +104,8 @@
     },
     {
       id: 'spiegare',
+      // A che cosa corrisponde nei riferimenti normativi (per documenti e docenti, non per lo studente).
+      riferimenti: [{ fonte: 'Regione Lombardia, DGR 3192/2020, Allegato B1', testo: 'Competenze alfabetiche funzionali (produzione di testi orali e scritti)' }],
       cv: 'Capacità di spiegare e documentare il lavoro svolto',
       verbo: 'Spiegare',
       domanda: 'Sai spiegare a qualcuno quello che hai fatto o come si fa?',
@@ -105,6 +118,8 @@
     },
     {
       id: 'migliorare',
+      // A che cosa corrisponde nei riferimenti normativi (per documenti e docenti, non per lo studente).
+      riferimenti: [{ fonte: 'Accordo Regioni 18/12/2019, Allegato 2', testo: 'Gestire il proprio apprendimento e sviluppo professionale' }, { fonte: 'Accordo Regioni 18/12/2019, Allegato 2', testo: 'Agire in modo imprenditoriale ed innovativo' }],
       cv: 'Analisi degli errori e capacità di migliorare il proprio lavoro',
       verbo: 'Migliorare',
       domanda: 'Quando qualcosa va storto, riesci a capire perché e a fare meglio la volta dopo?',

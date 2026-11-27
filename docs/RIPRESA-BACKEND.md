@@ -242,7 +242,7 @@ Il docente scrive in italiano semplice e non vuole emoji. Il piano completo è `
 - Non fatto: vista del cestino di tutta la classe; per i testi cancellati dentro un campo restano le revisioni (§5).
 
 ### 4.11 Orientamento in uscita (26 novembre 2026)
-- **Sito** `orientamento/` (card 05 nella pagina iniziale). Parte «Cosa faccio dopo»: La strada, Cosa mi piace, Cosa so fare, Dove vorrei andare, I prossimi passi, Il mio foglio (stampa e copia). Modello: il diario.
+- **Sito** `orientamento/` (card 05 nella pagina iniziale). Parte «Che cosa faccio dopo»: La strada, Che cosa mi piace, Che cosa so fare, Dove vorrei andare, I prossimi passi, Il mio foglio (stampa e copia). Modello: il diario.
 - **Documento** `orientamento` (chiave locale `orientamento-v1`): `profilo{indirizzo, anno}` e `uscita{piace, attivita[max 3], imparare, strade[max 2: id + perche], passi[max 3: id, cosa, con, entro]}`. Normalizzato in `orientamento/js/orientamento.js`, usato anche dal server (`TIPI.orientamento`).
 - **Dialogo con le altre sezioni**: solo lettura. Le attività piaciute si scelgono dal portfolio (per id); il bilancio si legge per il promemoria. Mai modificati.
 - **Mappa**: percorso 3+1 oppure quattro anni (`PERCORSO_QUADRIENNALE`, oggi Informatica I e II; da aggiornare ogni settembre). Tutti i fatti hanno la fonte in `docs/FILIERA.md`, con l'elenco di quello che resta da verificare.
@@ -258,8 +258,8 @@ Il docente scrive in italiano semplice e non vuole emoji. Il piano completo è `
 - **Non fatto**: le frasi regionali non entrano ancora nel campo «competenze» del curriculum (solo le sei situazioni); la vista dei docenti per competenza (blocco 8).
 
 ### 4.13 Racconto il CFP: orientamento in entrata (27 novembre 2026)
-- **Orientamento** ha due parti nella stessa pagina e nello stesso documento: «Racconto il CFP» (`entrata`: 3 passi) e «Cosa faccio dopo» (`uscita`: 6 passi). L'avanzamento per il pannello conta 9 passi.
-- **Racconto il CFP**: (1) le quattro domande dell'open day (presentati, racconto, difficile, consiglio); (2) sei domande dei ragazzi di terza media, tutte facoltative (giornata, pratica, iscriversi, professori, dopo, rifaresti), con un pulsante che porta le strade scelte in «Cosa faccio dopo» nella risposta «dopo»; (3) il testo per l'open day, con la bozza che mette in fila le risposte senza riscriverle. Si stampa un foglio con il testo e le risposte date. Nessuna pagina pubblica, nessuna foto.
+- **Orientamento** ha due parti nella stessa pagina e nello stesso documento: «Racconto il CFP» (`entrata`: 3 passi) e «Che cosa faccio dopo» (`uscita`: 6 passi). L'avanzamento per il pannello conta 9 passi.
+- **Racconto il CFP**: (1) le quattro domande dell'open day (presentati, racconto, difficile, consiglio); (2) sei domande dei ragazzi di terza media, tutte facoltative (giornata, pratica, iscriversi, professori, dopo, rifaresti), con un pulsante che porta le strade scelte in «Che cosa faccio dopo» nella risposta «dopo»; (3) il testo per l'open day, con la bozza che mette in fila le risposte senza riscriverle. Si stampa un foglio con il testo e le risposte date. Nessuna pagina pubblica, nessuna foto.
 - **Dal bilancio**: la sezione 07 «Orientamento» non c'è più. Le risposte già scritte lì si copiano nella nuova parte **una volta sola** (`importaDalBilancio`, segnata da `entrata.importato`), solo se la parte è ancora vuota. Il bilancio le conserva nel documento ma non le mostra né le stampa; `DATI.ORIENTAMENTO` e `componiOrientamento` restano solo per leggerle (e per il foglio Google, spento).
 - Il bilancio ha cinque sezioni.
 

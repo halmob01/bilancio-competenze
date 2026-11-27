@@ -376,7 +376,6 @@
     const iniziato = !!stato.aggiornato;
     return h('div', { class: 'home' },
       h('div', { class: 'home__fascia' }, h('div', { class: 'home__fascia-dentro' },
-      h('a', { class: 'home__tutti', href: '../', text: 'Tutti i percorsi' }),
       h('h1', { text: 'Bilancio di competenze' }),
       h('p', { class: 'home__sottotitolo', text: 'Che cosa hai imparato finora?' }),
       h('p', { class: 'home__testo misura', text: 'Racconta che cosa hai fatto e che cosa sai fare. Alla fine hai il tuo bilancio.' }),
@@ -387,7 +386,7 @@
         iniziato ? h('button', { type: 'button', class: 'pulsante pulsante--secondario', onclick: function () { vaiA('bilancio', 'dossier'); } }, 'Vai al bilancio') : null),
       )),
       h('section', { class: 'home__indice', 'aria-labelledby': 'home-indice' },
-        h('h2', { id: 'home-indice', class: 'meta', text: 'Cinque sezioni · circa tre ore' }),
+        h('h2', { id: 'home-indice', class: 'meta', text: 'Le sezioni del bilancio' }),
         h('ol', null, D.SEZIONI.map(function (s, i) {
           return h('li', null,
             h('span', { class: 'meta', text: String(i + 1).padStart(2, '0') }),

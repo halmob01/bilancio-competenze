@@ -190,12 +190,12 @@
   // ---------- Avanzamento (stessa forma di bilancio e curriculum: serve anche al pannello dei docenti) ----------
   const PASSI_ENTRATA = [{ id: 'racconto', titolo: 'Che cosa racconteresti' }, { id: 'medie', titolo: 'Le domande dei ragazzi' }, { id: 'testo', titolo: 'Il testo per l\'open day' }];
   const PASSI_USCITA = [
-    { id: 'strada', titolo: 'La strada' }, { id: 'piace', titolo: 'Cosa mi piace' }, { id: 'sofare', titolo: 'Cosa so fare' },
+    { id: 'strada', titolo: 'La strada' }, { id: 'piace', titolo: 'Che cosa mi piace' }, { id: 'sofare', titolo: 'Che cosa so fare' },
     { id: 'dove', titolo: 'Dove vorrei andare' }, { id: 'prossimi', titolo: 'I prossimi passi' }, { id: 'foglio', titolo: 'Il mio foglio' }
   ];
   const PARTI = [
     { id: 'entrata', titolo: 'Racconto il CFP', per: 'Per chi deve scegliere dopo la terza media.', passi: PASSI_ENTRATA },
-    { id: 'uscita', titolo: 'Cosa faccio dopo', per: 'Per te: le strade dopo il CFP.', passi: PASSI_USCITA }
+    { id: 'uscita', titolo: 'Che cosa faccio dopo', per: 'Per te: le strade dopo il CFP.', passi: PASSI_USCITA }
   ];
   const PASSI = PASSI_ENTRATA.concat(PASSI_USCITA);
   function statoPasso(stato, id) {

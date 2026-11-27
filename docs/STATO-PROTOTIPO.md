@@ -35,7 +35,7 @@ Il percorso completo in sei sezioni, utilizzabile da smartphone e da computer, c
 
 ## Verifiche da fare in classe
 
-- Durata reale del percorso (stimata in circa tre ore, non misurata).
+- Durata reale del percorso: non è indicata agli studenti e non è stata misurata.
 - Leggibilità su telefoni economici e con zoom del testo al 200%.
 - Navigazione con lettore di schermo (VoiceOver, TalkBack): la struttura è semantica ma non è stata provata con tecnologie assistive reali.
 - Verifica del contrasto dell'indicatore rosso sui radio selezionati: lo stato è comunicato anche dal bordo nero più spesso, non dal solo colore.
@@ -92,6 +92,7 @@ Primo intervento verso un portale con più strumenti che si parlano (vedi la dis
 - **Nessuna perdita di dati**: chi aveva già scritto il curriculum dentro il bilancio lo ritrova. Il primo dei due siti aperto lo copia in `cv-v1` (il bilancio lo fa prima di salvarsi senza, il curriculum se non trova il proprio); una vecchia copia `.json` del bilancio si può caricare anche nel curriculum.
 - **Foglio Google**: invariato. L'invio parte dal bilancio, con lo stesso contenuto e lo stesso metodo di prima (provato intercettando la richiesta), e non è mai stato incluso il curriculum. L'indirizzo della pagina non conta per lo script, che non controlla l'origine. Le righe del foglio restano le stesse perché il codice anonimo dello studente è nel salvataggio del bilancio, che non cambia chiave.
 - **Link «Tutti i percorsi»** nella testata dei tre siti (sotto i 640px nella schermata iniziale di ciascuno, perché la testata di lavoro è piena). Sostituisce la regola «nessun pulsante tra i siti» del diario.
+- **27/11/2026, revisione della testata:** «Tutti i percorsi» non c'è più. In alto a sinistra, in tutti i siti e nel pannello docenti, c'è sempre «Portale dello studente» (anello + nome), che porta alla pagina iniziale; il nome del sito porta alla home del sito. Pagina iniziale: titolo «Il portale dello studente». Tolte le durate («circa tre ore», «circa mezz'ora»).
 - **Da sapere**: l'interfaccia del curriculum duplica una parte degli elementi di base di quella del bilancio (campi, dialoghi), come già fa il diario; un modulo condiviso è un passo successivo. Le schermate in `docs/guida/` sono quelle di prima e mostrano ancora il curriculum dentro il bilancio.
 
 ## Bilancio più corto e meno vago (10 novembre 2026)

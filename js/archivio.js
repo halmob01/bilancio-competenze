@@ -292,7 +292,7 @@
     scaduta = true;
     const testa = document.querySelector('.testata');
     if (!testa || document.getElementById('avviso-sessione')) return;
-    const casa = document.querySelector('a.testata__tutti');
+    const casa = document.querySelector('a.testata__portale');
     const p = document.createElement('p');
     p.id = 'avviso-sessione'; p.className = 'avviso-sessione'; p.setAttribute('role', 'status');
     p.textContent = 'Non sei più collegato. ';
@@ -327,7 +327,7 @@
   function mostraUtente() {
     if (!sessione) return;
     const riga = document.querySelector('.testata__riga');
-    const casa = document.querySelector('a.testata__tutti');
+    const casa = document.querySelector('a.testata__portale');
     if (!riga || !casa || document.getElementById('utente-portale')) return;
     const box = document.createElement('span');
     box.id = 'utente-portale'; box.className = 'testata__utente';
